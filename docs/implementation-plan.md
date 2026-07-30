@@ -15,7 +15,7 @@
 |---|---|
 | Planning and board conversion complete | End of Week 7 |
 | Core individual issues | 20 |
-| Named conditional packages | 7 |
+| Named conditional packages | 8 |
 | First repeatable bid → selection → reveal → FULL loop | End of Week 14 |
 | Protocol-complete local evidence | End of Week 16 |
 | Broader integration evidence | Weeks 17–18 |
