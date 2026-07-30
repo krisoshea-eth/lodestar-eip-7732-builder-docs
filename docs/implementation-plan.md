@@ -7,7 +7,7 @@
 **Working model:** one shared feature branch; merge `unstable` regularly; split only when review benefits from it  
 **Formal product name:** `lodestar builder` / `packages/builder`  
 **Optional EPF mission codename:** Forgestar  
-**Status:** Lodestar review candidate. Planning, feedback incorporation, baseline pinning, and complete project-board conversion finish by the end of Week 7. Implementation starts in Week 8.
+**Status:** Feedback-incorporated final candidate. Lodestar review comments have been addressed; final approval, baseline pinning, HackMD sync, and complete project-board conversion finish by the end of Week 7. Early implementation groundwork is tracked below and does not change the issue evidence required for completion.
 
 > **Project documents:** [Merged proposal](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md) · [Living Technical Note](https://hackmd.io/@krisos/S1a9mdB7fl) · [Presentation slides](https://docs.google.com/presentation/d/1cmC3fpu652gZFTIm2_P1lIYOfC2M_w3c5qXSUZ4B6lc) · [Lodestar repository](https://github.com/ChainSafe/lodestar) · [Maintained Beacon API Builder flow](https://github.com/ethereum/beacon-APIs/blob/master/validator-flow.md#builder-optional)
 
@@ -410,6 +410,9 @@ The core does not include:
 | `D-14` | Reliability | High reliability/redundancy is not a first-iteration requirement | Offline-after-bid is documented as a known paid-without-reveal failure; HA remains in the deferred hardening inventory |
 | `D-15` | Test path | Local Kurtosis first; extend ethereum-package as needed; use buildoor configuration as reference; devnet next if available | Kurtosis is core evidence, devnet deployment is strong-success evidence |
 | `D-16` | Proposer test path | Use a Lodestar proposer BN/VC with deterministic Builder preference | Because Lodestar may prefer its local payload when values are close, pin `--builder.selection=builderalways` for the happy-path fixture or use `--builder.selection=maxprofit` with an explicitly documented Builder boost factor; other-client proposer interop follows later |
+| `D-17` | Genesis readiness | Keep a small `waitForGenesis` implementation in both validator and Builder because it depends on `@lodestar/api` and has no cleaner shared home | The Builder copy stays behaviorally aligned with validator: a 404 means genesis is not available yet and is logged at info; other errors are warnings; polling keeps the existing fixed interval and abort signal |
+| `D-18` | Lodestar BN pre-genesis 404 | Do not add an unreachable `getGenesis` branch to the Lodestar BN | Lodestar does not start its API before anchor-state initialization today, so a cosmetic 404 branch would be misleading; the client-side 404 handling remains correct for Teku and any BN that exposes the API before genesis |
+| `D-19` | Shared config checks and Builder API auth | Import `assertEqualParams` from `@lodestar/config`; keep staked Builder API request authentication outside the core sidecar | Reuse the utilities landed in [Lodestar #9725](https://github.com/ChainSafe/lodestar/pull/9725); do not duplicate them or import validator. Add `DOMAIN_REQUEST_AUTH` or request-signature verification only if `EXT-BUILDER-API-01` is activated or the relevant upstream API work lands |
 
 ### Details finalized against the pinned SHA
 
@@ -427,6 +430,20 @@ They are resolved during Week 7 baseline activation or in the issue that consume
 <a id="delivery-model-and-weekly-roadmap"></a>
 
 ## 4. Delivery model and weekly roadmap
+
+### Verified implementation baseline at final review
+
+This snapshot was checked on 30 July 2026. It records work that can narrow the board issues without treating an open draft or an unreviewed path as Done.
+
+| Source | Verified state | Effect on this plan |
+|---|---|---|
+| [Lodestar #9595](https://github.com/ChainSafe/lodestar/pull/9595) | Merged: Gloas Builder selection, broadcast validation, and stateless block-production flow | Re-audit the relevant BN and publication tasks against `unstable`; reuse landed capabilities instead of duplicating them |
+| [Lodestar #9725](https://github.com/ChainSafe/lodestar/pull/9725) | Merged: `assertEqualParams`, `NotEqualParamsError`, the private comparison helper, tests, and fixtures moved from validator to `@lodestar/config` | `API-01` imports the shared config check and removes the temporary Builder TODO; no Builder-to-validator dependency |
+| [Lodestar #9726](https://github.com/ChainSafe/lodestar/pull/9726) | Merged: validator treats `getGenesis` 404 as expected waiting and other errors as warnings, with the retry loop unchanged | Keep the Builder's duplicate `waitForGenesis` behavior aligned; do not add unreachable Lodestar BN code |
+| [Lodestar #9594](https://github.com/ChainSafe/lodestar/pull/9594) | Open draft: Gloas staked Builder API work | Not a core dependency. Re-audit if it lands; request-auth constants and verification remain conditional |
+| [Marko's draft Builder PR](https://github.com/markolazic01/lodestar/pull/1) | Open draft at `9535166`: package and CLI scaffolding, local keystore/password loading with optional pubkey check, bid and envelope signing, focused tests, source-BN client wiring, and `waitForGenesis` are present | Start `CLI-01`, `SIGN-01`, and `API-01` from this work. Rebase onto current `unstable`, integrate [Lodestar #9725](https://github.com/ChainSafe/lodestar/pull/9725) and [#9726](https://github.com/ChainSafe/lodestar/pull/9726), finish readiness and active-Builder resolution, polish open ends, obtain review, and rerun required checks before any issue is marked Done |
+
+The board should therefore use **In progress** or **In review** for work represented only by the draft PR, and **Done** only when the issue's own completion evidence is satisfied. Landed upstream prerequisites may be marked complete or used to narrow the consuming issue during baseline activation.
 
 ### Board hierarchy and pickup model
 
@@ -740,8 +757,8 @@ flowchart TD
 
 **Tasks**
 
-- [ ] Create `packages/builder` parallel to `packages/validator`.
-- [ ] Register `lodestar builder` through existing CLI conventions.
+- [ ] Rebase and polish the existing `packages/builder` and `lodestar builder` scaffolding from Marko's draft PR rather than recreating it.
+- [ ] Complete command registration through existing CLI conventions.
 - [ ] Add configuration for source BN, network/chain, local keystore, Builder execution fee recipient, bounded bid-publication offset, timeouts, logging, and metrics.
 - [ ] Implement startup, readiness, health, signal handling, and shutdown.
 - [ ] Prevent signing/publication until key, BN, chain, and Builder-state checks pass.
@@ -757,7 +774,7 @@ flowchart TD
 **Tasks**
 
 - [ ] Reuse only the local-keystore primitives that fit without treating a Builder as a validator.
-- [ ] Support one local keystore-backed Builder key.
+- [ ] Finish and review the existing one-key keystore/password loader and optional expected-pubkey check.
 - [ ] Implement fork-aware bid and envelope signing under the current Builder domain.
 - [ ] Use current fork-configured SSZ types and signing roots.
 - [ ] Add known-vector, wrong-domain, wrong-fork, wrong-network, malformed-key, and locked-keystore tests.
@@ -772,6 +789,9 @@ flowchart TD
 **Tasks**
 
 - [ ] Reuse `@lodestar/api` route codecs where suitable.
+- [ ] Keep the small Builder `waitForGenesis` copy aligned with validator behavior from [Lodestar #9726](https://github.com/ChainSafe/lodestar/pull/9726): 404 is expected waiting, other failures are warnings, and the abort signal stops polling.
+- [ ] Do not add a Lodestar BN `getGenesis` 404 branch while the API cannot start before anchor-state initialization; retain client handling for Teku and other spec-compliant BNs.
+- [ ] Import `assertEqualParams` from `@lodestar/config` after [Lodestar #9725](https://github.com/ChainSafe/lodestar/pull/9725) and verify the source BN's spec-critical chain parameters before becoming Ready.
 - [ ] Verify expected genesis/fork/network identity and required BN capabilities.
 - [ ] Query Builder state by configured pubkey/index and require the expected active Builder version.
 - [ ] Record the resolved Builder index, lifecycle status, and BN-reported balance returned by the same status lookup.
@@ -1302,7 +1322,9 @@ flowchart TD
 
 **Entry criteria:** core payload/signing model stable; specs and existing Lodestar work sufficiently settled; maintainers want it.
 
-**Candidate work:** bid endpoint, preferences/auth, signed-block input, shared adapter, bounds, conformance/interoperability tests.
+**Current upstream input:** [Lodestar #9594](https://github.com/ChainSafe/lodestar/pull/9594) is still a draft. Reuse it if it lands, but do not pull `DOMAIN_REQUEST_AUTH` or request-signature verification into the core sidecar merely to anticipate this package.
+
+**Candidate work:** bid endpoint, preferences/auth, request-auth domain and signature verification where required by the settled specification, signed-block input, shared adapter, bounds, and conformance/interoperability tests.
 
 **Stop rule:** do not create a second payload/cache implementation.
 
@@ -1397,7 +1419,7 @@ follow-up      → create non-core/conditional item
 scope change   → amend proposal before changing core
 ```
 
-The Lodestar review pass from 27–29 July 2026 is incorporated as follows:
+The Lodestar review pass and follow-up decisions from 27–30 July 2026 are incorporated as follows:
 
 | Review topic | Disposition | Plan change |
 |---|---|---|
@@ -1415,6 +1437,11 @@ The Lodestar review pass from 27–29 July 2026 is incorporated as follows:
 | A wrong execution coinbase loses Builder revenue | accepted | Treat it as a financial-loss configuration error and add distinct-address/wrong-coinbase tests |
 | The BN should return the complete bid for the sidecar to sign | clarification | Limit the sidecar to sanity-checking and signing the exact BN-produced bid; audit the currently untested route |
 | Payload `feeRecipient` and `bid.fee_recipient` should differ in real operation | accepted | Define the former as Builder revenue and the latter as proposer payment, even if a test reuses one wallet |
+| `waitForGenesis` has no clean shared package because it depends on `@lodestar/api` | accepted | Keep the small validator and Builder copies behaviorally aligned rather than creating the wrong dependency |
+| Validator should distinguish pre-genesis 404 from other errors | accepted and landed | Reuse the behavior from [Lodestar #9726](https://github.com/ChainSafe/lodestar/pull/9726): 404 logs expected waiting at info, other failures warn, and retry behavior is unchanged |
+| Lodestar BN cannot reach a pre-genesis `getGenesis` 404 path without starting the API before chain initialization | clarification | Do not add unreachable code; retain the client behavior for Teku and any other BN that can return the specified 404 |
+| Builder needs validator's spec-critical parameter comparison | accepted and landed | Import `assertEqualParams` and its error from `@lodestar/config` after [Lodestar #9725](https://github.com/ChainSafe/lodestar/pull/9725); do not duplicate it or depend on validator |
+| `DOMAIN_REQUEST_AUTH` and request verification belong to the staked Builder API path | clarification | Keep them out of core and revisit only through `EXT-BUILDER-API-01` or settled upstream work |
 
 <a id="week-6-and-week-7-completion-checklist"></a>
 
@@ -1422,16 +1449,16 @@ The Lodestar review pass from 27–29 July 2026 is incorporated as follows:
 
 ### Week 6
 
-- [ ] Record the current Lodestar-team replies in the decision register.
-- [ ] Confirm the superseded 90% policy, sidecar-equivocation policy, 2–3-slot durable-cache contract, remote-signer work, and full HA assumptions remain outside core and are retained only as follow-up context in Section 9 and the Living Technical Note.
+- [x] Record the current Lodestar-team replies in the decision register.
+- [x] Confirm the superseded 90% policy, sidecar-equivocation policy, 2–3-slot durable-cache contract, remote-signer work, and full HA assumptions remain outside core and are retained only as follow-up context in Section 9 and the Living Technical Note.
 - [ ] Review all core issue boundaries, sizes, lanes, and dependencies with Marko.
 - [ ] Draft the board epics, 20 core issue shells, proposal-relevant conditional parent items, and dependency links.
-- [ ] Circulate the implementation-plan review draft and maintain one feedback-disposition log.
-- [ ] Keep the Living Technical Note as background rather than a second plan.
+- [x] Circulate the implementation-plan review draft and maintain one feedback-disposition log.
+- [x] Keep the Living Technical Note as background rather than a second plan.
 
 ### Week 7
 
-- [ ] Resolve every Lodestar comment, record its disposition, and apply accepted changes.
+- [x] Resolve every Lodestar comment, record its disposition, and apply accepted changes.
 - [ ] Re-circulate the final candidate with a concise change summary.
 - [ ] Obtain approval or agreed no-objection and publish v1.0.
 - [ ] Pin the exact `unstable` SHA, spec/API versions, and feature branch.
