@@ -7,7 +7,7 @@
 **Working model:** one shared feature branch; merge `unstable` regularly; split only when review benefits from it  
 **Formal product name:** `lodestar builder` / `packages/builder`  
 **Optional EPF mission codename:** Forgestar  
-**Status:** Feedback-incorporated final candidate. Lodestar review comments and the confirmed 1–3 August follow-up guidance have been incorporated; one final implementation detail remains explicitly pending confirmation. Final approval, baseline pinning, HackMD sync, and project-board reconciliation finish before full implementation activation. Early implementation groundwork is tracked below and does not change the issue evidence required for completion.
+**Status:** Final v1.0 merge candidate. All Lodestar review comments and confirmed guidance through 4 August have been incorporated, and no plan-level implementation question remains open. Final review-thread resolution, merge, HackMD pull, baseline pinning, and remaining board ownership complete the planning handoff. Early implementation groundwork is tracked below and does not change the issue evidence required for completion.
 
 > **Project documents:** [Merged proposal](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md) · [Living Technical Note](https://hackmd.io/@krisos/S1a9mdB7fl) · [Presentation slides](https://docs.google.com/presentation/d/1cmC3fpu652gZFTIm2_P1lIYOfC2M_w3c5qXSUZ4B6lc) · [Lodestar repository](https://github.com/ChainSafe/lodestar) · [Maintained Beacon API Builder flow](https://github.com/ethereum/beacon-APIs/blob/master/validator-flow.md#builder-optional)
 
@@ -337,7 +337,7 @@ The core is complete only when all of the following are demonstrated:
 - the source BN reuses its canonical post-Gloas payload-production path rather than copying Engine API or proposer-state logic into the Builder;
 - the unsigned bid commits to the real payload, uses the payload-value baseline (`bid.value = execution_payload_value`), and uses `execution_payment = 0`;
 - the Builder config supplies the execution payload `feeRecipient`/coinbase through the BN preparation/candidate flow before payload work begins; the BN must not silently reuse the proposer's self-build fee recipient;
-- the execution payload `feeRecipient`/coinbase pays the Builder, while `bid.fee_recipient` pays the proposer; the two roles remain semantically distinct even if a fixture deliberately uses the same address;
+- the execution payload `feeRecipient`/coinbase pays a Builder-controlled address, while `bid.fee_recipient` pays the proposer; the two addresses must not be the same, although the Builder fixture may reuse its own withdrawal/execution address for payload revenue;
 - insufficient Builder balance is rejected by the authoritative BN workflow and produces a clear Builder operator warning or error; the sidecar may include the status/balance it already reads, but it does not attempt to predict future coverability; top-up management remains external;
 - the source BN retains the exact payload, execution requests, blobs, and proofs needed for stateful reveal until success or expiry;
 - the Builder follows the connected BN's head view, signs the exact head-compatible BN-produced bid, and publishes it at a configurable bounded time before the target proposal slot rather than waiting until the slot boundary;
@@ -403,14 +403,14 @@ The core does not include:
 | `D-02` | Product/package name | Formal command is `lodestar builder`; package lives in `packages/builder` parallel to `packages/validator` | “Forgestar” may be used only as an EPF mission codename, not as the package/API name |
 | `D-03` | Runtime boundary | Standalone sidecar; BN owns Engine API and payload-building state | No sidecar-to-EL adapter in core |
 | `D-04` | API boundary | Use the intended standard Beacon API namespaces: Builder-only operations under `/builder`, chain/publication surfaces under `/beacon`, and SSE where useful | The project may implement a typed pre-spec adapter, but it does not invent a `/lodestar` namespace for interfaces intended for upstream standardization; confirmed gaps are proposed upstream |
-| `D-05` | Registration, fee recipient, and funds | Builder onboarding, top-ups, withdrawals, and balance management stay external; the Builder execution fee recipient is required local config and must reach the BN before external-Builder payload preparation begins | Trace `prepareNextSlot` and the current bid route, then add the smallest reviewed preparation/candidate contract that triggers payload work with the Builder fee recipient; top-ups still come from the Builder withdrawal/execution address |
+| `D-05` | Registration, fee recipient, and funds | Builder onboarding, top-ups, withdrawals, and balance management stay external; the Builder execution fee recipient is required local config and must reach the BN before external-Builder payload preparation begins. It may be any execution address controlled by the Builder, need not match the Builder withdrawal credentials, and must not be the proposer's address | Trace `prepareNextSlot` and the current bid route, then add the smallest reviewed preparation/candidate contract that triggers payload work with the Builder fee recipient. The simplest fixture may reuse the Builder withdrawal/execution address, but the implementation preserves separate configuration and keeps top-ups external |
 | `D-06` | Key scope | One local keystore-backed Builder key | No remote signer or validator keymanager work in core because no Builder remote-signer contract is defined; retain a narrow signer boundary for a future specification |
 | `D-07` | Bid policy | Use the payload-value baseline: the payload pays execution rewards to the Builder's configured payload fee-recipient address and `bid.value = execution_payload_value` pays the proposer | With the Builder payload fee recipient and proposer payment address correctly separated, the baseline targets zero pre-cost margin; implement the amount through a small strategy function so later policies can replace it without changing lifecycle code |
 | `D-08` | Solvency and balance visibility | BN is authoritative for per-bid coverability and may reject at candidate generation or bid publication | The sidecar uses the Builder-status API it already needs for index resolution to expose current status/balance as passive operator diagnostics; it does not make an independent coverability decision, silently clamp, predict runway, or perform top-ups |
 | `D-09` | Source-BN trust | BN is the source of truth for proposer context, preferences, payload construction, value, balance, and reveal material | Sidecar checks chain identity, Builder identity, slot/fork/domain, `execution_payment = 0`, and bid/envelope consistency; it does not independently recompute payload value or BN state |
 | `D-10` | Bid timing and head view | Follow the connected BN's head through SSE, submit bids compatible with that local head view, allow resubmission after a head change, and make publication time configurable relative to the target proposal slot | Prepare early enough for a complete bid to be ready, publish at a bounded pre-slot time rather than at the slot boundary, and pin/test the initial default from local Lodestar behavior. Reuse merged [consensus-specs #5497](https://github.com/ethereum/consensus-specs/pull/5497) and [Lodestar #9739](https://github.com/ChainSafe/lodestar/pull/9739); keep multi-branch flood publishing deferred |
 | `D-11` | Reveal timing | Reveal immediately when a BN event/block shows the local bid was selected | No head/import waiting policy or strategic withholding in core |
-| `D-12` | Equivocation | The sidecar explicitly requests `consensus_and_equivocation`; publication validation and proposer-equivocation detection are BN-owned | Treat the BN validation as a required upstream capability, use Deathstar to prove the BN refuses envelope publication for the proposer-unbundling case, and do not add Builder-side equivocation policy |
+| `D-12` | Equivocation | The sidecar explicitly requests `consensus_and_equivocation`; publication validation and proposer-equivocation detection are BN-owned | Reuse [Lodestar #9757](https://github.com/ChainSafe/lodestar/pull/9757) when it lands, use Deathstar to prove the BN refuses envelope publication for the proposer-unbundling case, and do not add Builder-side equivocation policy |
 | `D-13` | Reveal cache and stale work | Reuse the same-host BN stateful block-production cache model and its existing payload-job cleanup; retain the selected reveal package until reveal or bounded expiry and remove it after successful reveal | Trace and test the current BN cleanup on head change before adding anything. A new head produces a new parent-tuple bid; do not add a sidecar cache or separate cancellation path unless the baseline audit proves the existing cleanup is insufficient |
 | `D-14` | Reliability | High reliability/redundancy is not a first-iteration requirement | Offline-after-bid is documented as a known paid-without-reveal failure; HA remains in the deferred hardening inventory |
 | `D-15` | Test path | Local Kurtosis first; extend ethereum-package as needed; use buildoor configuration as reference; devnet next if available | Kurtosis is core evidence, devnet deployment is strong-success evidence |
@@ -418,6 +418,7 @@ The core does not include:
 | `D-17` | Genesis readiness | Keep a small `waitForGenesis` implementation in both validator and Builder because it depends on `@lodestar/api` and has no cleaner shared home | The Builder copy stays behaviorally aligned with validator: a 404 means genesis is not available yet and is logged at info; other errors are warnings; polling keeps the existing fixed interval and abort signal |
 | `D-18` | Lodestar BN pre-genesis 404 | Do not add an unreachable `getGenesis` branch to the Lodestar BN | Lodestar does not start its API before anchor-state initialization today, so a cosmetic 404 branch would be misleading; the client-side 404 handling remains correct for Teku and any BN that exposes the API before genesis |
 | `D-19` | Shared config checks and Builder API auth | Import `assertEqualParams` from `@lodestar/config`; keep staked Builder API request authentication outside the core sidecar | Reuse the utilities landed in [Lodestar #9725](https://github.com/ChainSafe/lodestar/pull/9725); do not duplicate them or import validator. Add `DOMAIN_REQUEST_AUTH` or request-signature verification only if `EXT-BUILDER-API-01` is activated or the relevant upstream API work lands |
+| `D-20` | Exact protocol integers | Preserve bid and payload fields represented as protocol `uint64` values without narrowing them to JavaScript `number` | Reuse the exact `UintBn64` handling landed in [Lodestar #9749](https://github.com/ChainSafe/lodestar/pull/9749), [#9750](https://github.com/ChainSafe/lodestar/pull/9750), and [#9751](https://github.com/ChainSafe/lodestar/pull/9751). Keep `execution_payment`, bid `gas_limit`, proposer `targetGasLimit`, and any other SSZ-root input exact through parsing, caching, comparison, signing, hashing, and events; test the `2^53` boundary and `uint64` maximum |
 
 ### Details finalized against the pinned SHA
 
@@ -435,13 +436,17 @@ These are implementation details, not unresolved architecture questions:
 
 They are resolved during Week 7 baseline activation or in the issue that consumes them.
 
-### Pending final confirmation from the 1–3 August follow-up
+### Final confirmations from the 1–3 August follow-up
 
-This point was not answered by the confirmed guidance and remains open for one final Lodestar-team response:
+The follow-up closes the remaining plan-level questions:
 
-- whether the execution payload `feeRecipient` must equal the Builder's on-chain execution address or may be a separately configured address supplied through the preparation/candidate flow;
+- the execution payload `feeRecipient` may be any execution address controlled by the Builder, need not match the Builder withdrawal credentials, and must not be the proposer's address;
+- payload preparation and bid publication are separate concerns: prepare early enough for a complete bid to be ready, then publish at an operator-configurable bounded pre-slot offset rather than waiting for `t=0`;
+- an already-published bid cannot be withdrawn. A head change produces a fresh bid for the new parent tuple, while stale payload work follows the BN's existing cleanup and expiry behavior unless the pinned-baseline audit proves a gap;
+- the preparation/candidate surface is bounded and operator-controlled under the one-source-BN, same-host v1 trust model;
+- `consensus_and_equivocation` is explicitly requested by the sidecar and enforced by the BN.
 
-The plan must not silently resolve this identity constraint before that response. Nico's 3 August clarification closes the former current-slot/next-slot framing by separating preparation from configurable pre-slot bid publication. It also turns old-head cancellation into a baseline code audit: reuse the BN's existing payload-job/cache cleanup unless that audit demonstrates a gap. The preparation/candidate surface remains bounded and operator-controlled under the existing one-source-BN trust model unless the Lodestar team requests a broader exposure contract.
+The exact preparation route, initial publication offset, and cache hook remain implementation details to settle against the pinned baseline, not unresolved plan decisions.
 
 <a id="delivery-model-and-weekly-roadmap"></a>
 
@@ -449,7 +454,7 @@ The plan must not silently resolve this identity constraint before that response
 
 ### Verified implementation baseline at final review
 
-This snapshot was refreshed on 3 August 2026. It records work that can narrow the board issues without treating a draft, an open follow-up, or partially verified work as Done.
+This snapshot was refreshed on 5 August 2026. It records work that can narrow the board issues without treating a draft, an open follow-up, or partially verified work as Done.
 
 | Source | Verified state | Effect on this plan |
 |---|---|---|
@@ -458,10 +463,15 @@ This snapshot was refreshed on 3 August 2026. It records work that can narrow th
 | [Lodestar #9726](https://github.com/ChainSafe/lodestar/pull/9726) | Merged: validator treats `getGenesis` 404 as expected waiting and other errors as warnings, with the retry loop unchanged | Keep the Builder's duplicate `waitForGenesis` behavior aligned; do not add unreachable Lodestar BN code |
 | [consensus-specs #5497](https://github.com/ethereum/consensus-specs/pull/5497) | Merged: bid admission and propagation are keyed by Builder plus parent tuple and restricted to bids compatible with the node's local head view | Core bids follow the connected BN's current head view; different-branch flood publishing is deferred pending propagation evidence and a safe local-validation design |
 | [Lodestar #9739](https://github.com/ChainSafe/lodestar/pull/9739) | Merged at `dbe9dc8`: implements #5497 head-compatible validation, per-parent seen-bid tracking, deferred-parent recovery, and duplicate-validation protection | Rebase and reuse the API validation path. A same-head sidecar works without relaxing validation; multi-branch flood publishing remains stretch work |
-| [Lodestar #9594](https://github.com/ChainSafe/lodestar/pull/9594) | Open draft: Gloas staked Builder API work | Not a core dependency. Re-audit if it lands; request-auth constants and verification remain conditional |
-| [Marko's draft Builder PR](https://github.com/markolazic01/lodestar/pull/1) | Open draft at `906f735`: package/CLI scaffolding, keystore loading, bid/envelope signing and tests, source-BN wiring, `waitForGenesis`, shutdown, shared `assertEqualParams`, active-Builder resolution, and initial clock work are present. Nico approved the draft and requested a PR against the main Lodestar repository; one minor README alpha-release comment remains open | Treat `CLI-01`, `SIGN-01`, and the implemented part of `API-01` as In review. Open the upstream PR, resolve the minor documentation follow-up, finish clock/readiness work, and rerun the issue evidence before marking anything Done |
+| [Lodestar #9749](https://github.com/ChainSafe/lodestar/pull/9749), [#9750](https://github.com/ChainSafe/lodestar/pull/9750), and [#9751](https://github.com/ChainSafe/lodestar/pull/9751) | Merged: exact `UintBn64` handling for `execution_payment`, bid `gas_limit`, and proposer `targetGasLimit` through preferences, `PayloadAttributesV4`, and events | Preserve these fields exactly through Builder parsing, caching, signing, hashing, comparison, and diagnostics; add boundary tests rather than reintroducing JavaScript `number` narrowing |
+| [Lodestar #9756](https://github.com/ChainSafe/lodestar/pull/9756) | Merged: narrowly ignores direct-parent bids at epoch boundaries; the broader same/next-slot restriction discussed during review did not land | Add a focused epoch-boundary regression around the connected BN's head-compatible publication path without imposing the retracted broader restriction |
+| [Lodestar #9736](https://github.com/ChainSafe/lodestar/pull/9736) | Open draft: correct FULL-parent state use for block production and reward calculation | Audit and reuse it in `BN-02` when available; do not build a parallel FULL-parent path in the Builder project |
+| [Lodestar #9757](https://github.com/ChainSafe/lodestar/pull/9757) | Open draft with green checks: adds `consensus_and_equivocation` handling and a Deathstar proposer-equivocation feature using buildoor for the initial end-to-end proof | Treat this as the upstream BN capability for `REV-01` and `QA-01`; retain a Lodestar Builder fixture so the project proves the same rejection once its honest loop works |
+| [Lodestar #9594](https://github.com/ChainSafe/lodestar/pull/9594), [builder-specs #165](https://github.com/ethereum/builder-specs/pull/165), and [beacon-APIs #630](https://github.com/ethereum/beacon-APIs/pull/630) | Open Builder API work; the Lodestar team expects the specifications and implementation to settle over the next one to two weeks | Not a core dependency. Re-audit the settled route and auth shapes before `BN-01` or `EXT-BUILDER-API-01`; keep staked Builder API request authentication conditional |
+| [Lodestar #9758](https://github.com/ChainSafe/lodestar/pull/9758) | Merged at `74a3175`: initial `@lodestar/builder` package and CLI scaffolding, local keystore, bid/envelope signing and tests, source-BN wiring, `waitForGenesis`, shutdown, shared `assertEqualParams`, and active-Builder resolution. The first package was also published to npm | `SIGN-01` is Done with merged review and CI evidence. Keep `CLI-01` In review until readiness/configuration and inert-until-ready behavior close, and keep `API-01` In progress on Marko's follow-up branch |
+| [Lodestar #9770](https://github.com/ChainSafe/lodestar/pull/9770) | Merged: hides the generated Builder CLI page from the public docs sidebar while the command is not yet functional | Keep the page hidden or clearly marked work in progress until `CLI-01` is complete, then restore it as part of `HANDOFF-01` |
 
-The board should therefore use **In progress** or **In review** for work represented only by the draft PR, and **Done** only when the issue's own completion evidence is satisfied. Landed upstream prerequisites may be marked complete or used to narrow the consuming issue during baseline activation.
+The board should therefore keep `CLI-01` **In review**, `API-01` **In progress**, and mark only the completed signing boundary in `SIGN-01` **Done**. Landed upstream prerequisites may be marked complete or used to narrow the consuming issue during baseline activation, but their merge does not automatically complete the project issue that consumes them.
 
 ### Board hierarchy and pickup model
 
@@ -775,12 +785,13 @@ flowchart TD
 
 **Tasks**
 
-- [ ] Rebase and polish the existing `packages/builder` and `lodestar builder` scaffolding from Marko's draft PR rather than recreating it.
+- [ ] Reuse and extend the merged `packages/builder` and `lodestar builder` scaffolding from [Lodestar #9758](https://github.com/ChainSafe/lodestar/pull/9758) rather than recreating it.
 - [ ] Complete command registration through existing CLI conventions.
 - [ ] Add configuration for source BN, network/chain, local keystore, Builder execution fee recipient, bounded bid-publication offset, timeouts, logging, and metrics.
 - [ ] Implement startup, readiness, health, signal handling, and shutdown.
 - [ ] Prevent signing/publication until key, BN, chain, and Builder-state checks pass.
 - [ ] Use structured logs and bounded metric labels; never log secret material.
+- [ ] Keep the generated Builder CLI page hidden from the public sidebar, as established by [Lodestar #9770](https://github.com/ChainSafe/lodestar/pull/9770), or clearly mark it work in progress until the command is functional.
 - [ ] Keep Forgestar as an optional project codename only.
 
 **Done when:** The command starts/stops cleanly, reports precise readiness failures, and remains inert until dependencies are ready.
@@ -814,7 +825,8 @@ flowchart TD
 - [ ] Query Builder state by configured pubkey/index and require the expected active Builder version.
 - [ ] Record the resolved Builder index, lifecycle status, and BN-reported balance returned by the same status lookup.
 - [ ] Expose current Builder status/balance through structured diagnostics and a bounded metric, without treating that snapshot as an independent per-bid solvency decision.
-- [ ] Surface BN sync and relevant diagnostic state.
+- [ ] Check BN sync at startup and readiness, and do not retrieve, sign, or propagate bids while the BN is far behind or its EL is syncing.
+- [ ] Reuse the smallest suitable existing `not while syncing` helper. Share the validator `SyncingStatusTracker` only if its resync lifecycle is actually needed; do not pull in `runOnResynced` merely because validator uses it for duty refetching.
 - [ ] Implement typed timeouts, cancellation, response bounds, and redacted errors.
 - [ ] Document which inputs are BN-authoritative and which sanity checks the sidecar performs.
 
@@ -871,6 +883,7 @@ flowchart TD
 **Tasks**
 
 - [ ] Begin from the maintained [Beacon API Builder flow](https://github.com/ethereum/beacon-APIs/blob/master/validator-flow.md#builder-optional) and current [`getExecutionPayloadBid` schema](https://github.com/ethereum/beacon-APIs/blob/master/apis/validator/execution_payload_bid.yaml), then audit the pinned `unstable` SHA for unsigned-bid, envelope, publication, Builder-state, and block-event support.
+- [ ] Re-audit the settled shapes from [builder-specs #165](https://github.com/ethereum/builder-specs/pull/165), [beacon-APIs #630](https://github.com/ethereum/beacon-APIs/pull/630), and [Lodestar #9594](https://github.com/ChainSafe/lodestar/pull/9594) at issue activation; the exact API is expected to change before this work starts.
 - [ ] Treat the current `/eth/v1/validator/execution_payload_bids/{slot}/{builder_index}` location as a known specification gap and implement/propose its move to the `/builder` namespace, tracked in [beacon-APIs #595](https://github.com/ethereum/beacon-APIs/issues/595).
 - [ ] Trace `prepareNextSlot`, the current payload-job lifecycle, and the unsigned-bid route before selecting the smallest clean trigger for external-Builder payload preparation.
 - [ ] Define a reviewed preparation/candidate contract that tells the BN which target slot and head view to prepare, carries the configured Builder execution fee recipient before payload work begins, and later returns the complete bid; validate the address as a 20-byte execution address and propose the resulting contract upstream.
@@ -894,12 +907,14 @@ flowchart TD
 - [ ] Trace the pinned self-build/produce-block path and identify the smallest reusable payload-job seam.
 - [ ] Integrate the reviewed preparation trigger with the existing `prepareNextSlot`/payload-job machinery rather than assuming that fetching a bid can synchronously start and finish payload construction.
 - [ ] Reuse the connected BN's proposer head and FULL/EMPTY choice rather than accepting arbitrary sidecar parent input.
+- [ ] Reuse the corrected FULL-parent production path from [Lodestar #9736](https://github.com/ChainSafe/lodestar/pull/9736) if it has landed, including the correct state for operations and reward calculation; do not create a parallel workaround.
 - [ ] Reuse proposer preferences for `targetGasLimit` and for the proposer's `bid.fee_recipient`, but not for the execution payload's `feeRecipient`/coinbase.
 - [ ] Thread the Builder execution fee recipient from sidecar config through the preparation/candidate contract into `forkchoiceUpdated` payload attributes; do not fall back to Lodestar's proposer/self-build fee-recipient cache.
 - [ ] Assert that execution rewards accrue to the configured Builder address. A wrong payload coinbase is a financial-loss configuration error and must fail a focused accounting test.
 - [ ] Reuse safe/finalized handling, `engine_forkchoiceUpdated`, `engine_getPayload`, execution requests, blobs, proofs/cells, and execution-payload value.
 - [ ] Prepare early enough for the target proposal slot without copying the payload builder; keep payload preparation and candidate readiness separate from the sidecar's configurable pre-slot publication schedule.
 - [ ] Trace and test the existing payload-job/cache cleanup after a source-BN head change before considering any new cancellation mechanism.
+- [ ] Use the existing BN sync guard so payload work is not prepared for a far-behind head and require the EL to be synced before treating candidate production as available.
 - [ ] Separate transient BN/EL failure from no-bid and definitive invalidity.
 - [ ] Add focused tests proving that the external route uses the canonical parent/preferences path and surfaces syncing or payload-production failure clearly.
 
@@ -914,13 +929,15 @@ flowchart TD
 - [ ] Construct all fork-correct bid fields from the canonical payload result and beacon context.
 - [ ] Implement a small `computeBidValue(payloadValue)` strategy function whose initial implementation returns the full execution-payload value.
 - [ ] Convert value units using one documented canonical conversion.
-- [ ] Set `bid.fee_recipient` from the matching proposer preferences. Treat it as the proposer payment address and the execution payload's `feeRecipient`/coinbase as the Builder revenue address; they are semantically distinct even if a test fixture deliberately uses the same wallet.
+- [ ] Set `bid.fee_recipient` from the matching proposer preferences. Treat it as the proposer payment address and the execution payload's `feeRecipient`/coinbase as a Builder-controlled revenue address; reject any configuration that uses the proposer address for both roles.
 - [ ] Set `execution_payment = 0` for the p2p trustless bid.
 - [ ] Use BN-authoritative Builder balance and pending obligations to decide per-bid coverability.
 - [ ] Reject/return no-bid when the Builder cannot cover the bid; never silently lower the value.
 - [ ] Expose a typed insufficient-funds reason that the sidecar can log as an operator warning/error, including the latest BN-reported balance when available and explaining that external tooling and the Builder withdrawal/execution address must perform the top-up.
 - [ ] Do not add a first-iteration low-balance threshold or runway predictor; precise early warning becomes follow-up work because pending obligations and future multi-key operation complicate it.
 - [ ] Use current SSZ types and keep future fork-specific construction behind a narrow adapter.
+- [ ] Preserve `execution_payment`, bid `gas_limit`, proposer `targetGasLimit`, and every other SSZ-root `uint64` input as exact `UintBn64`/`bigint` values through construction, response encoding, caching, and diagnostics; never narrow unbounded values to JavaScript `number`.
+- [ ] Add exact-integer tests at `2^53 - 1`, `2^53`, `2^53 + 1`, and `uint64` maximum, including a signing-root comparison.
 - [ ] Add field, unit, balance, parent, `prev_randao`, gas-limit, request-root, blob-commitment, distinct-address, and wrong-payload-coinbase tests.
 
 **Done when:** A real payload produces one complete fork-correct payload-value bid with `execution_payment = 0`, authoritative balance validation, and tested fee-recipient/accounting behavior.
@@ -996,12 +1013,14 @@ flowchart TD
 - [ ] Treat no-bid, syncing, missing preferences, insufficient balance, timeout, and internal errors distinctly.
 - [ ] Verify the expected chain/source BN, active Builder index, slot, fork/domain, and `execution_payment = 0`.
 - [ ] Sanity-check the complete BN-produced bid, but do not construct it, independently recompute payload value, or mutate it.
+- [ ] Preserve exact `uint64` fields through decoding, local sanity checks, the signed-bid map, SSZ hashing/signing, API publication, and diagnostics; cover the `2^53` boundary and `uint64` maximum.
 - [ ] Sign the exact returned bid with the local Builder key.
 - [ ] Keep signed bids keyed by Builder, slot, `parent_block_hash`, and `parent_block_root` in the running-process map needed for exact selection matching.
 - [ ] Publish through the typed BN route at the configured offset; record candidate-ready and publication timestamps.
 - [ ] Surface accepted, duplicate, rejected, and transient responses clearly.
 - [ ] When the BN rejects for insufficient balance, include the latest BN-reported Builder status/balance when available and log that top-up is external and must be performed through the Builder withdrawal/execution address.
 - [ ] Add focused missing/wrong fee-recipient, wrong-domain, wrong-builder, malformed-bid, insufficient-balance, duplicate, head-change resubmission, timing-offset, and publication-error tests.
+- [ ] Add an epoch-boundary regression for the narrow direct-parent rejection merged in [Lodestar #9756](https://github.com/ChainSafe/lodestar/pull/9756), without enforcing the broader same/next-slot restriction that was retracted during review.
 
 **Done when:** One complete BN-produced payload-value bid is sanity-checked, signed unchanged, published under the bounded timing configuration, and available for exact local selection matching.
 
@@ -1030,7 +1049,7 @@ flowchart TD
 - [ ] Check that slot, Builder index, block hash, execution-requests commitment, and fork context match the selected signed bid.
 - [ ] Sign the exact envelope with the local Builder key.
 - [ ] Publish immediately through the stateful same-BN path using the pinned request shape and explicitly request `consensus_and_equivocation` broadcast validation.
-- [ ] Keep proposer-equivocation detection at the BN publication boundary and treat any missing implementation as an upstream BN capability gap rather than adding a Builder-side withholding rule.
+- [ ] Keep proposer-equivocation detection at the BN publication boundary, reuse [Lodestar #9757](https://github.com/ChainSafe/lodestar/pull/9757) when it lands, and treat any remaining gap as an upstream BN capability issue rather than adding a Builder-side withholding rule.
 - [ ] Keep duplicate publication idempotent for the exact same message.
 - [ ] Attempt publication immediately and keep retries bounded. If the protocol deadline passes, record the reveal as late and follow the BN response; do not treat the deadline itself as a strategic withholding trigger or retry indefinitely.
 - [ ] Add success, mismatch, cache miss, duplicate, BN rejection, timeout, late, and proposer-equivocation tests.
@@ -1075,7 +1094,7 @@ flowchart TD
 - [ ] Cover invalid/locked key, wrong chain, inactive Builder, unsupported fork, missing preferences, and BN/EL syncing.
 - [ ] Cover Builder-status/balance diagnostics and insufficient balance with a clear external-top-up warning; do not claim predictive low-balance alerting.
 - [ ] Cover malformed candidate, commitment mismatch, missing reveal material, publication rejection, and late reveal.
-- [ ] Use a bounded Deathstar proposer-equivocation fixture in Kurtosis and assert that the BN refuses envelope publication for the equivocated proposal.
+- [ ] Reuse the Deathstar proposer-equivocation feature and `consensus_and_equivocation` behavior from [Lodestar #9757](https://github.com/ChainSafe/lodestar/pull/9757), then run the stored [PR #9757 Kurtosis fixture](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/test-plans/pr-9757-builder-equivocation.yaml) with Lodestar Builder and assert that the BN refuses envelope publication for the equivocated proposal.
 - [ ] Cover basic duplicate event/request/publication idempotency.
 - [ ] Document the Builder/BN-offline-after-selection paid-without-reveal failure without implementing or simulating HA.
 - [ ] Produce one evidence index mapping each retained core failure to a named test or deterministic assertion.
@@ -1175,6 +1194,7 @@ flowchart TD
 **Tasks**
 
 - [ ] Finalize operator config, local-key, lifecycle, metrics, troubleshooting, Kurtosis, and ethereum-package runbooks.
+- [ ] Restore the Builder CLI page to the public documentation sidebar only after `CLI-01` is functional, reversing the temporary [Lodestar #9770](https://github.com/ChainSafe/lodestar/pull/9770) hide.
 - [ ] Finalize developer architecture, issue/PR map, test guidance, known limitations, and conditional packages.
 - [ ] Update the Living Technical Note with accepted decisions, final code paths, current baseline, and evidence links.
 - [ ] Complete the EPF report and refresh the existing presentation.
@@ -1224,6 +1244,7 @@ The order is intentional: first prove the simple working loop, then add protocol
 | Missing/mismatched proposer preferences | No bid; precise reason | `BN-02`, `BN-03` |
 | Insufficient Builder balance | BN rejects; sidecar reports current status/balance when available and warns that external top-up is required | `API-01`, `BN-03`, `BID-01`, `QA-01` |
 | Missing/malformed Builder execution fee recipient | No preparation/candidate request and no payload work | `CLI-01`, `BID-01` |
+| Builder payload fee recipient | May be any execution address controlled by the Builder, need not match withdrawal credentials, and must not be the proposer address | `CLI-01`, `BN-01`, `BN-02`, `OUT-01` |
 | Distinct Builder/proposer payment addresses | Payload rewards accrue to the configured Builder address; `bid.fee_recipient` remains the proposer address | `BN-02`, `BN-03`, `OUT-01` |
 | Valid candidate | Complete BN-produced bid uses the payload-value policy and `execution_payment = 0`; sidecar signs it unchanged | `BN-02`, `BN-03`, `BID-01` |
 | Default Lodestar local payload would win | Happy-path fixture forces Builder selection with `--builder.selection=builderalways` or `maxprofit` plus a documented boost factor | `ENV-01`, `E2E-01` |
@@ -1347,7 +1368,7 @@ flowchart TD
 
 **Entry criteria:** core payload/signing model stable; specs and existing Lodestar work sufficiently settled; maintainers want it.
 
-**Current upstream input:** [Lodestar #9594](https://github.com/ChainSafe/lodestar/pull/9594) is still a draft. Reuse it if it lands, but do not pull `DOMAIN_REQUEST_AUTH` or request-signature verification into the core sidecar merely to anticipate this package.
+**Current upstream input:** [builder-specs #165](https://github.com/ethereum/builder-specs/pull/165), [beacon-APIs #630](https://github.com/ethereum/beacon-APIs/pull/630), and [Lodestar #9594](https://github.com/ChainSafe/lodestar/pull/9594) are still open, and the Lodestar team expects the specification and implementation work to settle over the next one to two weeks. Re-audit them when this package is activated and reuse the landed implementation, but do not pull `DOMAIN_REQUEST_AUTH` or request-signature verification into the core sidecar merely to anticipate it.
 
 **Candidate work:** bid endpoint, preferences/auth, request-auth domain and signature verification where required by the settled specification, signed-block input, shared adapter, bounds, and conformance/interoperability tests.
 
@@ -1445,7 +1466,7 @@ follow-up      → create non-core/conditional item
 scope change   → amend proposal before changing core
 ```
 
-The Lodestar review pass and confirmed follow-up decisions from 27 July–3 August 2026 are incorporated as follows:
+The Lodestar review pass and confirmed follow-up decisions from 27 July–4 August 2026 are incorporated as follows:
 
 | Review topic | Disposition | Plan change |
 |---|---|---|
@@ -1462,7 +1483,8 @@ The Lodestar review pass and confirmed follow-up decisions from 27 July–3 Augu
 | New useful routes need not be `/lodestar`-specific | accepted | Use intended `/builder` or `/beacon` namespaces and isolate only temporary pre-spec details |
 | A wrong execution coinbase loses Builder revenue | accepted | Treat it as a financial-loss configuration error and add distinct-address/wrong-coinbase tests |
 | The BN should return the complete bid for the sidecar to sign | clarification | Limit the sidecar to sanity-checking and signing the exact BN-produced bid; audit the currently untested route |
-| Payload `feeRecipient` and `bid.fee_recipient` should differ in real operation | accepted | Define the former as Builder revenue and the latter as proposer payment, even if a test reuses one wallet |
+| Payload `feeRecipient` and `bid.fee_recipient` should differ in real operation | accepted | Define the former as Builder-controlled revenue and the latter as proposer payment; do not use the proposer address for both roles |
+| Builder execution payload fee-recipient identity | clarification | Allow any Builder-controlled execution address, do not require it to match withdrawal credentials, and reject use of the proposer's address; the simplest fixture may reuse the Builder withdrawal/execution address |
 | `waitForGenesis` has no clean shared package because it depends on `@lodestar/api` | accepted | Keep the small validator and Builder copies behaviorally aligned rather than creating the wrong dependency |
 | Validator should distinguish pre-genesis 404 from other errors | accepted and landed | Reuse the behavior from [Lodestar #9726](https://github.com/ChainSafe/lodestar/pull/9726): 404 logs expected waiting at info, other failures warn, and retry behavior is unchanged |
 | Lodestar BN cannot reach a pre-genesis `getGenesis` 404 path without starting the API before chain initialization | clarification | Do not add unreachable code; retain the client behavior for Teku and any other BN that can return the specified 404 |
@@ -1476,6 +1498,12 @@ The Lodestar review pass and confirmed follow-up decisions from 27 July–3 Augu
 | Envelope publication validation mode | accepted | Explicitly request `consensus_and_equivocation`; keep the validation BN-owned and test proposer unbundling with Deathstar |
 | [consensus-specs #5497](https://github.com/ethereum/consensus-specs/pull/5497) and [Lodestar #9739](https://github.com/ChainSafe/lodestar/pull/9739) | accepted and landed | Reuse head-compatible bid validation and per-parent seen-bid behavior; do not implement the superseded single-bid model |
 | [Lodestar #9723](https://github.com/ChainSafe/lodestar/pull/9723) | clarification | Do not treat it as a Builder-project dependency or use it to block the plan |
+| Initial Lodestar Builder package and signer | accepted and landed | Reuse merged [Lodestar #9758](https://github.com/ChainSafe/lodestar/pull/9758); treat `SIGN-01` as Done, keep `CLI-01` In review, and keep `API-01` In progress until their remaining issue evidence closes |
+| Builder startup and bid work while syncing | accepted | Add a simple BN/EL sync readiness gate and reuse the smallest suitable existing helper; do not automatically duplicate validator's full resync service |
+| Exact bid and payload `uint64` values | accepted and landed | Preserve the exact types from [Lodestar #9749](https://github.com/ChainSafe/lodestar/pull/9749), [#9750](https://github.com/ChainSafe/lodestar/pull/9750), and [#9751](https://github.com/ChainSafe/lodestar/pull/9751) through Builder hashing/signing and test the unsafe JavaScript-number boundary |
+| Epoch-boundary head-compatible bid validation | accepted and landed | Reuse the narrow rule in [Lodestar #9756](https://github.com/ChainSafe/lodestar/pull/9756) and add a focused regression without adopting the retracted broader restriction |
+| Builder CLI documentation is public before the command is functional | accepted and landed | Keep it hidden or marked work in progress after [Lodestar #9770](https://github.com/ChainSafe/lodestar/pull/9770), then restore it during handoff |
+| Builder API specifications and Lodestar implementation are finalizing | clarification and code audit | Re-audit [builder-specs #165](https://github.com/ethereum/builder-specs/pull/165), [beacon-APIs #630](https://github.com/ethereum/beacon-APIs/pull/630), and [Lodestar #9594](https://github.com/ChainSafe/lodestar/pull/9594) at activation; do not freeze a superseded request shape or move staked auth into core |
 
 <a id="week-6-and-week-7-completion-checklist"></a>
 
@@ -1486,20 +1514,22 @@ The Lodestar review pass and confirmed follow-up decisions from 27 July–3 Augu
 - [x] Record the current Lodestar-team replies in the decision register.
 - [x] Confirm the superseded 90% policy, sidecar-equivocation policy, 2–3-slot durable-cache contract, remote-signer work, and full HA assumptions remain outside core and are retained only as follow-up context in Section 9 and the Living Technical Note.
 - [ ] Review all core issue boundaries, sizes, lanes, and dependencies with Marko.
-- [ ] Draft the board epics, 20 core issue shells, proposal-relevant conditional parent items, and dependency links.
+- [x] Draft the board epics, 20 core issue shells, proposal-relevant conditional parent items, and dependency links.
 - [x] Circulate the implementation-plan review draft and maintain one feedback-disposition log.
 - [x] Keep the Living Technical Note as background rather than a second plan.
 
 ### Week 7
 
 - [x] Resolve every Lodestar comment, record its disposition, and apply accepted changes.
-- [ ] Resolve the one pending confirmation in Section 3 and update the affected fee-recipient/accounting details.
-- [ ] Re-circulate the final candidate with a concise change summary.
-- [ ] Obtain approval or agreed no-objection and publish v1.0.
+- [x] Resolve the final confirmation in Section 3 and update the affected fee-recipient/accounting details.
+- [x] Re-circulate the final candidate with a concise change summary.
+- [x] Obtain Lodestar-team confirmation or agreed no-objection for the accepted decisions.
+- [ ] Merge and publish v1.0.
 - [ ] Pin the exact `unstable` SHA, spec/API versions, and feature branch.
 - [ ] Complete the baseline capability audit and narrow/close already-landed work.
-- [ ] Create all 20 core issues and all proposal-relevant Conditional parents on the board.
-- [ ] Add milestones, weeks, sizes, lanes, statuses, owners, reviewers, dependencies, and evidence fields.
+- [x] Create all 20 core issues and all proposal-relevant Conditional parents on the board.
+- [x] Add milestones, weeks, sizes, lanes, statuses, dependencies, and evidence fields.
+- [ ] Complete remaining owner and reviewer assignments as issues approach Ready.
 - [ ] Mark `ENV-01` and `CLI-01` Ready and assigned for Week 8.
 - [ ] Confirm implementation starts in Week 8 with no hidden planning dependency.
 - [ ] Preview the HackMD in both edit and published modes; click-test the table of contents, project-document links, Mermaid diagrams, and long tables.
