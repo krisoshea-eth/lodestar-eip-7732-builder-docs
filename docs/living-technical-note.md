@@ -176,6 +176,7 @@ These items were reconciled against the August 4 monitoring report, confirmed Lo
 - [#9756](https://github.com/ChainSafe/lodestar/pull/9756) narrowly ignores direct-parent bids at epoch boundaries. The broader same/next-slot restriction considered during review did not land.
 - [#9486](https://github.com/ChainSafe/lodestar/pull/9486) provides the `head_v2` payload-status event, and [#9598](https://github.com/ChainSafe/lodestar/pull/9598) provides Lodestar's current Gloas proposer circuit breaker. The Builder observes their outcomes but does not invent a second circuit-breaker policy.
 - [#9689](https://github.com/ChainSafe/lodestar/pull/9689) and [#9710](https://github.com/ChainSafe/lodestar/pull/9710) have merged the current EIP-7688 boundary follow-up and the envelope-by-peer quota correction. Cross-fork light-client work in [#9687](https://github.com/ChainSafe/lodestar/pull/9687) remains separate.
+- [#9766](https://github.com/ChainSafe/lodestar/pull/9766) aligns the Builder package build and type-check scripts with the workspace TypeScript 7 migration. This closes the immediate CI-script regression but does not complete CLI readiness.
 - [#9770](https://github.com/ChainSafe/lodestar/pull/9770) hides the generated Builder CLI page from the public docs sidebar until the command is functional.
 - Existing Gloas types, gossip, proposer preferences, bid validation/pooling/selection, payload-envelope import, PTC handling, block/payload events, and publication routes remain the BN foundation. The implementation must audit the exact pinned shapes rather than duplicate them.
 
@@ -334,6 +335,7 @@ Only unresolved or moving items belong here.
 - **Preparation/candidate contract:** trace `prepareNextSlot` and return the proposed route/lifecycle for Lodestar review in `BN-01`.
 - **FULL-parent production:** reuse [Lodestar #9736](https://github.com/ChainSafe/lodestar/pull/9736) if it lands; do not create a parallel workaround.
 - **Equivocation validation:** track [#9757](https://github.com/ChainSafe/lodestar/pull/9757) and rerun the stored fixture with Lodestar Builder.
+- **Gloas compliance:** track draft [#9761](https://github.com/ChainSafe/lodestar/pull/9761) during `BASELINE-01`; use it as baseline evidence rather than creating a duplicate Builder-only compliance harness.
 - **Builder API convergence:** track builder-specs #165, beacon-APIs #630, and Lodestar #9594, but keep staked request authentication outside core.
 
 ### Protocol and interoperability
@@ -342,6 +344,7 @@ Only unresolved or moving items belong here.
 - **Epoch boundaries:** preserve the narrow #9756 direct-parent rejection and test skipped slots without adopting the retracted broader restriction.
 - **Exact integers:** prevent regressions that narrow `UintBn64` values to JavaScript `number`.
 - **FCR artifacts:** #5498, #5499, and #5504 are merged; regenerated artifacts and Lodestar coverage still need verification.
+- **Post-alpha.13 fork-choice and reward tests:** consensus [#5514](https://github.com/ethereum/consensus-specs/pull/5514) is merged and [#5509](https://github.com/ethereum/consensus-specs/pull/5509) remains open. Re-audit them when choosing the exact spec/Lodestar pin; do not silently treat unreleased `master` behavior as part of alpha.13.
 - **Local versus peer faults:** #9755 remains open and must preserve error ownership under wrapped failures.
 - **Range-sync attempt identity:** [#9667](https://github.com/ChainSafe/lodestar/pull/9667) and [#9686](https://github.com/ChainSafe/lodestar/pull/9686) remain open ecosystem work. Do not pull them into Builder scope unless the pinned local evidence exposes a direct dependency.
 - **Devnet transition:** devnet-7 and devnet-8 remain separate baselines; no devnet-8 launch is verified.
@@ -774,7 +777,7 @@ Status reflects the August 5 reconciliation. The merged implementation plan rema
 
 | Area | File / PR | Current understanding | Builder follow-up |
 |---|---|---|---|
-| Builder package and CLI | [#9758](https://github.com/ChainSafe/lodestar/pull/9758) | Merged initial `@lodestar/builder` package, CLI wiring, key loading, source-BN wiring, shutdown, and tests; the package has been published to npm | Finish readiness and API-01 follow-up work; keep generated CLI docs hidden until functional |
+| Builder package and CLI | [#9758](https://github.com/ChainSafe/lodestar/pull/9758), [#9766](https://github.com/ChainSafe/lodestar/pull/9766) | Merged initial `@lodestar/builder` package, CLI wiring, key loading, source-BN wiring, shutdown, tests, and the TypeScript 7 script correction; the package has been published to npm | Finish readiness and API-01 follow-up work; keep generated CLI docs hidden until functional |
 | Builder signing | [#9758](https://github.com/ChainSafe/lodestar/pull/9758) | Bid and envelope signing with a local Builder keystore is merged and tested | Treat `SIGN-01` as complete; extend only for fork coverage and failure evidence |
 | Shared configuration checks | [#9725](https://github.com/ChainSafe/lodestar/pull/9725) | `assertEqualParams` and `NotEqualParamsError` moved to `@lodestar/config` | Import from config; do not create a Builder-to-validator dependency |
 | Genesis wait behavior | [#9726](https://github.com/ChainSafe/lodestar/pull/9726) | Validator now distinguishes a pre-genesis 404 from other failures | Keep the small Builder copy aligned; do not add unreachable BN code |
@@ -870,7 +873,8 @@ BASELINE-01 / ENV-01 / CLI-01
 → API-01 / API-02 / BN-01
 → BN-02 / BN-03 / BN-04
 → BID-01 / SELECT-01 / REV-01
-→ E2E-01 / QA-01 / REL-01 / OBS-01 / OUT-01 / HANDOFF-01
+→ E2E-01 / OUT-01 / DATA-01 / QA-01 / REL-01
+→ INT-01 / SEC-01 / HANDOFF-01
 ```
 
 Per-package quality bar:
@@ -941,6 +945,7 @@ Initial implementation work, originally recorded only in HackMD:
 
 - [Lodestar #9758](https://github.com/ChainSafe/lodestar/pull/9758) merged the initial `@lodestar/builder` package, CLI scaffold, local key loading, bid/envelope signing, source-BN wiring, `waitForGenesis`, shutdown handling, tests, and packaging cleanup.
 - `@lodestar/builder` received its first npm publication. The public generated CLI page remains hidden through merged [#9770](https://github.com/ChainSafe/lodestar/pull/9770) until the command is functional.
+- Merged [#9766](https://github.com/ChainSafe/lodestar/pull/9766) replaced the stale `tsgo` package scripts with `tsc`, restoring the Builder's workspace build and type-check compatibility after the TypeScript 7 migration.
 - Cleanup retained from the HackMD work log includes the keystore-loader rename, single-pass keypair parsing, CI fixes, moving the clock into `@lodestar/state-transition`, and the Builder banner.
 - Merged [#9725](https://github.com/ChainSafe/lodestar/pull/9725) moved `assertEqualParams` and `NotEqualParamsError` into `@lodestar/config`; the Builder imports the shared utility.
 - Merged [#9726](https://github.com/ChainSafe/lodestar/pull/9726) added 404-aware validator genesis waiting. The Builder keeps its small duplicate, and no unreachable 404 branch was added to the BN.
@@ -965,6 +970,7 @@ Status checked August 5, 2026 against the live primary sources. The tables prior
 | [#9739](https://github.com/ChainSafe/lodestar/pull/9739) / [#9756](https://github.com/ChainSafe/lodestar/pull/9756) | Merged | Local-head-compatible multi-bid handling and narrow epoch-boundary filtering |
 | [#9749](https://github.com/ChainSafe/lodestar/pull/9749), [#9750](https://github.com/ChainSafe/lodestar/pull/9750), [#9751](https://github.com/ChainSafe/lodestar/pull/9751) | Merged | Exact `uint64`-safe payment, gas-limit, preference, attribute, and event propagation |
 | [#9486](https://github.com/ChainSafe/lodestar/pull/9486) / [#9598](https://github.com/ChainSafe/lodestar/pull/9598) | Merged | `head_v2` payload-status observation and the existing Gloas proposer circuit breaker |
+| [#9766](https://github.com/ChainSafe/lodestar/pull/9766) | Merged | Restores Builder package build/type-check scripts after the TypeScript 7 migration |
 | [#9770](https://github.com/ChainSafe/lodestar/pull/9770) | Merged | Temporarily hides the incomplete Builder CLI page |
 | [#9594](https://github.com/ChainSafe/lodestar/pull/9594) — Builder actor/API | Open draft | Upstream API convergence to re-audit before BN-01; not a core blocker today |
 | [#9736](https://github.com/ChainSafe/lodestar/pull/9736) — FULL-parent production | Open draft | Correct parent-state operation selection and rewards remain relevant to E2E coverage |
@@ -975,6 +981,7 @@ Status checked August 5, 2026 against the live primary sources. The tables prior
 | [#9689](https://github.com/ChainSafe/lodestar/pull/9689) / [#9710](https://github.com/ChainSafe/lodestar/pull/9710) | Merged August 4 | EIP-7688 boundary follow-up and envelope-by-peer quota correction |
 | [#9667](https://github.com/ChainSafe/lodestar/pull/9667) / [#9686](https://github.com/ChainSafe/lodestar/pull/9686) | Open | Range-sync fault classification and attempt-identity hardening; ecosystem watch unless baseline evidence makes it direct |
 | [#9687](https://github.com/ChainSafe/lodestar/pull/9687) / [#9711](https://github.com/ChainSafe/lodestar/pull/9711) | Open | Cross-fork light-client compatibility and remaining FCR diagnostics |
+| [#9761](https://github.com/ChainSafe/lodestar/pull/9761) | Open draft | Gloas compliance coverage to consume during the baseline audit |
 | [#7342](https://github.com/ChainSafe/lodestar/pull/7342) — FOCIL | Open draft | Conditional future-fork adaptation, not the core base |
 
 ### consensus-specs
@@ -987,6 +994,8 @@ Status checked August 5, 2026 against the live primary sources. The tables prior
 | [#5495](https://github.com/ethereum/consensus-specs/pull/5495) | Merged | Preserves accumulated PTC votes and timeliness state on known-block redelivery |
 | [#5498](https://github.com/ethereum/consensus-specs/pull/5498) / [#5499](https://github.com/ethereum/consensus-specs/pull/5499) | Merged | Correct epoch-boundary FCR vector scheduling |
 | [#5504](https://github.com/ethereum/consensus-specs/pull/5504) | Merged by August 5 | Removes the generation gate reported as still open in the August 4 monitor; regenerate and verify artifacts before classifying Lodestar skips |
+| [#5514](https://github.com/ethereum/consensus-specs/pull/5514) | Merged after alpha.13 | Adds coverage that parent payload availability precedes attestation rewards, including across a missed slot |
+| [#5509](https://github.com/ethereum/consensus-specs/pull/5509) | Open | Tests payload-status variants independently in the filtered block tree; watch until settled and released |
 | [#5492](https://github.com/ethereum/consensus-specs/pull/5492) | Open | Unsettled epoch-boundary late-head proposer-reorg proposal; watch, do not encode as policy |
 | [#5416](https://github.com/ethereum/consensus-specs/pull/5416) / [#5414](https://github.com/ethereum/consensus-specs/pull/5414) | Merged | Builder withdrawal prefix `0xB0` and `PAYLOAD_DUE_BPS = 5000` remain settled baseline rules |
 

@@ -7,7 +7,7 @@
 **Working model:** one shared feature branch; merge `unstable` regularly; split only when review benefits from it  
 **Formal product name:** `lodestar builder` / `packages/builder`  
 **Optional EPF mission codename:** Forgestar  
-**Status:** Final v1.0 merge candidate. All Lodestar review comments and confirmed guidance through 4 August have been incorporated, and no plan-level implementation question remains open. Final review-thread resolution, merge, HackMD pull, baseline pinning, and remaining board ownership complete the planning handoff. Early implementation groundwork is tracked below and does not change the issue evidence required for completion.
+**Status:** v1.0 merged on 5 August 2026. All Lodestar review comments and confirmed guidance through 4 August have been incorporated, and no plan-level implementation question remains open. HackMD synchronization and preview, baseline pinning, and remaining board ownership complete the planning handoff. Early implementation groundwork is tracked below and does not change the issue evidence required for completion.
 
 > **Project documents:** [Merged proposal](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md) · [Living Technical Note](https://hackmd.io/@krisos/S1a9mdB7fl) · [Presentation slides](https://docs.google.com/presentation/d/1cmC3fpu652gZFTIm2_P1lIYOfC2M_w3c5qXSUZ4B6lc) · [Lodestar repository](https://github.com/ChainSafe/lodestar) · [Maintained Beacon API Builder flow](https://github.com/ethereum/beacon-APIs/blob/master/validator-flow.md#builder-optional)
 
@@ -469,6 +469,7 @@ This snapshot was refreshed on 5 August 2026. It records work that can narrow th
 | [Lodestar #9757](https://github.com/ChainSafe/lodestar/pull/9757) | Open draft with green checks: adds `consensus_and_equivocation` handling and a Deathstar proposer-equivocation feature using buildoor for the initial end-to-end proof | Treat this as the upstream BN capability for `REV-01` and `QA-01`; retain a Lodestar Builder fixture so the project proves the same rejection once its honest loop works |
 | [Lodestar #9594](https://github.com/ChainSafe/lodestar/pull/9594), [builder-specs #165](https://github.com/ethereum/builder-specs/pull/165), and [beacon-APIs #630](https://github.com/ethereum/beacon-APIs/pull/630) | Open Builder API work; the Lodestar team expects the specifications and implementation to settle over the next one to two weeks | Not a core dependency. Re-audit the settled route and auth shapes before `BN-01` or `EXT-BUILDER-API-01`; keep staked Builder API request authentication conditional |
 | [Lodestar #9758](https://github.com/ChainSafe/lodestar/pull/9758) | Merged at `74a3175`: initial `@lodestar/builder` package and CLI scaffolding, local keystore, bid/envelope signing and tests, source-BN wiring, `waitForGenesis`, shutdown, shared `assertEqualParams`, and active-Builder resolution. The first package was also published to npm | `SIGN-01` is Done with merged review and CI evidence. Keep `CLI-01` In review until readiness/configuration and inert-until-ready behavior close, and keep `API-01` In progress on Marko's follow-up branch |
+| [Lodestar #9766](https://github.com/ChainSafe/lodestar/pull/9766) | Merged: aligns the Builder package build and type-check scripts with the workspace TypeScript 7 migration by using `tsc` | Record the CI follow-up under `CLI-01`, but keep the issue In review because operational readiness and configuration remain open |
 | [Lodestar #9770](https://github.com/ChainSafe/lodestar/pull/9770) | Merged: hides the generated Builder CLI page from the public docs sidebar while the command is not yet functional | Keep the page hidden or clearly marked work in progress until `CLI-01` is complete, then restore it as part of `HANDOFF-01` |
 
 The board should therefore keep `CLI-01` **In review**, `API-01` **In progress**, and mark only the completed signing boundary in `SIGN-01` **Done**. Landed upstream prerequisites may be marked complete or used to narrow the consuming issue during baseline activation, but their merge does not automatically complete the project issue that consumes them.
@@ -1524,7 +1525,7 @@ The Lodestar review pass and confirmed follow-up decisions from 27 July–4 Augu
 - [x] Resolve the final confirmation in Section 3 and update the affected fee-recipient/accounting details.
 - [x] Re-circulate the final candidate with a concise change summary.
 - [x] Obtain Lodestar-team confirmation or agreed no-objection for the accepted decisions.
-- [ ] Merge and publish v1.0.
+- [x] Merge and publish v1.0 on GitHub.
 - [ ] Pin the exact `unstable` SHA, spec/API versions, and feature branch.
 - [ ] Complete the baseline capability audit and narrow/close already-landed work.
 - [x] Create all 20 core issues and all proposal-relevant Conditional parents on the board.
