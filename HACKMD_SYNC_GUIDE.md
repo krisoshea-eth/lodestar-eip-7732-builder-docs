@@ -24,7 +24,7 @@ Use these exact file paths when linking notes from HackMD.
 | HackMD note | GitHub branch | GitHub file |
 | --- | --- | --- |
 | Proposal note | `main` after the repo-docs PR is merged | `docs/proposal.md` |
-| Implementation plan | `main` after the implementation-plan PR is merged | `docs/implementation-plan.md` |
+| Implementation-plan landing page | `main` after the matching docs PR is merged | `docs/hackmd-implementation-plan-index.md` |
 | Living technical note | `main` after the living-note PR is merged | `docs/living-technical-note.md` |
 | Week 0 update | `main` after the repo-docs PR is merged | `docs/weekly-updates/week-00.md` |
 | Week 1 update | `main` after the repo-docs PR is merged | `docs/weekly-updates/week-01.md` |
@@ -32,6 +32,7 @@ Use these exact file paths when linking notes from HackMD.
 | Week 3 update | `main` after the repo-docs PR is merged | `docs/weekly-updates/week-03.md` |
 | Week 4 update | `main` after the repo-docs PR is merged | `docs/weekly-updates/week-04.md` |
 | Week 5 update | `main` after the repo-docs PR is merged | `docs/weekly-updates/week-05.md` |
+| Week 6 update | `main` after the weekly-update PR is merged | `docs/weekly-updates/week-06.md` |
 
 While a review PR is still open, use that PR branch if you want HackMD to pull the current PR content before it is merged:
 
@@ -83,6 +84,30 @@ Use this when someone edits the Markdown in GitHub or a PR is merged.
 
 HackMD saves a version named like `before pull from <branch>` before applying pulled changes. It does not lock the note during the merge, so avoid simultaneous editing during a pull.
 
+## Implementation Plan Character-Limit Exception
+
+The full `docs/implementation-plan.md` is larger than the per-note character limit reported by HackMD. Do not pay for an upgrade or remove reviewed content merely to preserve a duplicate full-note mirror.
+
+Use `docs/hackmd-implementation-plan-index.md` for the existing public implementation-plan HackMD URL. It is a short landing page linking to the canonical reviewed GitHub plan, PR history, Living Technical Note, Linear project, and GitHub Project mirror.
+
+After the matching docs PR merges:
+
+1. Optionally download the current HackMD Markdown or save a named version as rollback evidence. The old content is not a source to merge into GitHub.
+2. Change the note's linked GitHub file to `docs/hackmd-implementation-plan-index.md` on `main`, or replace the note with that file's content manually.
+3. Preview the landing page and click each link.
+4. Keep all future full-plan edits in `docs/implementation-plan.md`; update the landing page only when its links or status summary change.
+
+## Recover Any Other Note That Is Behind GitHub
+
+Do not push an older HackMD copy over a newer GitHub file.
+
+1. Optionally download the current HackMD Markdown and save a named HackMD version as rollback evidence.
+2. Confirm that the reviewed GitHub file contains every intended heading and decision.
+3. Pull the reviewed `main` file into HackMD, unless the implementation-plan character-limit exception above applies.
+4. Review the full result in both source and preview mode before saving a new named version.
+5. If the pull fails or joins unrelated lines, leave GitHub as the source of truth and record the exact error. Try importing the reviewed file into a fresh HackMD note before paying for an upgrade or splitting the document.
+6. Only reconnect or replace the public HackMD link after the fresh note renders correctly.
+
 ## Recommended Review Workflow
 
 Use GitHub for review and HackMD for writing.
@@ -102,6 +127,6 @@ This keeps GitHub review comments attached to concrete diffs and keeps HackMD up
 
 - Each HackMD note links to one Markdown file.
 - HackMD syncs Markdown files; avoid MDX-specific syntax unless you are comfortable with HackMD not rendering it.
-- HackMD's free plan may limit the number of GitHub sync operations per month.
+- The full implementation plan is about 118,000 bytes/characters and triggers HackMD's reported 100,000-character note limit. Keep the reviewed full plan on GitHub and use the short HackMD landing page instead of upgrading or deleting content.
 - Do not edit the same note in HackMD while pulling GitHub changes into it.
 - If a sync looks wrong, stop and create a named HackMD version before trying again.

@@ -2,14 +2,15 @@
 
 This repository mirrors the Lodestar EIP-7732 Builder project documents as raw Markdown so the Lodestar team can review and comment through GitHub pull requests.
 
-The human-facing HackMD notes remain useful for writing and publishing. This repo gives the same material a GitHub review surface.
+The human-facing HackMD notes remain useful for writing and publishing. This repo gives the same material a GitHub review surface. The full implementation plan exceeds HackMD's per-note character limit, so GitHub is canonical and its HackMD note is a short landing page.
 
 ## Documents
 
 | Document | GitHub file | Source |
 | --- | --- | --- |
 | Project proposal | [docs/proposal.md](docs/proposal.md) | Accepted EPF proposal in `eth-protocol-fellows/cohort-seven` |
-| Implementation plan | `docs/implementation-plan.md` | [HackMD](https://hackmd.io/j3T4poyWTFqcVAuaoWXiqA); reviewed in a focused PR |
+| Implementation plan | `docs/implementation-plan.md` | Canonical full plan; [HackMD landing page](https://hackmd.io/@krisos/SyPZNJp4fg); reviewed in a focused PR |
+| HackMD plan landing page | `docs/hackmd-implementation-plan-index.md` | Short index kept below HackMD's per-note character limit |
 | Living technical note | `docs/living-technical-note.md` | [HackMD](https://hackmd.io/@krisos/S1a9mdB7fl); reviewed in a separate PR |
 | Weekly updates | [docs/weekly-updates/](docs/weekly-updates/) | Kris's EPF HackMD updates |
 
@@ -23,6 +24,7 @@ The human-facing HackMD notes remain useful for writing and publishing. This rep
 | Week 3 | [docs/weekly-updates/week-03.md](docs/weekly-updates/week-03.md) | [Update 3](https://hackmd.io/@krisos/BkiFy_KXMx) |
 | Week 4 | [docs/weekly-updates/week-04.md](docs/weekly-updates/week-04.md) | [Update 4](https://hackmd.io/@krisos/ByrVRrG4Mx) |
 | Week 5 | [docs/weekly-updates/week-05.md](docs/weekly-updates/week-05.md) | [Update 5](https://hackmd.io/@krisos/rysfyco4Mg) |
+| Week 6 | [docs/weekly-updates/week-06.md](docs/weekly-updates/week-06.md) | [Update 6](https://hackmd.io/@krisos/SyM9AhPrfg) |
 
 ## Syncing With HackMD
 
