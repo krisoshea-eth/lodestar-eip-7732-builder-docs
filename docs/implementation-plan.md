@@ -7,7 +7,7 @@
 **Working model:** one shared feature branch; merge `unstable` regularly; split only when review benefits from it  
 **Formal product name:** `lodestar builder` / `packages/builder`  
 **Optional EPF mission codename:** Forgestar  
-**Status:** v1.0 merged on 5 August 2026. All Lodestar review comments and confirmed guidance through 4 August have been incorporated, and no plan-level implementation question remains open. HackMD synchronization and preview, baseline pinning, and remaining board ownership complete the planning handoff. Early implementation groundwork is tracked below and does not change the issue evidence required for completion.
+**Status:** v1.0 merged on 5 August 2026. All Lodestar review comments and confirmed guidance through 4 August have been incorporated, and no plan-level implementation question remains open. Publishing the short HackMD landing page, baseline pinning, and remaining board ownership complete the planning handoff. The full plan remains canonical on GitHub because it exceeds HackMD's per-note character limit. Early implementation groundwork is tracked below and does not change the issue evidence required for completion.
 
 > **Project documents:** [Merged proposal](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md) · [Living Technical Note](https://hackmd.io/@krisos/S1a9mdB7fl) · [Presentation slides](https://docs.google.com/presentation/d/1cmC3fpu652gZFTIm2_P1lIYOfC2M_w3c5qXSUZ4B6lc) · [Lodestar repository](https://github.com/ChainSafe/lodestar) · [Maintained Beacon API Builder flow](https://github.com/ethereum/beacon-APIs/blob/master/validator-flow.md#builder-optional)
 
@@ -826,8 +826,9 @@ flowchart TD
 - [ ] Query Builder state by configured pubkey/index and require the expected active Builder version.
 - [ ] Record the resolved Builder index, lifecycle status, and BN-reported balance returned by the same status lookup.
 - [ ] Expose current Builder status/balance through structured diagnostics and a bounded metric, without treating that snapshot as an independent per-bid solvency decision.
-- [ ] Check BN sync at startup and readiness, and do not retrieve, sign, or propagate bids while the BN is far behind or its EL is syncing.
-- [ ] Reuse the smallest suitable existing `not while syncing` helper. Share the validator `SyncingStatusTracker` only if its resync lifecycle is actually needed; do not pull in `runOnResynced` merely because validator uses it for duty refetching.
+- [ ] Observe and report the source BN's sync, optimistic-execution, and EL-availability state at sidecar startup/readiness, and keep the sidecar inert while the source is not ready.
+- [ ] Keep the authoritative `not while syncing` and optimistic-execution guard in the BN preparation/candidate path. Return a typed syncing or unavailable result instead of recreating chain-readiness policy in the sidecar.
+- [ ] Reuse the smallest suitable existing BN helper. Share or import the validator `SyncingStatusTracker` only if a real Builder resync lifecycle or broader code-reuse case appears and the package dependency remains clean; do not pull in `runOnResynced` merely because validator uses it for duty refetching.
 - [ ] Implement typed timeouts, cancellation, response bounds, and redacted errors.
 - [ ] Document which inputs are BN-authoritative and which sanity checks the sidecar performs.
 
@@ -1500,7 +1501,7 @@ The Lodestar review pass and confirmed follow-up decisions from 27 July–4 Augu
 | [consensus-specs #5497](https://github.com/ethereum/consensus-specs/pull/5497) and [Lodestar #9739](https://github.com/ChainSafe/lodestar/pull/9739) | accepted and landed | Reuse head-compatible bid validation and per-parent seen-bid behavior; do not implement the superseded single-bid model |
 | [Lodestar #9723](https://github.com/ChainSafe/lodestar/pull/9723) | clarification | Do not treat it as a Builder-project dependency or use it to block the plan |
 | Initial Lodestar Builder package and signer | accepted and landed | Reuse merged [Lodestar #9758](https://github.com/ChainSafe/lodestar/pull/9758); treat `SIGN-01` as Done, keep `CLI-01` In review, and keep `API-01` In progress until their remaining issue evidence closes |
-| Builder startup and bid work while syncing | accepted | Add a simple BN/EL sync readiness gate and reuse the smallest suitable existing helper; do not automatically duplicate validator's full resync service |
+| Builder startup and bid work while syncing | accepted | Let the sidecar observe and report startup readiness, but keep the authoritative syncing, optimistic-execution, and EL-readiness guard in the BN preparation/candidate path. Reuse the smallest suitable helper; do not import validator only for `runOnResynced`, while leaving a broader package dependency open to a later evidence-based audit |
 | Exact bid and payload `uint64` values | accepted and landed | Preserve the exact types from [Lodestar #9749](https://github.com/ChainSafe/lodestar/pull/9749), [#9750](https://github.com/ChainSafe/lodestar/pull/9750), and [#9751](https://github.com/ChainSafe/lodestar/pull/9751) through Builder hashing/signing and test the unsafe JavaScript-number boundary |
 | Epoch-boundary head-compatible bid validation | accepted and landed | Reuse the narrow rule in [Lodestar #9756](https://github.com/ChainSafe/lodestar/pull/9756) and add a focused regression without adopting the retracted broader restriction |
 | Builder CLI documentation is public before the command is functional | accepted and landed | Keep it hidden or marked work in progress after [Lodestar #9770](https://github.com/ChainSafe/lodestar/pull/9770), then restore it during handoff |
@@ -1533,5 +1534,5 @@ The Lodestar review pass and confirmed follow-up decisions from 27 July–4 Augu
 - [ ] Complete remaining owner and reviewer assignments as issues approach Ready.
 - [ ] Mark `ENV-01` and `CLI-01` Ready and assigned for Week 8.
 - [ ] Confirm implementation starts in Week 8 with no hidden planning dependency.
-- [ ] Preview the HackMD in both edit and published modes; click-test the table of contents, project-document links, Mermaid diagrams, and long tables.
+- [ ] Publish and preview the short HackMD landing page, then click-test its links to the canonical GitHub plan, review history, Living Technical Note, Linear project, and GitHub Project mirror.
 - [ ] Confirm every diagram still matches the authoritative issue dependencies and accepted decisions after the final feedback pass.
