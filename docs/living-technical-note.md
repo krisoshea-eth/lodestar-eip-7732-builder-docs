@@ -2,16 +2,18 @@
 
 | Doc status | |
 |---|---|
-| Proposal | [Merged](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md) via [PR #161](https://github.com/eth-protocol-fellows/cohort-seven/pull/161) on July 13; strong-success list amended via [PR #186](https://github.com/eth-protocol-fellows/cohort-seven/pull/186) on July 14 |
-| Spec target | [consensus-specs v1.7.0-alpha.12](https://github.com/ethereum/consensus-specs/releases/tag/v1.7.0-alpha.12) (released July 8, 2026) |
-| Lodestar baseline | Stable release: [v1.44.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.44.0), still aligned to alpha.11; active implementation work: `unstable`, [alpha.12 #9606](https://github.com/ChainSafe/lodestar/pull/9606), and [devnet-7 #9587](https://github.com/ChainSafe/lodestar/pull/9587) |
-| Devnet | glamsterdam-devnet-6 remains **On**; [devnet-7 configuration is published](https://notes.ethereum.org/@ethpandaops/glamsterdam-devnet-7) but the network is still marked **WIP**; test fixtures pinned at [`tests-glamsterdam-devnet@v7.2.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v7.2.0) |
-| Builder withdrawal prefix | `0xB0` — resolved by [consensus-specs #5416](https://github.com/ethereum/consensus-specs/pull/5416) |
-| Payload deadline | `PAYLOAD_DUE_BPS = 5000` — six seconds into a 12-second slot; PTC payload attestation remains at `7500` |
-| Last sweep | July 14, 2026 (monitor pass; full manual sweep July 13) |
-| Next milestone | Week 5 wrap-up — publish this note, finalise the presentation, take the five gating questions to Nico; then Weeks 6–7 architecture + skeleton + first reviewable PR |
+| Proposal | [Merged](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md); strong-success list amended through [PR #186](https://github.com/eth-protocol-fellows/cohort-seven/pull/186) |
+| Implementation plan | [v1.0 merged](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/pull/2) on August 5, 2026; the merged GitHub plan is the implementation source of truth |
+| Spec target | [consensus-specs v1.7.0-alpha.13](https://github.com/ethereum/consensus-specs/releases/tag/v1.7.0-alpha.13), published July 31, 2026 |
+| Lodestar baseline | Stable release: [v1.45.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.45.0); implementation work targets a Week 7 pin of current `unstable` |
+| Builder implementation | Initial [`@lodestar/builder`](https://www.npmjs.com/package/@lodestar/builder) package merged in [Lodestar #9758](https://github.com/ChainSafe/lodestar/pull/9758); `SIGN-01` is Done, `CLI-01` is In Review, and `API-01` is In Progress |
+| Devnet | [glamsterdam-devnet-7](https://notes.ethereum.org/@ethpandaops/glamsterdam-devnet-7) remains the active published configuration on alpha.12/v7.2.0; [`tests-glamsterdam-devnet@v8.0.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.0.0) begins the devnet-8 fixture series but does not establish a devnet-8 launch |
+| Builder lifecycle identifiers | Deposit request type `0x03`; Builder withdrawal credentials prefix `0xB0` |
+| Payload deadline | `PAYLOAD_DUE_BPS = 5000`, six seconds into a 12-second slot; PTC payload attestation remains at `7500` |
+| Last reconciliation | August 5, 2026: August 4 monitor report, confirmed Discord decisions, merged implementation plan, live upstream status, Linear, and HackMD comparison |
+| Next milestone | Finish `BASELINE-01`, `ENV-01`, and `API-01`; pin the working `unstable` SHA; then activate the reviewed BN preparation/candidate design |
 
-This is the working document for the Lodestar EIP-7732 Builder project, an EPF cohort 7 project by [Kris O'Shea](https://github.com/krisoshea-eth) and [Marko Lazic](https://github.com/markolazic01), mentored by [Nico Flaig](https://github.com/nflaig) (ChainSafe, EIP-7732 co-author). The [project proposal](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md) is now merged and should remain the stable public description of scope. This note carries the moving implementation details: current specification and client baselines, architecture decisions, open questions, code-path maps, adversarial cases, and status trackers.
+This is the working document for the Lodestar EIP-7732 Builder project, an EPF cohort 7 project by [Kris O'Shea](https://github.com/krisoshea-eth) and [Marko Lazic](https://github.com/markolazic01), mentored by [Nico Flaig](https://github.com/nflaig) (ChainSafe, EIP-7732 co-author). The [project proposal](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md) remains the stable public scope, while the [merged implementation plan](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/implementation-plan.md) owns accepted delivery decisions and issue boundaries. This note carries moving technical context, implementation findings, upstream state, code-path maps, adversarial cases, and research watches. Linear owns issue status, ownership, dependencies, and evidence.
 
 ## Contents
 
@@ -38,7 +40,7 @@ This is the working document for the Lodestar EIP-7732 Builder project, an EPF c
 - **Part IV — Implementation reference**
   - [Current Lodestar code-path map](#current-lodestar-code-path-map)
   - [Beacon API notes](#beacon-api-notes)
-  - [Work packages / ownership](#possible-implementation-packages--ownership-split)
+  - [Implementation packages and ownership](#implementation-packages-and-ownership)
   - [Process notes](#process-notes)
   - [Weekly implementation log](#weekly-implementation-log)
 - **Part V — Trackers**
@@ -63,67 +65,60 @@ This is the working document for the Lodestar EIP-7732 Builder project, an EPF c
 
 Run roughly weekly and before each milestone. Update the Doc status table afterwards.
 
-- [ ] New consensus-specs tag after `v1.7.0-alpha.12`?
-- [ ] Has Lodestar [#9606](https://github.com/ChainSafe/lodestar/pull/9606) merged or been replaced? Is `unstable` still pinned to alpha.11? Is there a stable release after v1.44.0?
-- [ ] Has [Lodestar #9390](https://github.com/ChainSafe/lodestar/pull/9390) landed EIP-7688 on `unstable`? Has [#9587](https://github.com/ChainSafe/lodestar/pull/9587) moved from a devnet branch toward merge?
-- [ ] Has glamsterdam-devnet-7 moved from **WIP** to **On**? Check its fork config, client images — including Prysm's temporary EIP-7688 flag state — the builder-deposit contract, the current `tests-glamsterdam-devnet` fixture tag (v7.2.0 at this sweep), and the explorer before treating it as a runnable target.
-- [ ] Has the Gloas Builder API implementation [#9594](https://github.com/ChainSafe/lodestar/pull/9594) or the Gloas circuit breaker [#9598](https://github.com/ChainSafe/lodestar/pull/9598) changed the architecture or demo path?
-- [ ] New beacon-APIs, builder-specs, or execution-apis changes touching proposer preferences, bid selection, payload attributes, builder authentication, bids, or envelopes? Has [#624](https://github.com/ethereum/beacon-APIs/pull/624) merged or changed the envelope submission shape?
-- [ ] New builder-specific Lodestar command, service, or branch? Do not confuse API/proposer-side builder support with the missing external builder.
-- [ ] Has the `focil` branch rebased onto current `unstable`? Any Heze change after the restored `inclusion_list_bits` field?
-- [ ] Has the `deathstar` branch rebased or gained a third implemented chaos behavior? Re-read code, not only `EPBS_CHAOS_FEATURES.md`.
-- [ ] EIP-8237 or EIP-8146 status or fork targeting changed?
-- [ ] buildoor or assertoor registration flows updated for the `0xB0` withdrawal prefix and devnet-7 contract addresses?
+- [ ] New consensus-specs prerelease after `v1.7.0-alpha.13`, or a change to the #5497 head-compatible bid rules?
+- [ ] Stable Lodestar release after v1.45.0, or material `unstable` changes to the Builder package, Gloas types, payload production, publication, or events?
+- [ ] Status change in [#9736](https://github.com/ChainSafe/lodestar/pull/9736), [#9757](https://github.com/ChainSafe/lodestar/pull/9757), [#9755](https://github.com/ChainSafe/lodestar/pull/9755), or [#9594](https://github.com/ChainSafe/lodestar/pull/9594)?
+- [ ] Status or contract change in [builder-specs #165](https://github.com/ethereum/builder-specs/pull/165) or [beacon-APIs #630](https://github.com/ethereum/beacon-APIs/pull/630)?
+- [ ] Cross-client rollout of #5497, especially Teku and the Prysm replacement, and any evidence that strict local-head validation limits propagation?
+- [ ] Has devnet-7 changed state, or has a devnet-8 launch been verified separately from the v8 fixture release?
+- [ ] Have exact `uint64` fields remained exact through Builder parsing, caching, signing, hashing, events, and API boundaries?
+- [ ] Have corrected FCR fixtures been regenerated after consensus #5498/#5499 and merged smoke check #5504?
+- [ ] New evidence on epoch-transition reorg pressure, bid-request timing, skipped slots, or minimum-bid fallback? Keep archive reports separate from verified telemetry.
+- [ ] Has the Deathstar proposer-equivocation work moved beyond #9757, or has the stored Lodestar Builder fixture run end to end?
+- [ ] EIP-8237, EIP-8146, FOCIL, or circuit-breaker changes that materially alter a conditional package rather than the current core?
 
 ## Current stance
 
 | Area | Current stance |
 |---|---|
-| Core project | Implement the honest Lodestar EIP-7732 / Gloas Builder loop |
-| First success target | Complete a reproducible local bid → selection → reveal loop |
-| Strong-success extension | Adapt the Builder for Heze / FOCIL after the Gloas path is stable and the target Lodestar branch is agreed |
-| Stretch work | Improved bid policy and/or one builder-specific Deathstar scenario after the honest path is reliable |
-| Default base-branch position | Start from current Gloas work, not the large divergent `focil` branch, unless the Lodestar team explicitly recommends otherwise |
+| Core project | One same-host `lodestar builder` sidecar, one local Builder key, and one trusted source BN; the BN owns EL access, payload construction, value, balance enforcement, reveal material, and publication validation |
+| First success target | Reproducible local preparation → complete BN-produced bid → configurable pre-slot publication → exact selection → immediate stateful reveal → FULL/PTC/payment evidence |
+| Bid baseline | Payload-value bid, `execution_payment = 0`; execution rewards pay a Builder-controlled address and `bid.fee_recipient` pays the proposer |
+| Reliability boundary | Stateful one-BN path first; bounded same-BN restart recovery later; no HA, stateless failover, or multi-BN claim in v1 |
+| Test order | Focused tests, then local Kurtosis, then ethereum-package/buildoor; public devnet is conditional evidence rather than a core prerequisite |
+| Conditional extensions | One selected package after the core gates, with FOCIL, policy, observability, Builder API, advanced preparation, adversarial work, UI, and devnet deployment all explicitly gated |
+| Base branch | Current `unstable`, pinned by `BASELINE-01`; merge `unstable` regularly and split work only when review benefits |
 
-FOCIL has a stronger role than it did in the first draft: it is now the natural strong-success extension because it changes what a future builder must commit to and construct. It is still not a parallel core deliverable, and its branch should not become the default base merely because it contains substantial implementation work.
-
-Deathstar remains notebook-first. The branch is useful prior art for conventions and test injection points, but adversarial implementation must not delay the honest Builder.
+FOCIL remains a useful extension candidate, not a parallel core deliverable. Deathstar now contributes one bounded core QA fixture for proposer equivocation and payload unbundling, while broader malicious controls remain conditional. Neither should delay the honest Builder loop.
 
 ```mermaid
 flowchart LR
     B["Core: Gloas Builder honest path"] --> A{"Stable local loop<br/>and reviewable implementation?"}
-    A -->|"yes"| H["Strong-success pass:<br/>Heze / FOCIL adaptation"]
+    A -->|"yes"| H{"Extension entry criteria<br/>and maintainer value?"}
     A -->|"no"| C["Continue core hardening"]
-    H --> G{"Time and maintainer value?"}
-    G -->|"yes"| D["One stretch item:<br/>Deathstar or bid policy"]
-    G -->|"no"| R["Tests, docs, handoff"]
+    H -->|"yes"| D["Activate one bounded package:<br/>FOCIL, Deathstar, policy, API, or devnet"]
+    H -->|"no"| R["Tests, docs, handoff"]
 ```
 
 ## Decision log
 
 | Date | Question | Outcome | Notes |
 |---|---|---|---|
-| 2026-07-14 | Proposal strong-success list | **Amended post-merge** | [PR #186](https://github.com/eth-protocol-fellows/cohort-seven/pull/186): new goal per Nico's review comment, items decoupled, blocker links added — the first substantive mentor input on scope |
-| 2026-07-14 | Devnet-7 fixture baseline | **`tests-glamsterdam-devnet@v7.2.0`** | [Published July 10](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v7.2.0), superseding v7.1.0; carries the EIP-8037 calldata-floor / block-gas-accounting changes |
-| 2026-07-13 | Proposal status | **Merged** | [EPF7 PR #161](https://github.com/eth-protocol-fellows/cohort-seven/pull/161); proposal submission is no longer the next milestone |
-| 2026-07-13 | Joint vs separate proposal | **One joint proposal** | Settled at PR #161; weekly EPF updates remain individual |
-| 2026-07-13 | Current spec target | **v1.7.0-alpha.12** | Alpha.12 contains the builder-prefix, deadline, EIP-7688, imported-payload, and Heze bid-shape changes relevant to this project |
-| 2026-07-03 | Builder withdrawal prefix | **`0xB0`** | [consensus-specs #5416](https://github.com/ethereum/consensus-specs/pull/5416) merged; stale `0x03` credentials and scripts must be regenerated |
-| 2026-07-03 | Heze `inclusion_list_bits` | **Restored** | [consensus-specs #5410](https://github.com/ethereum/consensus-specs/pull/5410) merged; Lodestar [#9526](https://github.com/ChainSafe/lodestar/pull/9526), which removed the field, closed unmerged |
-| 2026-07-06 | Payload deadline | **Six seconds into the slot** | [consensus-specs #5414](https://github.com/ethereum/consensus-specs/pull/5414); mainnet alpha.12 expresses this as `PAYLOAD_DUE_BPS = 5000` |
-| 2026-07-06 | Progressive consensus structures | **In alpha.12 spec baseline** | [consensus-specs #4630](https://github.com/ethereum/consensus-specs/pull/4630) merged; Lodestar implementation remains active in [#9390](https://github.com/ChainSafe/lodestar/pull/9390) |
-| 2026-07-13 | Devnet-7 status | **Published configuration; network still WIP** | Use it as the next integration target, not yet as a stable live baseline |
-| 2026-07-13 | FOCIL project role | **Strong-success extension** | Not a second project; not the default implementation base; adaptation begins only after the honest Gloas loop works |
-| — | Base branch (`unstable` / `nc/alpha.12` / `glamsterdam-devnet-7`) | open | Resolve during the architecture milestone with the Lodestar team |
-| — | Builder home (standalone command / BN service / VC-adjacent / temporary prototype) | open | [#9594](https://github.com/ChainSafe/lodestar/pull/9594) makes the standardized API path more concrete, but does not choose the service boundary |
-| — | First EL (Ethrex / Nethermind / constrained mock) | open | Prefer the client aligned with the chosen devnet and `target_gas_limit` support |
-| — | Registration (mock active builder vs real EIP-8282) | open | Real registration now means `0xB0`; use current devnet contract data, not old playbook defaults |
-| — | Proposer `target_gas_limit` → EL plumbing | open | Must be per payload, not a static execution-client setting |
-| — | Reveal trigger (first valid sight / block import / configurable) | open | Must be explicit and testable; circuit-breaker interaction matters |
-| — | Proposer-side bid selection for the demo | open | [beacon-APIs issue #620](https://github.com/ethereum/beacon-APIs/issues/620) remains open |
-| — | Blobs in first demo | open | Zero-blob start is acceptable only if the later stateless/data-column path is documented |
-| — | First Deathstar scenario | open | Mismatched envelope is the smaller local test; withholding exercises the full failure path |
-| — | Collaboration split (rotating ownership vs whole-feature + deep cross-review) | open | Settle with Marko before the first work packages |
+| 2026-08-05 | Implementation plan | **v1.0 merged** | [Docs PR #2](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/pull/2); all 14 review threads resolved and no plan-level question remains open |
+| 2026-08-04 | Public Builder CLI docs | **Hidden until functional** | [Lodestar #9770](https://github.com/ChainSafe/lodestar/pull/9770) merged; restore the sidebar entry during `HANDOFF-01` |
+| 2026-08-03 | Initial Builder package | **Merged and published** | [Lodestar #9758](https://github.com/ChainSafe/lodestar/pull/9758) landed the package, CLI scaffold, local keystore, bid/envelope signer, config checks, genesis wait, shutdown, and initial BN wiring; first npm publication followed |
+| 2026-08-03 | Payload fee recipient | **Any Builder-controlled execution address; never the proposer address** | It need not match Builder withdrawal credentials. The simplest fixture may reuse the Builder withdrawal/execution address. `bid.fee_recipient` remains the proposer payment address |
+| 2026-08-03 | Preparation and publication timing | **Separate them** | Prepare early enough for a complete bid, then publish at a configurable bounded pre-slot offset rather than racing the proposer at `t=0` |
+| 2026-08-03 | Head change and stale work | **New parent tuple, new bid; no unpublish** | Audit and reuse existing BN payload-job/cache cleanup. Do not add a sidecar cancellation path unless the pin exposes a gap |
+| 2026-08-03 | Stateful cache model | **One same-host source BN in v1** | Reuse BN production state; stateless and multi-BN failover remain outside core |
+| 2026-08-01 | Envelope publication validation | **Explicit `consensus_and_equivocation`** | Validation and proposer-equivocation detection stay BN-owned; [Lodestar #9757](https://github.com/ChainSafe/lodestar/pull/9757) is the current implementation path |
+| 2026-07-31 | Multiple bids | **Compatible with the connected BN's local head view** | [consensus-specs #5497](https://github.com/ethereum/consensus-specs/pull/5497) and [Lodestar #9739](https://github.com/ChainSafe/lodestar/pull/9739) merged; multi-branch flood publishing remains deferred |
+| 2026-07-30 | Genesis wait and shared config | **Duplicate `waitForGenesis`; share `assertEqualParams` through config** | [Lodestar #9725](https://github.com/ChainSafe/lodestar/pull/9725) and [#9726](https://github.com/ChainSafe/lodestar/pull/9726) merged; do not add unreachable BN 404 code |
+| 2026-07-30 | Runtime boundary | **Standalone same-host sidecar; BN owns EL and payload building** | One local key and one trusted source BN define core v1 |
+| 2026-07-14 | Project extension model | **Core first; one bounded extension after gates** | FOCIL, policy, observability, Builder API, advanced preparation, adversarial work, UI, and devnet deployment remain conditional |
+| 2026-07-13 | Proposal status | **Merged** | [EPF7 PR #161](https://github.com/eth-protocol-fellows/cohort-seven/pull/161), amended through [PR #186](https://github.com/eth-protocol-fellows/cohort-seven/pull/186) |
+| 2026-07-06 | Payload deadline | **`PAYLOAD_DUE_BPS = 5000`** | Six seconds on a 12-second slot; read configured BPS rather than hardcoding milliseconds |
+| 2026-07-03 | Builder credentials | **Withdrawal prefix `0xB0`** | Deposit request type remains `0x03`; the two values are not interchangeable |
 
 ## Terms
 
@@ -143,15 +138,17 @@ flowchart LR
 | BPS deadline | A slot-relative deadline expressed in basis points of configured slot duration |
 | ProgressiveContainer | EIP-7688 forward-compatible SSZ container whose merkleization differs from legacy `Container` |
 | Data columns | PeerDAS erasure-coded blob data that the reveal path must make available |
-| Self-build | The proposer builds its own payload. The alpha.12 spec uses `BuilderIndex(UINT64_MAX)`; Lodestar currently represents that sentinel internally as `Infinity` |
+| Self-build | The proposer builds its own payload. The Gloas spec uses `BuilderIndex(UINT64_MAX)`; Lodestar represents that sentinel internally as `Infinity` |
 
 ## Proposal link
 
 - [Merged Lodestar EIP-7732 Builder proposal](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md)
 - [Proposal PR #161 and review history](https://github.com/eth-protocol-fellows/cohort-seven/pull/161)
 - [Strong-success amendment PR #186](https://github.com/eth-protocol-fellows/cohort-seven/pull/186)
-- Public HackMD link for this living note: add after publication
-- Presentation: link to be added once the deck is public
+- [Merged implementation plan](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/implementation-plan.md)
+- [Linear project](https://linear.app/kriso/project/lodestar-eip-7732-builder-814d6faca6fd)
+- [Public HackMD for this living note](https://hackmd.io/@krisos/S1a9mdB7fl)
+- [Presentation](https://docs.google.com/presentation/d/1cmC3fpu652gZFTIm2_P1lIYOfC2M_w3c5qXSUZ4B6lc)
 
 ---
 
@@ -159,50 +156,45 @@ flowchart LR
 
 ## Confirmed facts
 
-These items were checked against current specifications, repository state, or merged/open PR metadata during the July 13 sweep and the July 14 monitor pass. Re-check them after each baseline bump.
+These items were reconciled against the August 4 monitoring report, confirmed Lodestar-team guidance, and live primary sources on August 5. Re-check them after each baseline bump.
 
-### The builder gap
+### Current Builder implementation state
 
-- **No `SignedExecutionPayloadBid` signing method exists in Lodestar.** Current code verifies bid signatures and contains `signExecutionPayloadEnvelope`, but a repository search still finds no `signExecutionPayloadBid`. The new method should use `DOMAIN_BEACON_BUILDER`, be fork-aware, and follow the existing signer/key-manager conventions.
+- [Lodestar #9758](https://github.com/ChainSafe/lodestar/pull/9758) created the first real `@lodestar/builder` package. It includes package and CLI scaffolding, one local keystore-backed key, bid and envelope signing with tests, a Builder `waitForGenesis`, source-BN wiring, shared `assertEqualParams`, active-Builder lookup, signal handling, and shutdown.
+- The package was first published to npm on August 4. `latest` is currently the placeholder `0.0.0`; development builds are published under the `next` tag. This is package availability, not a claim that the command is production-ready.
+- `SIGN-01` is complete. `CLI-01` remains In Review because readiness, full configuration, inert-until-ready behavior, diagnostics, and public operator documentation are not complete. `API-01` remains In Progress on Marko's follow-up branch.
+- The main implementation gap is no longer signing. It is the complete same-host workflow: a reviewed BN preparation/candidate surface, canonical payload production with the Builder fee recipient, exact complete-bid return, publication timing, selection observation, stateful envelope retrieval, and evidence.
+- The Builder does not connect directly to the EL in core. The source BN owns Engine API access, proposer/head context, payload construction, value, balance enforcement, reveal material, and publication validation.
+- The sidecar owns its local key, chain/source-BN checks, active Builder resolution, head observation, bounded scheduling, sanity-checking and signing the exact BN-produced objects, exact local bid matching, diagnostics, and orchestration.
 
-```python
-def get_execution_payload_bid_signature(state, bid, privkey):
-    domain = get_domain(state, DOMAIN_BEACON_BUILDER, compute_epoch_at_slot(bid.slot))
-    signing_root = compute_signing_root(bid, domain)
-    return bls.Sign(privkey, signing_root)
-```
+### Landed Lodestar capabilities to reuse
 
-- **The implementation seam remains explicit.** `produceBlockBody.ts` on `unstable` still contains `TODO GLOAS: support non self-building here` where a block body selects or constructs its execution payload bid.
-- **No external builder has appeared.** [Lodestar #9594](https://github.com/ChainSafe/lodestar/pull/9594) implements the Gloas Builder API; it is proposer/beacon-node API plumbing, not the component that builds payloads, signs bids, stores commitments, detects wins, and reveals envelopes.
-- **The self-build sentinel needs an explicit boundary rule.** Alpha.12 specifies `BUILDER_INDEX_SELF_BUILD = BuilderIndex(UINT64_MAX)`. Lodestar still exposes `BUILDER_INDEX_SELF_BUILD = Infinity` internally. Code must treat that as a serialization representation of the protocol sentinel, not a normal builder index, and tests should cover API/SSZ conversions.
-- **The builder-owned pieces remain the same:** key handling, proposer-preference intake, payload creation, bid policy, bid signing, bid publication, exact bid → payload caching, win detection, and envelope signing/reveal.
-
-### What already works in Lodestar
-
-- Gloas SSZ types, gossip topics, proposer-preference production, bid validation, bid pooling, proposer-side bid selection, self-build, payload-envelope validation/import, PTC handling, and publish endpoints already exist in some form on `unstable` or active Gloas branches.
-- Bid validation uses the bid parent branch's state advanced to the bid slot rather than blindly using head state.
-- Two alpha.12 reference-test findings are already fixed on `unstable`:
-  - [#9624](https://github.com/ChainSafe/lodestar/pull/9624) rejects an out-of-range `builder_index` cleanly instead of allowing a lazy SSZ view to throw later.
-  - [#9627](https://github.com/ChainSafe/lodestar/pull/9627) applies `MAXIMUM_GOSSIP_CLOCK_DISPARITY` to bid-slot validation at millisecond precision.
-- [#9636](https://github.com/ChainSafe/lodestar/pull/9636) now emits the `payload_attestation_message` SSE event. Together with proposer preferences, bids, block gossip, and execution-payload events, the merged event surface is sufficient for a serious standalone-process prototype's inputs and reveal monitoring. FULL/EMPTY outcome still needs an authoritative query or internal observer until Lodestar [#9486](https://github.com/ChainSafe/lodestar/pull/9486) lands `head_v2`.
-- The envelope path already provides the model for external reveal. [#9401](https://github.com/ChainSafe/lodestar/pull/9401) remains the draft stateless path for submitting an envelope with blobs and KZG proofs.
-- `engine_getPayloadV6` support and the self-build payload path exist, although the external Builder still needs an explicit payload-source abstraction and per-payload gas-limit plumbing.
+- [#9725](https://github.com/ChainSafe/lodestar/pull/9725) moved `assertEqualParams` and `NotEqualParamsError` into `@lodestar/config`; the Builder must import them rather than duplicate validator code.
+- [#9726](https://github.com/ChainSafe/lodestar/pull/9726) distinguishes the expected pre-genesis 404 from real `waitForGenesis` errors. The Builder keeps its small behaviorally aligned copy because the function depends on `@lodestar/api` and has no clean config-level home.
+- [consensus-specs #5497](https://github.com/ethereum/consensus-specs/pull/5497) and [Lodestar #9739](https://github.com/ChainSafe/lodestar/pull/9739) allow multiple bids compatible with the local head view and track seen bids per parent tuple. Core follows the connected BN head; different-branch flood publishing is deferred.
+- [#9749](https://github.com/ChainSafe/lodestar/pull/9749), [#9750](https://github.com/ChainSafe/lodestar/pull/9750), and [#9751](https://github.com/ChainSafe/lodestar/pull/9751) preserve `execution_payment`, bid `gas_limit`, and proposer `targetGasLimit` as exact `UintBn64` values.
+- [#9756](https://github.com/ChainSafe/lodestar/pull/9756) narrowly ignores direct-parent bids at epoch boundaries. The broader same/next-slot restriction considered during review did not land.
+- [#9486](https://github.com/ChainSafe/lodestar/pull/9486) provides the `head_v2` payload-status event, and [#9598](https://github.com/ChainSafe/lodestar/pull/9598) provides Lodestar's current Gloas proposer circuit breaker. The Builder observes their outcomes but does not invent a second circuit-breaker policy.
+- [#9689](https://github.com/ChainSafe/lodestar/pull/9689) and [#9710](https://github.com/ChainSafe/lodestar/pull/9710) have merged the current EIP-7688 boundary follow-up and the envelope-by-peer quota correction. Cross-fork light-client work in [#9687](https://github.com/ChainSafe/lodestar/pull/9687) remains separate.
+- [#9770](https://github.com/ChainSafe/lodestar/pull/9770) hides the generated Builder CLI page from the public docs sidebar until the command is functional.
+- Existing Gloas types, gossip, proposer preferences, bid validation/pooling/selection, payload-envelope import, PTC handling, block/payload events, and publication routes remain the BN foundation. The implementation must audit the exact pinned shapes rather than duplicate them.
 
 ### Current Gloas specification baseline
 
-The material alpha.12 changes for this project are no longer open questions:
+The current project target is [v1.7.0-alpha.13](https://github.com/ethereum/consensus-specs/releases/tag/v1.7.0-alpha.13). Material settled rules include:
 
-| Topic | Alpha.12 result | Builder consequence |
+| Topic | Current result | Builder consequence |
 |---|---|---|
-| Builder withdrawal prefix | `0xB0` | Regenerate onboarding credentials and update scripts/playbooks |
-| Payload deadline | `PAYLOAD_DUE_BPS = 5000` | On a 12-second slot, reveal deadline is six seconds; never retain the old 75% assumption |
-| PTC attestation deadline | `PAYLOAD_ATTESTATION_DUE_BPS = 7500` | Payload must arrive before the later committee vote window |
-| EIP-7688 | Progressive containers/lists incorporated into consensus specs | Signing roots and hash-tree-root-derived identifiers must come from current SSZ types, never hand-built legacy merkleization |
-| Heze bid shape | `inclusion_list_bits` restored in `ExecutionPayloadBid` | Heze adaptation must populate, sign, cache, and validate the bitvector |
-| Payload-present gossip | Past-block `index == 1` votes require the payload to be imported/verified | Deathstar's “seen versus verified” distinction is narrower than before |
-| Self-build index | `UINT64_MAX` in the spec | Reconcile Lodestar's `Infinity` internal sentinel at boundaries |
+| Builder lifecycle identifiers | Deposit request type `0x03`; withdrawal prefix `0xB0` | Do not conflate the request type with withdrawal credentials |
+| Payload deadline | `PAYLOAD_DUE_BPS = 5000` | Six seconds on a 12-second slot; reveal immediately after exact selection |
+| PTC attestation deadline | `PAYLOAD_ATTESTATION_DUE_BPS = 7500` | Capture authoritative FULL/PTC evidence after reveal |
+| Head-compatible bids | Multiple bids for the node's local head view | Same-head v1 can resubmit after a head change; incompatible-branch flood publication is not core |
+| Parent-slot payload availability | Query availability at the parent block slot | Cover skipped-slot cases without using the child slot incorrectly |
+| Already-known block redelivery | Early return preserves PTC and timeliness state | Duplicate block observation must remain idempotent |
+| Progressive SSZ and exact integers | Current fork types and exact `uint64` roots are authoritative | Never hand-build roots or narrow values above `2^53` to JavaScript `number` |
+| Envelope shapes | One signed envelope supports stateful and stateless contents through `Eth-Blob-Data-Included` | Core uses stateful same-BN reveal; stateless/multi-BN remains conditional |
 
-The mainnet alpha.12 timing parameters are:
+The mainnet timing parameters remain:
 
 ```text
 SLOT_DURATION_MS                  = 12000
@@ -214,42 +206,34 @@ PAYLOAD_ATTESTATION_DUE_BPS      = 7500
 
 ### Current Lodestar baseline
 
-The phrase “Lodestar baseline” now needs two layers:
+The phrase “Lodestar baseline” has two layers:
 
-1. **Stable release baseline:** v1.44.0, released July 1 and aligned to consensus-specs alpha.11.
-2. **Implementation baseline:** `unstable` plus active alpha.12/EIP-7688/devnet-7 branches.
+1. **Stable release reference:** [v1.45.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.45.0), published July 27. It predates the later unstable Builder work recorded here.
+2. **Implementation baseline:** current `unstable`, pinned to an exact SHA by `BASELINE-01` before more code is treated as Ready.
 
-As of the sweep:
+Important open inputs on August 5:
 
-- `unstable` still pins consensus spec tests to `v1.7.0-alpha.11`.
-- [#9606](https://github.com/ChainSafe/lodestar/pull/9606), the alpha.12 upgrade, remains a draft PR.
-- [#9607](https://github.com/ChainSafe/lodestar/pull/9607) merged the alpha.12 constants into the `nc/alpha.12` branch, including `PAYLOAD_DUE_BPS: 7500 → 5000`.
-- [#9390](https://github.com/ChainSafe/lodestar/pull/9390), the EIP-7688 implementation, remains a large draft against `unstable`; [#9586](https://github.com/ChainSafe/lodestar/pull/9586) added further progressive Gloas containers on that branch.
-- [#9587](https://github.com/ChainSafe/lodestar/pull/9587), the devnet-7 branch, remains a large draft and should not be described as merged Lodestar behavior.
-- [#9594](https://github.com/ChainSafe/lodestar/pull/9594), the Gloas Builder API, is an open draft.
-- [#9598](https://github.com/ChainSafe/lodestar/pull/9598), a Gloas-specific builder circuit breaker based on unrevealed payloads, is open and directly relevant to proposer fallback and demo behavior.
+- [#9736](https://github.com/ChainSafe/lodestar/pull/9736), draft: correct FULL-parent state use for production and reward calculation;
+- [#9757](https://github.com/ChainSafe/lodestar/pull/9757), draft: `consensus_and_equivocation` and Deathstar proposer-equivocation support;
+- [#9755](https://github.com/ChainSafe/lodestar/pull/9755), open: keep local EL/payload failures from incorrectly scoring peers;
+- [#9594](https://github.com/ChainSafe/lodestar/pull/9594), draft: Gloas/staked Builder API work;
+- [builder-specs #165](https://github.com/ethereum/builder-specs/pull/165) and [beacon-APIs #630](https://github.com/ethereum/beacon-APIs/pull/630), open: API parity, request-auth, timeout, header, and preference details.
 
-The practical baseline rule is therefore:
-
-```text
-Use v1.44.0 for a reproducible stable reference.
-Use the chosen alpha.12/devnet-7 branch for current protocol behavior.
-Never imply that every alpha.12 feature is already on unstable or in a release.
-```
+Lodestar #9723 remains an ecosystem watch for proposer/EL coherence but is not a Builder-project dependency.
 
 ### Ecosystem tooling that already exists
 
 - **buildoor** remains the closest working external reference. Its ePBS mode, lifecycle support, and ethereum-package integration make it useful for registration, interop, and competing-bid tests.
 - **assertoor** still provides the `gloas-dev` lifecycle/deposit/exit/prefork playbooks. Any playbook or cached calldata that assumes `0x03` withdrawal credentials is stale after #5416; verify the current branch and devnet contract before running it.
-- **builder-specs #138** defines the staked Builder API. Lodestar #9594 is the concrete client-side implementation work to watch.
-- **devnet-6** remains the currently listed On network.
-- **devnet-7** now has published configuration and infrastructure entries, but the repository still labels it WIP. It is the next likely integration target, not yet the stable public network baseline. Its execution-spec-tests fixtures are pinned at [`tests-glamsterdam-devnet@v7.2.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v7.2.0), published July 10 and superseding v7.1.0; the delta carries the EIP-8037 calldata-floor and block-gas-accounting changes — not Builder-specific, but lifecycle and mixed-client runs should use v7.2.0.
+- **The staked Builder API** is moving through builder-specs #165, beacon-APIs #630, and Lodestar #9594. It is not a core dependency and should be re-audited when those shapes settle.
+- **devnet-7** remains the active published configuration on alpha.12 and v7.2.0 fixtures. A static sheet does not establish runtime health.
+- **devnet-8 fixtures** exist at [`tests-glamsterdam-devnet@v8.0.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.0.0), including mandatory EIP-8070 `engine_getBlobsV4` support for participating ELs. Fixtures do not establish that devnet-8 has launched.
 
 ### Fork and spec status
 
 - FOCIL remains outside the scheduled Glamsterdam set and belongs to the Heze/Hegotá track.
 - The Heze bid-shape question is resolved for the current baseline: `inclusion_list_bits` is present.
-- EIP-7688 remains in Review as an EIP, but its consensus-spec implementation is part of alpha.12. “EIP status” and “included in this spec tag” are separate statements.
+- EIP-7688 remains a separate EIP-status question from the consensus-spec release that uses progressive structures. Keep those claims distinct.
 - EIP-8237 and EIP-8146 remain Draft and continue to threaten future bid/cache/reveal shapes. They should stay behind fork-aware interfaces rather than inside Gloas-specific business logic.
 
 ## Working notes
@@ -258,26 +242,19 @@ Findings that shape the architecture but are not all final decisions.
 
 ### Architecture implications of the latest Lodestar work
 
-The standalone-builder option is stronger than it was in the first note:
+The service boundary is now settled for v1: `lodestar builder` is a lightweight same-host sidecar connected to one operator-controlled BN. The sidecar does not connect to the EL. The BN remains authoritative for head and proposer context, Engine API access, payload production, payload value, balance validation, reveal material, and publication validation.
 
-- the event stream now includes `payload_attestation_message` after #9636;
-- proposer-preference, bid, block, and payload events already exist;
-- `head_v2` would expose payload status, but the Lodestar implementation [#9486](https://github.com/ChainSafe/lodestar/pull/9486) is still an open draft;
-- publish endpoints exist or are under active review;
-- the standardized Gloas Builder API is being implemented in #9594.
+The remaining architecture work is narrower:
 
-That does not automatically settle the boundary. A standalone builder process still needs efficient access to a local EL, fork-aware Lodestar types/signing, exact payload data, retry semantics, and a way to avoid duplicating complex beacon-node logic. The architecture milestone should decide which interfaces are product boundaries and which are temporary in-process seams.
+- trace `prepareNextSlot`, the current payload-job lifecycle, and the unsigned-bid path;
+- choose the smallest reviewed preparation/candidate contract that carries target slot/head view and the Builder execution fee recipient before payload work starts;
+- reuse standard `/builder` and `/beacon` namespaces plus SSE; do not create a permanent `/lodestar` API for a specification gap;
+- keep the route operator-controlled and bounded in the same-host v1 model;
+- re-audit the final API shapes from builder-specs #165, beacon-APIs #630, and Lodestar #9594 before freezing the adapter.
 
 ### Gloas circuit breaker and proposer fallback
 
-[#9598](https://github.com/ChainSafe/lodestar/pull/9598) changes the failure model worth designing against. Pre-Gloas builder health used missed slots; post-Gloas the proposer still publishes a beacon block, so the relevant failure is an unrevealed payload. The draft breaker counts blocks without a FULL variant and ignores builder bids once the fault budget is exceeded while continuing to build locally.
-
-Builder-side implications:
-
-- reveal failures need explicit metrics and identifiers that correlate with proposer-side breaker activation;
-- retry behavior must be idempotent but bounded;
-- the local demo should show both normal selection/reveal and the fallback path after a withheld or failed reveal;
-- “our bid was selected” is not enough — the success signal is the block becoming FULL.
+Circuit-breaker threshold, recovery, fault class, and Builder-versus-relay identity remain unsettled research. Core v1 records reveal failures and authoritative FULL/EMPTY outcomes but does not implement or depend on a new circuit-breaker policy. A future package may correlate Builder failures with proposer fallback once the protocol and operator identity rules are defined.
 
 ### Heze / FOCIL after the bitlist decision
 
@@ -296,41 +273,37 @@ Gloas bid construction
 
 ### Deathstar, on the ground
 
-The public `deathstar` branch is small relative to current `unstable`: three chaos commits ahead and many normal Lodestar commits behind at the July 13 sweep. It contains two implemented flags:
+Deathstar is now directly relevant to one bounded core test. Draft [Lodestar #9757](https://github.com/ChainSafe/lodestar/pull/9757) adds proposer equivocation and BN-side `consensus_and_equivocation` handling, initially exercised with buildoor. The project stores the reviewed local fixture at [`docs/test-plans/pr-9757-builder-equivocation.yaml`](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/test-plans/pr-9757-builder-equivocation.yaml) and will rerun the same rejection with Lodestar Builder once the honest loop works.
 
-```text
---chain.chaosAlwaysBuildOnEmpty
---chain.chaosOmitPtcOnEmptyBuild
-```
-
-The catalog's opening line still says nothing is implemented, while later text and the branch code show those two features. The catalog also contains stale constants such as an old self-build index and builder-index flag. Treat the catalog as a scenario inventory and convention guide, not as a current spec reference.
-
-`deathstar-devnet-6` includes the same chaos work on an older devnet branch. Neither branch should be used directly for current builder development without a deliberate rebase.
+Broader runtime-configurable malicious controls, a configuration UI, payload withholding, late reveal, and Builder payload equivocation remain conditional work. The old `EPBS_CHAOS_FEATURES.md` catalog is useful for ideas but is not authoritative; some cases are stale or invalid and must be checked against current code and specs.
 
 ### Devnet-7 and branch layering
 
-Three layers are currently easy to conflate:
+Four layers are easy to conflate:
 
 ```text
-consensus-specs alpha.12
-→ Lodestar alpha.12 / EIP-7688 implementation branches
-→ Lodestar devnet-7 integration branch
-→ ethpandaops devnet-7 network deployment (still WIP)
+consensus-specs alpha.13
+→ current Lodestar unstable
+→ devnet-7 public configuration on alpha.12/v7.2.0
+→ devnet-8 execution fixtures v8.0.0 without a verified public launch
 ```
 
 A local demo can begin before the public devnet is On, but its runbook must record the exact CL branch, EL image, network config, deposit contract, and builder credentials used.
 
-- **Fixture baseline:** [`tests-glamsterdam-devnet@v7.2.0`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v7.2.0) is the current devnet fixture tag, published July 10 and superseding v7.1.0. The [devnet-7 sheet](https://notes.ethereum.org/@ethpandaops/glamsterdam-devnet-7) pins it. The v7.1.0 → v7.2.0 delta is the EIP-8037 calldata-floor / block-gas-accounting changes; use v7.2.0 for lifecycle and mixed-client runs even though the delta is not Builder-specific.
-- **Cross-client:** devnet-7 includes EIP-7688, and Prysm is staging its progressive-SSZ support behind a temporary feature flag while the stacked EIP-7688 work lands ([Prysm #16860](https://github.com/OffchainLabs/prysm/pull/16860); maintainers say the flag will then be removed). Mixed-client tests must verify that the chosen Prysm image and flag state agree before attributing failures elsewhere.
+- Keep devnet-7 and devnet-8 evidence separate. Fixture tags and images are configuration or publication evidence, not runtime-health evidence.
+- Use v7.2.0 for a devnet-7-compatible run. Use v8.0.0 only when deliberately testing the successor fixture line and an EL with required `engine_getBlobsV4` support.
+- Local Kurtosis remains the first evidence target, so a public devnet transition does not block the core project.
 
 ### Validation and observability edges
 
-- Bid tests should include parent-branch state, out-of-range builder indices, and slot-boundary clock disparity.
+- Bid tests should include parent-branch state, local-head compatibility, out-of-range Builder indices, slot-boundary clock disparity, and the narrow epoch-boundary direct-parent rule in #9756.
+- Preserve every SSZ-root `uint64` input exactly. Test `2^53 - 1`, `2^53`, `2^53 + 1`, and `uint64` maximum through parsing, caching, signing, hashing, proposer preferences, `PayloadAttributesV4`, and events.
 - Proposer preferences have a fork-boundary edge: the first Gloas slots can lack usable preferences unless they are broadcast before the fork ([#9571](https://github.com/ChainSafe/lodestar/pull/9571) addresses this).
-- The clean end-to-end signal is the selected block becoming FULL, not only a successful publish response. Use `head_v2.payload_status` once [#9486](https://github.com/ChainSafe/lodestar/pull/9486) or an equivalent implementation lands; until then use the current payload-import/fork-choice observability.
+- The clean end-to-end signal is the selected block becoming FULL, not only a successful publish response. Merged [#9486](https://github.com/ChainSafe/lodestar/pull/9486) provides `head_v2.payload_status`; retain payload-import and fork-choice evidence as a cross-check.
 - `payload_attestation_message` events are now available for measuring PTC observation and disagreement.
 - Data-column “published to zero peers” logs can be misleading when peers gossip locally produced columns back first; retain source-aware metrics.
-- The alpha.12 imported-payload rule means past-block payload-present votes should be tested against fully imported/verified payload state, not mere receipt.
+- For skipped slots, query parent payload availability using the parent block slot.
+- Consensus #5498 and #5499 corrected FCR vector scheduling. #5504 has now merged the compliance-generation smoke check; regenerated artifacts and Lodestar diagnostics remain a baseline-audit concern rather than new Builder scope.
 
 ### CL/EL integration gotchas
 
@@ -339,6 +312,8 @@ Failures at the consensus/execution boundary can masquerade as Builder bugs even
 - Post-Gloas `engine_forkchoiceUpdated` reports the bid's `parent_block_hash` as safe and finalized, because the safe or finalized block's own payload may not yet be confirmed canonical ([#9393](https://github.com/ChainSafe/lodestar/pull/9393)); pre-Gloas fcU assumptions do not carry over.
 - An EL returning `INVALID` once wedged a Gloas devnet node, since the pre-Gloas safety net is bypassed with payload verification deferred to `importExecutionPayload` ([#9332](https://github.com/ChainSafe/lodestar/pull/9332)).
 - The native (Zig) state-transition mode throws on Gloas; keep `nativeStateView` disabled during Builder work ([#9516](https://github.com/ChainSafe/lodestar/pull/9516)).
+- Do not prepare, retrieve, sign, or propagate bids when the BN is far behind or its EL is syncing. Reuse the smallest suitable existing `not while syncing` helper; share validator's full `SyncingStatusTracker` only if its resync lifecycle is actually needed.
+- Keep local EL and payload-production failures distinct from peer-attributable faults. [#9755](https://github.com/ChainSafe/lodestar/pull/9755) remains the relevant upstream error-ownership work.
 
 ### Registration sharp edges
 
@@ -346,52 +321,38 @@ Failures at the consensus/execution boundary can masquerade as Builder bugs even
 - Existing `0x03` withdrawal credentials are not a harmless display mismatch — they represent different bytes and should be regenerated for the current baseline.
 - Real EIP-8282 registration requires current devnet contract addresses and activation timing, not only a signed deposit payload.
 - A top-up to an exited builder can still create confusing lifecycle state; keep lifecycle checks explicit in a real-registration demo.
+- The execution payload fee recipient may be any address controlled by the Builder and need not match its withdrawal credentials. It must not be the proposer address. Onboarding, top-ups, withdrawals, and balance management remain external to `lodestar builder`.
 
 ## Watchlist
 
-Only unresolved items belong here.
+Only unresolved or moving items belong here.
 
-### Baseline and branch convergence
+### Direct project delivery
 
-- **Lodestar alpha.12:** #9606 is still draft, while `unstable` remains pinned to alpha.11. Watch for merge, replacement, or a new stable release.
-- **EIP-7688:** #9390 is still a large draft. Re-check type locations, signer roots, and test fixtures after it lands.
-- **Devnet-7:** configuration is published but the network is WIP. Confirm activation and client images — including the Prysm EIP-7688 flag state — before planning public interop.
-- **BeaconEngine refactor:** [#9550](https://github.com/ChainSafe/lodestar/pull/9550) is still a large draft and may move exactly the chain/engine interfaces the Builder wants to reuse.
+- **Baseline pin:** record the exact `unstable` SHA, spec/API versions, fixture/image versions, baseline failures, and capability audit in `BASELINE-01`.
+- **Source-BN readiness:** finish `API-01`, including Builder index/status/balance diagnostics, BN and EL sync gating, bounded timeouts, and readiness evidence.
+- **Preparation/candidate contract:** trace `prepareNextSlot` and return the proposed route/lifecycle for Lodestar review in `BN-01`.
+- **FULL-parent production:** reuse [Lodestar #9736](https://github.com/ChainSafe/lodestar/pull/9736) if it lands; do not create a parallel workaround.
+- **Equivocation validation:** track [#9757](https://github.com/ChainSafe/lodestar/pull/9757) and rerun the stored fixture with Lodestar Builder.
+- **Builder API convergence:** track builder-specs #165, beacon-APIs #630, and Lodestar #9594, but keep staked request authentication outside core.
 
-### Service boundary and APIs
+### Protocol and interoperability
 
-- **Envelope submission shape:** [beacon-APIs #624](https://github.com/ethereum/beacon-APIs/pull/624) would remove the blinded envelope types, make `include_payload` required, and replace the blinded-header response with an `Eth-Blob-Data-Included` header, cleanly separating the stateful same-node path from the stateless full-envelope path. Approved and CI-green at the July 14 monitor but not merged, with an implementation warning now recorded on the merged [#580](https://github.com/ethereum/beacon-APIs/pull/580) discussion. Do not harden against #580's blinded path while #624 is unresolved. (note: both are now merged)
-- **Lodestar Gloas Builder API:** #9594 may provide a standardized external boundary, but an internal implementation may still be the fastest first version.
-- **Bid selection:** beacon-APIs issue #620 remains open and affects how a demo proposer chooses the external bid.
-- **Circuit breaker:** #9598 may define proposer-side failure policy and the observability a Builder should expose.
-- **Stateless envelope submission:** #9401 remains draft; decide whether the first version can use a stateful/local path and how that transitions to external blobs/proofs — #624 makes the full-envelope-plus-blob-material contents shape the likely survivor.
-- **`target_gas_limit`:** pin the exact execution-apis shape and verify Lodestar + target EL support before implementing payload production.
+- **Cross-client #5497 rollout:** Lodestar support is merged; Teku work and a Prysm replacement remain active. Test propagation before relaxing local validation for multi-branch bids.
+- **Epoch boundaries:** preserve the narrow #9756 direct-parent rejection and test skipped slots without adopting the retracted broader restriction.
+- **Exact integers:** prevent regressions that narrow `UintBn64` values to JavaScript `number`.
+- **FCR artifacts:** #5498, #5499, and #5504 are merged; regenerated artifacts and Lodestar coverage still need verification.
+- **Local versus peer faults:** #9755 remains open and must preserve error ownership under wrapped failures.
+- **Range-sync attempt identity:** [#9667](https://github.com/ChainSafe/lodestar/pull/9667) and [#9686](https://github.com/ChainSafe/lodestar/pull/9686) remain open ecosystem work. Do not pull them into Builder scope unless the pinned local evidence exposes a direct dependency.
+- **Devnet transition:** devnet-7 and devnet-8 remain separate baselines; no devnet-8 launch is verified.
 
-### Future bid and reveal shape
+### Research and conditional work
 
-- **EIP-8237 (Draft):** would replace `execution_requests_root` with `partial_header_hash` and change bid/cache-key logic.
-- **EIP-8146 (Draft):** would add `block_access_list_hash` and a separately propagated BAL sidecar.
-- **Heze changes after #5410:** the bitlist is stable for alpha.12, not guaranteed forever.
-
-### FOCIL implementation convergence
-
-- The `focil` PR remains open and draft. Watch for rebase, split PRs, or a maintainer-endorsed branch.
-- Confirm which Engine API methods and inclusion-list storage interfaces survive before starting the adaptation pass.
-- Do not copy old Heze type code that predates #5410 or EIP-7688.
-
-### Deathstar
-
-- Watch for rebase onto alpha.12/devnet-7 and any scenario beyond the two existing flags.
-- Decide whether the first Builder-specific adversarial contribution belongs in the `deathstar` branch, an integration test, or a Kurtosis/assertoor scenario.
-- Resolve the stale constants and “nothing implemented” header before citing the catalog publicly as current documentation.
-
-### Loose ends to pin
-
-- Exact execution-apis PR carrying per-payload `targetGasLimit`.
-- Current Ethrex and Nethermind alignment with devnet-7.
-- Current assertoor `gloas-dev` credential defaults and deposit contract.
-- Whether a zero-blob first demo is accepted by maintainers as the first architecture milestone.
-- Nico's acting-as-builder gist and the Consensoor reference — ask directly when the five gating questions go over.
+- The August 4 public archive reports epoch-transition reorg concentration after skipped slots. Treat transition-state caching, duty prefetch, bid-request timing, minimum-bid fallback, and blob-heavy production as hypotheses until reproduced with reliable telemetry.
+- Circuit-breaker thresholds and Builder-versus-relay identity remain unsettled.
+- PTC late-slot import-freeze and shorter-attestation-deadline ideas remain non-normative research until supported by distributed, mainnet-like evidence.
+- FOCIL, advanced bid policy, multi-branch flood publishing, stateless/multi-BN reveal, remote signing, runtime malicious controls, and UI remain gated packages.
+- Lodestar #9723, Builder-deposit signature caching in #9727, FCR diagnostics in #9711, cross-fork light-client work in #9687, and the broader #9692 mainnet-readiness checklist remain ecosystem context unless the Builder baseline audit exposes a direct dependency.
 
 ---
 
@@ -399,90 +360,30 @@ Only unresolved items belong here.
 
 ## Mentor questions
 
-Nico's first substantive input has already arrived through the proposal itself — the strong-success amendment in [#186](https://github.com/eth-protocol-fellows/cohort-seven/pull/186) — so these continue an open thread rather than starting one. Per the proposal review, they are decisions to investigate, propose answers for, and get sign-off on through Lodestar team discussions, not blockers to wait on. The five that gate Weeks 6–7 remain: base branch; builder home and API surface, given builder-specs #138 and [#9594](https://github.com/ChainSafe/lodestar/pull/9594); mock versus real EIP-8282 registration, now on `0xB0` credentials; proposer `target_gas_limit` → EL plumbing; and the reveal trigger plus proposer-side bid selection, given [#620](https://github.com/ethereum/beacon-APIs/issues/620) and the [#9598](https://github.com/ChainSafe/lodestar/pull/9598) circuit breaker.
+The plan-level mentor questions are closed. Nico confirmed the architecture and remaining v1 assumptions, and the implementation plan merged with no unresolved review thread. The following are implementation-time design checks, not requests to reopen the plan.
 
-### Scope and base
+### Preparation/candidate API
 
-- Should the first Builder branch target `unstable`, `nc/alpha.12`, `glamsterdam-devnet-7`, or a smaller branch cut from one of them?
-- Which prerequisite PRs should be treated as hard dependencies: #9390, #9594, #9401, #9550, or none?
-- What is the smallest first PR the Lodestar team would review independently?
-- Is a local alpha.12 demo more valuable before devnet-7 is On, or should the first implementation align directly to the devnet branch?
+- Trace `prepareNextSlot`, payload-job creation, existing cache ownership, and the current unsigned-bid route.
+- Propose the smallest clean request and lifecycle that lets the same-host sidecar ask the BN to prepare for a target slot and its current head view while supplying the Builder-controlled payload fee recipient.
+- Bring the proposed route and lifecycle back to the Lodestar team before freezing it or proposing the upstream API change.
+- Re-audit builder-specs #165, beacon-APIs #630, and Lodestar #9594 because those shapes are expected to settle while `API-01` and `BN-01` progress.
 
-### Service boundary
+### Readiness and sync behavior
 
-- Standalone `lodestar builder` command, beacon-node service, validator-client-adjacent process, or temporary internal prototype?
-- If standalone, should it consume Beacon SSE + publish APIs, speak the Builder API in #9594, use a shared Lodestar library, or combine these?
-- Which component owns the Engine API connection and payload-building state?
-- Where should builder keys live, and which existing signer/key-manager abstractions can be reused without pretending a builder is a validator?
-- How should the architecture remain useful if #9550 moves the BeaconEngine boundary?
+- Confirm the smallest existing Lodestar `not while syncing` helper that covers Builder startup and candidate work.
+- Share validator's `SyncingStatusTracker` only if the Builder needs its resync lifecycle. `runOnResynced` was added for duty refetching and should not be copied without a Builder use case.
+- Require both the BN and EL to be sufficiently synced before preparation, retrieval, signing, or propagation.
 
-### Builder identity and registration
+### Timing and cache evidence
 
-- Mock an already-active builder for the first loop or use real EIP-8282 onboarding immediately?
-- Which current devnet deposit contract and lifecycle tooling should the runbook use?
-- How should `0xB0` credentials be generated and checked so stale `0x03` data fails loudly?
-- How should the spec's `UINT64_MAX` self-build sentinel map to Lodestar's internal `Infinity` at SSZ/API boundaries?
+- Choose the first pre-slot publication default from repeatable Kurtosis evidence and keep it operator-configurable as proposer cutoffs and the future Builder API evolve.
+- Confirm how the pinned BN cleans stale payload work after a head change. Do not add a sidecar cache or explicit cancellation path unless that audit proves a gap.
+- An already-published bid cannot be withdrawn. A head change creates a new parent-tuple bid.
 
-### Payload construction
+### Conditional-package questions
 
-- First EL: Ethrex, Nethermind, or a constrained test double followed immediately by a real client?
-- Can the self-build Engine API path be exposed through a small payload-source interface rather than copied?
-- Which payload attributes carry `target_gas_limit`, and does the chosen EL honor it per job?
-- Can the first demo use zero blobs? If yes, what second milestone proves the stateless envelope + data-column path?
-- What exact package must remain recoverable from bid publication until reveal?
-
-### Bid signing and publishing
-
-- Where should `signExecutionPayloadBid` live?
-- Should it share the envelope signer's domain/key path or have a dedicated Builder signer service?
-- Publish through an internal network method, a Beacon API route, or both behind one interface?
-- How should duplicate publication, reorged parents, and near-boundary slots be handled?
-
-### Winning-bid detection
-
-- Reveal on first valid block gossip, after block import, or through a configurable policy?
-- What must match before a cache entry is considered ours: full signed bid root, builder index + block hash, or a canonical commitment object?
-- Reveal for a selected local bid on a non-head/non-canonical block, or only under a policy?
-- How will the demo proposer select the external bid while beacon-APIs issue #620 remains unresolved?
-- How should Builder metrics correlate with #9598's proposer-side circuit breaker?
-
-### Envelope reveal and data availability
-
-- First path: local/stateful envelope, `SignedExecutionPayloadEnvelopeContents`, or both? ([beacon-APIs #624](https://github.com/ethereum/beacon-APIs/pull/624) would remove the blinded variant — plan around full-envelope-plus-blob-material submission.)
-- What blobs, proofs, cells, and data columns must the external builder retain or reconstruct?
-- What is the retry/idempotency contract of the publish endpoint?
-- Which observation proves success: publish response, envelope event, imported payload, FULL head, PTC votes, or all of them?
-
-### Heze / FOCIL gate
-
-- What core Builder condition is sufficient to start the adaptation pass?
-- Which FOCIL branch or split PR will be the supported target?
-- Should inclusion-list satisfaction be enforced inside payload-source selection, bid construction, or both?
-- Is `inclusion_list_bits` derived from locally observed ILs, from an Engine API result, or from a shared Lodestar store?
-
-### Deathstar gate
-
-- Which behavior is most useful to maintainers after the honest loop works: payload withholding, late reveal, or mismatched envelope?
-- Should the first contribution be a normal integration test before a hidden chaos flag?
-- Should the old `deathstar` branch be rebased first, or should the behavior be reimplemented on the current target branch following its conventions?
-
-#### Stretch-stretch goal (mentioned by Nico)
-UI to configure the builder and deathstar.
-Additional:
-the base components likely overlap ex. you need an api to modify configs at runtime.
-
-### Builder malicious behavior
-
-This section refers to builder's own malicious behavior, which is outside of deathstar (a more direct approach).
-
-Features to add:
-- malicious envelope withholding
-- intentional late reveal
-- payload equivocation
-
-Test: [payload equivocations and PTC timeliness issue from Potuz](https://github.com/ethereum/consensus-specs/issues/5333)
-
-Buildoor should already have some of the mentioned features, we should inspect it properly.
+FOCIL, multi-branch flood publication, stateless/multi-BN reveal, advanced policy, runtime malicious Builder behavior, Deathstar configurability, circuit breakers, and a UI remain questions only if their package passes the implementation-plan gate. They are not hidden v1 requirements.
 
 
 ## Gloas lifecycle summary
@@ -490,242 +391,222 @@ Buildoor should already have some of the mentioned features, we should inspect i
 The honest Builder lifecycle remains:
 
 ```text
-1.  Observe and validate proposer preferences.
-2.  Select target slot and parent context.
-3.  Ask the local EL for an execution payload candidate.
-4.  Construct the fork-correct ExecutionPayloadBid.
-5.  Sign SignedExecutionPayloadBid with the builder key.
-6.  Persist the exact bid → payload package.
-7.  Publish the bid before the gossip deadline.
-8.  Observe candidate beacon blocks.
-9.  Detect whether a selected bid matches the local commitment.
-10. Load and re-verify the cached payload package.
-11. Construct and sign SignedExecutionPayloadEnvelope.
-12. Publish the envelope and required data before PAYLOAD_DUE_BPS.
-13. Observe import, FULL status, and PTC outcome.
+1.  Load one local Builder key and the Builder-controlled execution payload fee recipient.
+2.  Wait for genesis, verify chain parameters, resolve the active Builder, and require BN/EL readiness.
+3.  Follow the source BN's current head view through SSE.
+4.  Ask the BN to prepare a candidate for the target slot and head view.
+5.  The BN resolves proposer context/preferences and prepares the payload through its EL with the Builder fee recipient.
+6.  The BN validates balance/coverability, retains exact reveal material, and returns the complete unsigned bid.
+7.  The sidecar sanity-checks the exact bid without rebuilding or revaluing it, signs it, and publishes at the configured pre-slot offset.
+8.  Observe block events and retrieve the fork-correct signed block.
+9.  Detect an exact locally signed bid selected for this Builder.
+10. Retrieve the exact stateful envelope from the same source BN.
+11. Recheck commitments, sign the exact envelope, and publish immediately with consensus_and_equivocation.
+12. Observe BN acceptance, payload import, FULL/EMPTY, PTC, data, and payment outcomes.
 ```
 
 ```mermaid
 sequenceDiagram
-    participant PP as Proposer Preferences
     participant B as Lodestar Builder
-    participant EL as Local EL
     participant BN as Lodestar BN / APIs
+    participant EL as Local EL
     participant P as Proposer
     participant PTC as PTC
 
-    PP-->>B: SignedProposerPreferences
-    B->>EL: Start payload job with slot-specific attributes
-    EL-->>B: Payload + requests + blobs/data
-    B->>B: Build/sign bid + persist exact reveal package
-    B->>BN: Publish SignedExecutionPayloadBid
+    B->>BN: Verify chain, active Builder, sync and head view
+    B->>BN: Prepare candidate for slot/head + Builder fee recipient
+    BN->>EL: forkchoiceUpdated / getPayload
+    EL-->>BN: Payload + requests + blobs/data + value
+    BN->>BN: Validate balance and retain exact reveal package
+    BN-->>B: Complete unsigned ExecutionPayloadBid
+    B->>B: Sanity-check and sign exact bid
+    B->>BN: Publish bid at configured pre-slot offset
     P->>BN: Beacon block selects bid
     BN-->>B: Block gossip/import event
-    B->>B: Match selected bid to cache
-    B->>BN: Publish SignedExecutionPayloadEnvelope contents
+    B->>B: Match exact locally signed bid
+    B->>BN: Retrieve stateful envelope for selecting block root
+    BN-->>B: Exact unsigned envelope
+    B->>BN: Sign and publish with consensus_and_equivocation
     BN-->>B: Payload imported / fork choice becomes FULL
     PTC-->>B: Payload-attestation events
 ```
 
-The Gloas alpha.12 bid remains the current core shape. Heze extends it with `inclusion_list_bits`; EIP-8237 and EIP-8146 remain future shape risks.
+The alpha.13 Gloas types remain the current core shape. Heze extends the bid with `inclusion_list_bits`; EIP-8237 and EIP-8146 remain future shape risks behind fork-aware adapters.
 
 ## Candidate architecture sketch
 
-This is the input to the Week 6 architecture milestone. The decision is the boundary around the Builder itself, not the lifecycle.
+The v1 boundary is accepted. The remaining work is to bind it to the pinned Lodestar interfaces without duplicating BN or EL logic.
 
 ```mermaid
 flowchart TB
-    subgraph BN["Lodestar beacon node"]
-        EV["SSE events<br/>preferences, bids, block gossip,<br/>payloads + PTC<br/>(head_v2 still draft)"]
-        BAPI["Gloas Builder API<br/>(#9594 draft)"]
-        PUB["Beacon publish endpoints<br/>bid / envelope"]
-        POOL["bid pool + validation +<br/>proposer selection"]
-        CB["Gloas circuit breaker<br/>(#9598 draft)"]
-    end
-
-    subgraph BLD["lodestar builder — boundary to decide"]
-        CFG["config + builder key"]
-        PREF["preference intake<br/>slot + dependent_root"]
-        PAY["payload source adapter"]
-        POL["baseline bid policy"]
+    subgraph BLD["lodestar builder sidecar"]
+        CFG["config + one local Builder key<br/>+ Builder payload fee recipient"]
+        API["typed source-BN client<br/>chain, Builder state, readiness"]
+        HEAD["head/block SSE observer"]
+        SCHED["preparation + publication scheduler"]
         SIGN["fork-aware bid/envelope signer"]
-        CACHE[("durable bid → payload cache")]
-        WIN["selected-bid detector"]
-        REV["reveal coordinator"]
-        OBS["metrics + structured log"]
+        LOCAL[("running-process signed-bid map")]
+        SELECT["exact selection matcher"]
+        REV["stateful reveal coordinator"]
+        OBS["bounded metrics + structured logs"]
     end
 
-    EL["local EL<br/>fcU / payload attributes / getPayloadV6"]
-    REG["EIP-8282 lifecycle<br/>0xB0 credentials"]
+    subgraph BN["one trusted same-host Lodestar BN"]
+        PREP["prepareNextSlot / reviewed candidate trigger"]
+        PAY["canonical payload job<br/>head + preferences + value"]
+        BAL["Builder state + balance enforcement"]
+        CACHE[("authoritative payload/envelope cache")]
+        PUB["bid and envelope publication<br/>consensus_and_equivocation"]
+        EVENTS["head, block, payload and PTC events"]
+    end
 
-    EV --> PREF
-    BAPI -. "optional standardized path" .-> BLD
-    PREF --> PAY --> EL
-    EL --> PAY --> POL --> SIGN
-    SIGN --> CACHE
+    EL["local EL owned by BN"]
+    REG["external EIP-8282 lifecycle<br/>deposit/top-up/withdrawal"]
+
+    CFG --> API
+    API --> PREP
+    HEAD --> SCHED --> PREP
+    PREP --> PAY --> EL
+    EL --> PAY --> BAL --> CACHE
+    BAL --> API --> SIGN
+    SIGN --> LOCAL
     SIGN --> PUB
-    EV --> WIN
-    WIN --> CACHE
-    CACHE --> REV --> PUB
-    EV --> OBS
-    CB -. "fallback state" .-> OBS
-    CFG --> SIGN
-    CFG --> PAY
+    EVENTS --> HEAD
+    EVENTS --> SELECT
+    SELECT --> LOCAL
+    SELECT --> REV --> CACHE
+    CACHE --> REV --> SIGN
+    REV --> PUB
+    API --> OBS
+    EVENTS --> OBS
     BLD -.-> REG
 ```
 
 ### Architecture milestone output
 
-The architecture phase should produce four concrete artifacts:
+The architecture phase now produces four concrete artifacts:
 
-1. **Boundary decision:** where the process runs and which APIs/internal interfaces it owns.
-2. **Interface map:** preference source, payload source, signer, cache, block observer, reveal publisher, and metrics.
-3. **Failure contract:** what fails closed, what retries, what can be mocked, and how proposer fallback is observed.
-4. **Skeleton PR:** configuration + key loading + connectivity + subscriptions, without pretending the full Builder is implemented.
+1. **Pinned capability audit:** exact `unstable` SHA, API/spec versions, landed capabilities, and pre-existing failures.
+2. **Reviewed BN contract:** preparation/candidate request, stateful envelope lookup, publication modes, bounds, errors, and namespaces.
+3. **Failure contract:** readiness, no-bid, syncing, insufficient balance, stale head, cache miss, publication rejection, late reveal, and offline-after-selection outcomes.
+4. **Evidence map:** the Linear issue, PR, focused tests, and end-to-end assertion that prove each retained core capability.
 
 A reasonable implementation principle regardless of boundary:
 
 ```text
-Core builder orchestration depends on narrow TypeScript interfaces.
-Adapters bind those interfaces to internal Lodestar services or external APIs.
-Fork-specific bid/envelope construction lives behind the type/signing adapter.
+Core Builder orchestration depends on narrow typed source-BN interfaces.
+The BN remains the authoritative payload and state boundary.
+Fork-specific bid/envelope validation and signing live behind current Lodestar types.
+Temporary pre-spec routes remain isolated so settled APIs can replace them.
 ```
 
 ## Bid → payload cache design
 
-The cache is a safety boundary. A bid must not be published unless the exact committed reveal package is durably recoverable for the necessary fork/reorg window.
+The source BN's stateful production cache is the authoritative reveal boundary for v1. The sidecar does not create a second payload cache and does not claim durable or multi-BN recovery. A bid must not be returned as signable unless the same BN retains the exact reveal material for the required bounded window.
 
 ### Commitment identity
 
-For Gloas alpha.12, a logical lookup key may include:
+The local signed-bid record and BN candidate identity include:
 
 ```text
-fork
 slot
 parent_block_root
 parent_block_hash
 builder_index
 block_hash
-execution_requests_root
 signed_bid_root
 ```
 
-The canonical identity should be derived through current Lodestar SSZ types rather than hand-merkleizing fields. EIP-7688 is now part of the spec baseline, so a legacy-container root and a progressive-container root are not interchangeable.
-
-Keep the key adapter fork-aware:
-
-- Heze adds `inclusion_list_bits` to the signed commitment.
-- EIP-8237 would replace `execution_requests_root` with `partial_header_hash`.
-- EIP-8146 would add `block_access_list_hash` and a BAL sidecar payload.
+The normal selection path requires the selected block's bid to match an exact locally signed bid. Derive all roots through current fork-configured Lodestar SSZ types. Preserve exact `uint64` fields; a value narrowed through JavaScript `number` can produce a different signing root even when the displayed decimal appears plausible.
 
 ### Cache entry
 
-```text
-fork
-signed_bid
-signed_bid_root
-proposer_preferences
-payload_attributes
-execution_payload
-execution_requests
-blob commitments
-blobs / cells / proofs / data-column source material
-parent_beacon_block_root
-parent_execution_block_hash
-payload_block_hash
-builder_index
-slot
-bid_value
-inclusion-list context, if Heze
-created_at
-expires_at
-reveal attempts + result
-```
+The BN entry must retain the exact execution payload, execution requests, parent context, blobs, commitments, proofs/cells, and other source material needed to derive the envelope for the selecting block root. The sidecar retains only bounded orchestration state and the exact signed bid required for normal-path matching.
 
-That entry is deliberately the full submission unit: the [#624](https://github.com/ethereum/beacon-APIs/pull/624) direction — one stateless call carrying the signed envelope plus its blob/KZG material — confirms nothing in it can be dropped and reconstructed later.
+The stateful cache returns clear available, missing, expired, and commitment-mismatch results. It must never rebuild a different payload after selection. Stateless contents, cache transfer, and multi-BN lookup remain a separate conditional design.
 
 ### Write ordering
 
 ```text
-build payload
-→ construct bid
-→ construct complete cache entry
-→ persist and verify entry
-→ sign bid
-→ publish bid
+BN prepares payload through canonical job
+→ BN constructs and validates complete unsigned bid
+→ BN retains exact reveal package
+→ BN returns signable bid
+→ sidecar sanity-checks and signs exact bid
+→ sidecar publishes at configured pre-slot offset
 ```
 
-Do not publish and then attempt to fill the cache asynchronously.
+The BN must not return a signable bid and then attempt to fill the reveal cache asynchronously.
 
 ### Match and reveal behavior
 
 ```text
-cache miss:
-  do not guess or rebuild a replacement payload
-  emit critical structured error + metric
+source-BN head changes before publication:
+  prepare and sign a fresh bid for the new parent tuple
+  leave any already-published old-parent bid published
+  rely on verified BN payload-job cleanup/expiry for stale preparation
 
-partial field match:
-  do not reveal
-  log exact mismatched commitment fields
+selected bid has no exact local match:
+  do not enter normal reveal
+  bounded same-BN restart recovery is handled separately by REL-01
 
-expired entry:
-  fail closed by default
-  allow override only in an explicit isolated-devnet test mode
+stateful cache miss or commitment mismatch:
+  fail closed
+  never reconstruct a different payload
 
-repeat reveal request:
-  return the same signed envelope / contents
-  make network publication retry bounded and idempotent
+repeat exact reveal:
+  keep lookup and publication idempotent
+  bound immediate retry and record late/terminal outcome
 ```
 
 ### Expiry
 
-Expiry must account for forks and orphaned blocks, not only elapsed slots. Retain entries long enough to handle competing blocks, delayed import, req/resp serving, and reveal retries. Mirror Lodestar's ancestry-aware payload-envelope cache lessons — the fork-aware `pruneBelowParent` fix ([#9326](https://github.com/ChainSafe/lodestar/pull/9326)) and the envelope-cache incidents around unbounded growth and in-flight fake success ([#9489](https://github.com/ChainSafe/lodestar/pull/9489), [#9501](https://github.com/ChainSafe/lodestar/pull/9501)) — rather than a simple “delete everything before head slot” rule.
+First trace the existing BN payload-job/cache cleanup on head change and the normal stateful envelope eviction hook. Remove the reveal package after successful publication and otherwise use bounded expiry. Add no explicit sidecar cancellation path or second cache unless the pinned-baseline audit demonstrates a concrete gap.
 
 ### Metrics
 
 ```text
-builder_payload_jobs_started_total
-builder_payload_jobs_failed_total
-builder_bids_constructed_total
-builder_bids_persisted_total
+builder_candidates_requested_total
+builder_candidates_ready_total
 builder_bids_published_total
 builder_bids_selected_total
-builder_cache_hits_total
-builder_cache_misses_total
-builder_cache_mismatches_total
+builder_stateful_reveal_hits_total
+builder_stateful_reveal_misses_total
+builder_commitment_mismatches_total
 builder_reveals_attempted_total
 builder_reveals_published_total
-builder_reveals_imported_total
-builder_reveal_latency_ms
 builder_late_reveals_total
 builder_selected_payload_full_total
 builder_selected_payload_empty_total
+builder_candidate_ready_seconds
+builder_bid_publication_offset_seconds
+builder_selection_to_reveal_seconds
 ```
 
 Every metric should carry only bounded labels. Use structured log fields for roots, slots, and builder IDs.
 
 ## Bid policy notes
 
-The first implementation should keep policy deliberately small:
+The core implementation has one deliberately small honest policy:
 
 ```text
-fixed-value:
-  bid.value = configured_value
-
-fixed-shade:
-  estimated_payload_value = local value estimate
-  bid.value = min(max_bid, estimated_payload_value * configured_shade)
+execution_payload.feeRecipient = builder_controlled_execution_address
+bid.fee_recipient               = proposer_payment_address
+bid.value                       = execution_payload_value
+execution_payment               = 0
 ```
 
-Minimum policy constraints:
+The BN is authoritative for payload construction, execution value, active Builder status, current Builder balance, and balance enforcement. The sidecar requests the candidate, checks that the returned values and addresses match its request and the active fork, signs that exact BN-produced bid, and publishes it. It must not reconstruct the bid, recompute its value, silently clamp it, or substitute the proposer address as the payload fee recipient.
+
+Minimum core constraints:
 
 - never bid more than the builder can cover after pending obligations;
 - respect proposer preferences and fork-specific validity rules;
-- cap bids explicitly;
+- preserve all SSZ-root-contributing integers exactly rather than narrowing them to JavaScript `number`;
 - make the policy deterministic and observable for tests;
 - keep policy separate from payload construction, signing, and publication.
 
-The project does not need a production auction model to prove the honest lifecycle. A more sophisticated strategy remains behind the extension gate.
+Fixed-value, shading, balance allocation across concurrent opportunities, weak-head branch strategies, and other auction behavior belong to `EXT-POLICY-01`. They are not prerequisites for proving the honest payload-value lifecycle.
 
 ### Later research surface
 
@@ -734,7 +615,7 @@ The project does not need a production auction model to prove the honest lifecyc
 1. the builder's value for the candidate block;
 2. the distribution of competing bids for the slot.
 
-The `execution_payload_bid` stream supplies empirical competing-bid observations once the Builder runs. buildoor can provide a real devnet competitor — and that is now more than our own framing: a Lodestar developer suggested on [#186](https://github.com/eth-protocol-fellows/cohort-seven/pull/186) running a kurtosis devnet with the Lodestar Builder and buildoor together to test whether the Builder can consistently out-bid buildoor and get selected. Once the honest loop works, that run is the natural first empirical target for the fixed-shade policy and the competing-bid observations. Any later objective should include:
+The `execution_payload_bid` stream supplies empirical competing-bid observations once the Builder runs. buildoor can provide a real devnet competitor. A Lodestar developer suggested on [#186](https://github.com/eth-protocol-fellows/cohort-seven/pull/186) running the Lodestar Builder and buildoor together in Kurtosis to test selection behavior. Once the honest payload-value loop works, that run is a natural first empirical input to the conditional bidding-policy work. Any later objective should include:
 
 - priority fees and capturable MEV;
 - builder balance and pending payments;
@@ -754,7 +635,7 @@ Useful background:
 
 ## Slot timing and PTC
 
-Current alpha.12 mainnet timing:
+Current alpha.13 mainnet timing:
 
 ```text
 slot start                                      0 ms
@@ -775,12 +656,17 @@ flowchart LR
     T0 --> TB --> TP --> TA --> TN
 ```
 
-The code should still read configured BPS and slot duration. “Six seconds” is the current 12-second-slot result, not permission to hardcode `6000` everywhere — EIP-7782 (Reduce Block Latency) remains Declined for Glamsterdam, so 12-second slots stay the mainnet working assumption, but a six-second devnet slot using the same 5000 BPS value would have a three-second payload deadline.
+The code should still read configured BPS and slot duration. “Six seconds” is the current 12-second-slot result, not permission to hardcode `6000` everywhere. EIP-7782 (Reduce Block Latency) remains Declined for Glamsterdam, so 12-second slots stay the mainnet working assumption, but a six-second devnet slot using the same 5000 BPS value would have a three-second payload deadline.
+
+Preparation and publication are separate timing decisions. The BN should start candidate work early enough for the full bid to be ready, while the Builder's publication offset is configurable and defaults to broadcasting before the proposal slot rather than waiting until `t=0` and racing the proposer. Exact selection triggers immediate reveal. The sidecar may make a bounded number of immediate retries, but after `PAYLOAD_DUE_BPS` it records a late outcome instead of retrying indefinitely or introducing strategic withholding into the core path.
+
+The August 3 public ePBS archive reported a concentration of reorgs around epoch transitions after skipped slots. Transition-state caching, duty prefetch, bid-request timing, minimum-bid behavior, and blob-heavy proposal work are hypotheses to profile, not verified causes or evidence that the public devnet is unhealthy.
 
 Builder timing metrics should answer:
 
 - when preferences became usable;
 - when payload construction began and completed;
+- the configured publication offset and actual publication time;
 - when the bid was signed and accepted for publication;
 - when the selecting block was first seen and imported;
 - when reveal began and completed;
@@ -792,14 +678,14 @@ Transport and local EL latency are part of the experiment. Confirm QUIC/UDP conf
 
 ## Deathstar notebook
 
-Deathstar remains notebook-first until the honest Builder path works.
+Deathstar remains secondary to the honest Builder path, but the first core safety fixture is now concrete.
 
 ### Current branch reality
 
-- `deathstar` contains the catalog plus two implemented chaos flags.
-- It is based on older Lodestar code and is substantially behind current `unstable`.
-- `deathstar-devnet-6` carries the same work on the devnet-6 line and is also not a current alpha.12/devnet-7 base.
-- The catalog has stale introductory text and constants. Use current code/specs for parameters and the catalog for scenario organization and flag conventions. Its four-tier structure — core safety/liveness, equivocation and split-view, market manipulation/resource exhaustion, and accounting edge cases — remains a useful organising frame even where its constants are stale.
+- [Lodestar #9757](https://github.com/ChainSafe/lodestar/pull/9757) is the active draft for `consensus_and_equivocation` validation and proposer-equivocation support in Deathstar.
+- The repository stores the exact local end-to-end fixture at [`docs/test-plans/pr-9757-builder-equivocation.yaml`](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/test-plans/pr-9757-builder-equivocation.yaml). It runs the PR Lodestar BN, a Deathstar VC that signs two block roots for one duty, and lifecycle-managed buildoor until the Builder can bid and reveal.
+- The required outcome is rejection by the source BN before gossip publication when the selected proposer has equivocated. Buildoor is the temporary Builder actor; the same fixture should move to `@lodestar/builder` when the honest lifecycle is functional.
+- The older `deathstar` catalog remains useful for scenario organization, but its parameters and implementation status must be checked against current `unstable` before reuse.
 
 Conventions worth preserving:
 
@@ -814,7 +700,7 @@ normal library tests remain off unless the chaos option is supplied
 
 ### Updated threat-model distinction
 
-PTC messages are not a general execution-validity oracle. However, alpha.12 now requires a payload-present vote for a past block to correspond to a fully imported/verified payload. That reduces the old “seen but not verified” gap for that gossip case; it does not remove withholding, late reveal, equivocation, data-availability, or split-view risks.
+PTC messages are not a general execution-validity oracle. The current Gloas rules require a payload-present vote for a past block to correspond to a fully imported and verified payload. That reduces the old “seen but not verified” gap for that gossip case; it does not remove withholding, late reveal, equivocation, data-availability, or split-view risks.
 
 ### Candidate scenarios
 
@@ -823,10 +709,11 @@ PTC messages are not a general execution-validity oracle. However, alpha.12 now 
 | Mismatched envelope | Envelope must match selected bid and current fork commitments | envelope validation + cache match | unit/integration | yes | low/medium |
 | Payload withholding | Selected bid never becomes FULL; proposer circuit breaker may react | reveal coordinator, fork choice, #9598 | integration | yes | medium |
 | Late reveal | `PAYLOAD_DUE_BPS = 5000` | delayed publish + timing metrics | integration/devnet | yes | medium |
-| Bid at slot-boundary disparity | alpha.12 gossip range semantics | execution-payload-bid validation | unit/reference test | maybe | low |
+| Bid at slot-boundary disparity | current gossip range semantics | execution-payload-bid validation | unit/reference test | maybe | low |
 | Out-of-range builder index | must REJECT cleanly | bid validation | unit/reference test | maybe | low |
 | Invalid high-value `prev_randao` bid | rejected at gossip so it cannot suppress valid lower bids ([cs #5360](https://github.com/ethereum/consensus-specs/pull/5360)) | bid validation / bid pool | unit/reference test | yes | low |
 | Bid extends wrong FULL/EMPTY parent | `shouldBuildOnFull` and proposer-head rules (regression fixed in [#9442](https://github.com/ChainSafe/lodestar/pull/9442)) | block production / fork choice | integration | yes | medium |
+| Proposer equivocation and unbundling | `consensus_and_equivocation` must reject the envelope before gossip | #9757 + stored local fixture | local E2E | configurable Deathstar proposer | medium |
 | Proposer-preference censorship | no matching preferences means external bid cannot be valid | preference intake / validation | integration | maybe | low |
 | PTC split view | threshold/timing under asymmetric propagation ([cs #5345](https://github.com/ethereum/consensus-specs/pull/5345) grounds the split-vote case) | PTC pool + fork choice | devnet | yes | high |
 | Builder API failure / timeout | proposer must fall back safely | #9594 + #9598 | integration | fault injection | medium |
@@ -835,7 +722,7 @@ PTC messages are not a general execution-validity oracle. However, alpha.12 now 
 
 ### Recommended first case
 
-A mismatched-envelope test is the smallest high-value first case because it exercises the cache safety boundary without requiring timing-sensitive network orchestration. Payload withholding is the strongest first full-system Deathstar behavior after the honest reveal path and circuit-breaker observability exist.
+Use the #9757 proposer-equivocation fixture as the first full-system adversarial case because it directly proves the validation mode required by the core reveal path. Keep mismatched-envelope and cache-identity failures as smaller unit or integration tests. Payload withholding, late reveal, split views, runtime-controlled malicious behavior, and Builder-side attacks remain conditional follow-up work after the honest lifecycle is reproducible.
 
 ## FOCIL context
 
@@ -883,36 +770,30 @@ Do not use the `focil` branch as the default base before those conditions are me
 
 ## Current Lodestar code-path map
 
-Status reflects the July 13 sweep and July 14 monitor pass.
+Status reflects the August 5 reconciliation. The merged implementation plan remains the delivery source of truth; this map highlights moving code seams and upstream work.
 
 | Area | File / PR | Current understanding | Builder follow-up |
 |---|---|---|---|
-| Gloas SSZ types | [`packages/types/src/gloas/sszTypes.ts`](https://github.com/ChainSafe/lodestar/blob/unstable/packages/types/src/gloas/sszTypes.ts) | Core types exist on `unstable`; alpha.12 progressive conversion is not fully merged there | Bind construction/signing to fork-configured type objects; re-check after #9390 |
-| EIP-7688 implementation | [#9390](https://github.com/ChainSafe/lodestar/pull/9390), [#9586](https://github.com/ChainSafe/lodestar/pull/9586) | Large draft plus merged child work on the EIP branch | Do not hand-code roots or freeze alpha.11 fixtures |
-| Gossip topics | [`topic.ts`](https://github.com/ChainSafe/lodestar/blob/unstable/packages/beacon-node/src/network/gossip/topic.ts) | Gloas topics exist | Confirm activation and event emission on chosen branch |
-| SSE events | [`events.ts`](https://github.com/ChainSafe/lodestar/blob/unstable/packages/api/src/beacon/routes/events.ts), [#9636](https://github.com/ChainSafe/lodestar/pull/9636), [#9486](https://github.com/ChainSafe/lodestar/pull/9486) | Payload-attestation event is merged; `head_v2` remains draft | Build a typed event adapter, reconnect/backfill policy, and temporary FULL-status query |
-| Gloas Builder API | [#9594](https://github.com/ChainSafe/lodestar/pull/9594) | Draft implementation of builder-specs #138 | Decide whether the Builder consumes/speaks this API or stays internal first |
-| Bid validation | [`executionPayloadBid.ts`](https://github.com/ChainSafe/lodestar/blob/unstable/packages/beacon-node/src/chain/validation/executionPayloadBid.ts), [#9624](https://github.com/ChainSafe/lodestar/pull/9624), [#9627](https://github.com/ChainSafe/lodestar/pull/9627) | Parent-state validation plus alpha.12 bounds/timing fixes | Mirror these cases in Builder-side tests |
-| Bid pool / proposer selection | [`executionPayloadBidPool.ts`](https://github.com/ChainSafe/lodestar/blob/unstable/packages/beacon-node/src/chain/opPools/executionPayloadBidPool.ts), [#9289](https://github.com/ChainSafe/lodestar/pull/9289) | Proposer can select gossip bids | Demo still needs explicit per-builder selection policy; issue #620 remains open |
-| Proposer preferences | [`proposerPreferences.ts`](https://github.com/ChainSafe/lodestar/blob/unstable/packages/validator/src/services/proposerPreferences.ts) | Validator side produces/signs preferences | Implement Builder intake/matching and stale/missing policy; note the pre-fork broadcast edge ([#9571](https://github.com/ChainSafe/lodestar/pull/9571)) |
-| Envelope validation/import | validation and payload-envelope processor paths | Existing reveal consumer and FULL/EMPTY transition machinery | Define exact external reveal package and success signal |
-| Stateless envelope publish | [#9401](https://github.com/ChainSafe/lodestar/pull/9401) | Draft envelope + blobs/KZG proofs path | Decide first-version dependency and later data-column milestone; align with the #624 direction |
-| Self-build reveal | [`block.ts`](https://github.com/ChainSafe/lodestar/blob/unstable/packages/validator/src/services/block.ts) | Existing envelope signing/publish model | Reuse logic through shared helpers rather than copy/paste |
-| Envelope signer | [`validatorStore.ts`](https://github.com/ChainSafe/lodestar/blob/unstable/packages/validator/src/services/validatorStore.ts) | `signExecutionPayloadEnvelope` exists | Add bid signer with a Builder-appropriate key boundary |
-| Payload production | Engine types/http/interface + self-build path | `engine_getPayloadV6` support exists | Add payload-source abstraction and `target_gas_limit` support |
-| Block production seam | [`produceBlockBody.ts`](https://github.com/ChainSafe/lodestar/blob/unstable/packages/beacon-node/src/chain/produceBlock/produceBlockBody.ts) | Still contains non-self-build TODO | Keep proposer logic separate from Builder orchestration |
-| Gloas circuit breaker | [#9598](https://github.com/ChainSafe/lodestar/pull/9598) | Open PR; tracks unrevealed payload faults rather than missed slots | Align Builder metrics and failure tests with proposer fallback |
-| Alpha.12 upgrade | [#9606](https://github.com/ChainSafe/lodestar/pull/9606), [#9607](https://github.com/ChainSafe/lodestar/pull/9607) | Draft parent PR; constants landed on its branch | Choose exact commit/branch for the skeleton |
-| Devnet-7 | [#9587](https://github.com/ChainSafe/lodestar/pull/9587) | Large draft branch | Use only with recorded EL/images/config; do not call it merged behavior |
-| BeaconEngine refactor | [#9550](https://github.com/ChainSafe/lodestar/pull/9550) | Large active draft | Avoid tight coupling to APIs likely to move |
-| FOCIL | [#7342](https://github.com/ChainSafe/lodestar/pull/7342), `focil` branch | Substantial but divergent Heze implementation | Strong-success adaptation target, not default base |
-| Deathstar | `deathstar`, `deathstar-devnet-6` | Two implemented chaos flags on old branch lines | Rebase/reimplement only after honest path works |
+| Builder package and CLI | [#9758](https://github.com/ChainSafe/lodestar/pull/9758) | Merged initial `@lodestar/builder` package, CLI wiring, key loading, source-BN wiring, shutdown, and tests; the package has been published to npm | Finish readiness and API-01 follow-up work; keep generated CLI docs hidden until functional |
+| Builder signing | [#9758](https://github.com/ChainSafe/lodestar/pull/9758) | Bid and envelope signing with a local Builder keystore is merged and tested | Treat `SIGN-01` as complete; extend only for fork coverage and failure evidence |
+| Shared configuration checks | [#9725](https://github.com/ChainSafe/lodestar/pull/9725) | `assertEqualParams` and `NotEqualParamsError` moved to `@lodestar/config` | Import from config; do not create a Builder-to-validator dependency |
+| Genesis wait behavior | [#9726](https://github.com/ChainSafe/lodestar/pull/9726) | Validator now distinguishes a pre-genesis 404 from other failures | Keep the small Builder copy aligned; do not add unreachable BN code |
+| Source-BN client and readiness | `feat/builder-api-01`, validator sync helpers | API-01 continues after #9758; both BN and EL must be sufficiently synced before bid preparation | Start with the narrow `not while syncing` behavior, then decide whether `runOnResynced` is useful enough to share |
+| Bid gossip and head compatibility | [#9739](https://github.com/ChainSafe/lodestar/pull/9739), [#9756](https://github.com/ChainSafe/lodestar/pull/9756) | Local-head-compatible multiple bids are merged, including the narrow epoch-boundary direct-parent filter | Track the connected BN head; publish the same-head core path and leave branch flooding conditional |
+| Exact bid fields | [#9749](https://github.com/ChainSafe/lodestar/pull/9749), [#9750](https://github.com/ChainSafe/lodestar/pull/9750), [#9751](https://github.com/ChainSafe/lodestar/pull/9751) | Exact `UintBn64` propagation is merged for execution payment, bid gas limit, `targetGasLimit`, preferences, payload attributes, and events | Preserve exact values through parsing, caching, signing, hashing, and metrics; test `2^53±1` and `uint64` max |
+| Candidate preparation and payload cache | BN production and Engine paths | The BN already owns EL access and payload caching, but the Builder-specific trigger and return shape are not settled | Trace `prepareNextSlot` and existing cleanup before proposing the smallest `/builder` or `/beacon` surface |
+| FULL-parent production | [#9736](https://github.com/ChainSafe/lodestar/pull/9736) | Draft work remains for operation selection, rewards, exits, and execution requests on the correct state | Keep on the baseline watchlist and cover FULL/EMPTY paths in E2E evidence |
+| Envelope validation and Deathstar | [#9757](https://github.com/ChainSafe/lodestar/pull/9757) | Draft `consensus_and_equivocation` support and proposer-equivocation test machinery | Use the stored local fixture, then replace buildoor with Lodestar Builder when ready |
+| Builder API convergence | [#9594](https://github.com/ChainSafe/lodestar/pull/9594), [builder-specs #165](https://github.com/ethereum/builder-specs/pull/165), [beacon-APIs #630](https://github.com/ethereum/beacon-APIs/pull/630) | Specifications and Lodestar actor/API work are still open | Re-audit settled routes before BN-01; staked request authentication remains conditional |
+| Range-sync fault ownership | [#9755](https://github.com/ChainSafe/lodestar/pull/9755) | Open fix preserves local-versus-peer error ownership when the EL fails | Ensure local BN/EL failures cannot be attributed to the Builder or honest peers in tests and metrics |
+| Public CLI documentation | [#9770](https://github.com/ChainSafe/lodestar/pull/9770) | Merged temporary sidebar hide for the not-yet-functional command | Restore the page only after CLI-01 is complete |
+| FOCIL and advanced adversarial work | [#7342](https://github.com/ChainSafe/lodestar/pull/7342), Deathstar research | Valuable but outside the core Gloas delivery path | Activate only through the implementation plan's extension gate |
 
 ## Beacon API notes
 
 ### Existing Gloas-facing routes
 
-The current Beacon API work includes post-Gloas block production, proposer preferences, execution-payload bids, and execution-payload-envelope routes. Exact route names and request bodies must be re-read from the chosen branch before coding because some of the historical links and singular/plural paths changed during the devnets.
+The current Beacon API work includes post-Gloas block production, proposer preferences, execution-payload bids, and execution-payload-envelope routes. New Builder-specific gaps should use the intended `/builder` or `/beacon` namespace and be proposed upstream rather than becoming undocumented private conventions. Exact route names, versions, headers, and request bodies must still be re-read from the pinned baseline before coding.
 
 The important architectural split is:
 
@@ -926,18 +807,19 @@ stateless/external path:
   needed to derive and gossip data columns
 ```
 
-[beacon-APIs #624](https://github.com/ethereum/beacon-APIs/pull/624) is the open direction for this surface as of the July 14 monitor: it removes the blinded envelope types from [#580](https://github.com/ethereum/beacon-APIs/pull/580), makes `include_payload` required, replaces the blinded-header response with an `Eth-Blob-Data-Included` header, and separates the stateful same-node path from the stateless full-envelope-plus-blobs/proofs path. It is approved and CI-green but not merged, and an implementation warning now sits on #580's discussion. Until it resolves, do not harden against #580's blinded path — keep the exact signed full envelope and its blob/KZG material as one cacheable submission unit. [#9401](https://github.com/ChainSafe/lodestar/pull/9401) remains the Lodestar draft for the stateless external path. (note: both #624 and #580 are merged)
+[beacon-APIs #580](https://github.com/ethereum/beacon-APIs/pull/580) and [#624](https://github.com/ethereum/beacon-APIs/pull/624) are merged. The resulting surface uses one signed execution payload envelope with `Eth-Blob-Data-Included` to distinguish the stateful same-node path from the stateless full-envelope-plus-blob-material path. The core Builder uses the stateful same-source-BN form; the stateless form remains a conditional extension.
 
 ### Builder API
 
-[builder-specs #138](https://github.com/ethereum/builder-specs/pull/138) defines the staked Builder API, including bid retrieval, proposer preferences, and signed block submission concepts. [Lodestar #9594](https://github.com/ChainSafe/lodestar/pull/9594) is the current implementation draft.
+[builder-specs #165](https://github.com/ethereum/builder-specs/pull/165), [beacon-APIs #630](https://github.com/ethereum/beacon-APIs/pull/630), and [Lodestar #9594](https://github.com/ChainSafe/lodestar/pull/9594) are the active convergence work for Builder requests, preferences, block submission, authentication objects, versioning, required headers, timeout propagation, and the Lodestar Builder actor/API.
 
-Architecture questions:
+Core boundary:
 
-- Is `lodestar builder` a client of the Beacon API, the Builder API, internal Lodestar services, or a layered combination?
-- Does the Builder API trigger payload creation or only expose already-running builder state?
-- Which API owns authentication and builder endpoint discovery?
-- How does direct builder access interact with P2P bids and issue #620's per-builder selection preferences?
+- `lodestar builder` is a same-host sidecar that consumes a trusted source-BN API and P2P-compatible publication surfaces.
+- The missing core question is the smallest preparation/candidate route that lets the sidecar identify the target slot/branch and Builder-controlled payload fee recipient before the BN asks its EL to build.
+- The BN remains responsible for payload creation, execution value, balance enforcement, reveal material, and publication validation.
+- Staked Builder API request authentication, remote discovery, and serving arbitrary external Builders remain in `EXT-BUILDER-API-01`; core work must not pull them in accidentally.
+- [beacon-APIs issues #595](https://github.com/ethereum/beacon-APIs/issues/595) and [#599](https://github.com/ethereum/beacon-APIs/issues/599) remain useful checks for endpoint placement and selection/outcome observation.
 
 ### SSE event stream
 
@@ -950,7 +832,7 @@ block_gossip
 execution_payload / execution_payload_gossip / execution_payload_available
 payload_attestation_message
 data_column_sidecar
-head_v2 (payload_status; Lodestar #9486 draft, not on unstable yet)
+head_v2 (payload_status; Lodestar #9486 merged)
 ```
 
 A standalone builder can map them as follows:
@@ -961,33 +843,37 @@ execution_payload_bid       → competitor observation
 block_gossip / block import → selected-bid detection
 execution payload events    → reveal/import monitoring
 payload_attestation_message → PTC observation
-head_v2                     → EMPTY/PENDING/FULL outcome once #9486 lands
+head_v2                     → EMPTY/PENDING/FULL outcome
 ```
 
-The merged event stream is sufficient for a prototype's inputs and reveal monitoring. Until `head_v2` lands, FULL/EMPTY outcome needs a separate authoritative query or internal observer. Reconnect semantics, missed events, and ordering still need explicit design.
+The merged event stream is sufficient for prototype inputs and reveal monitoring, including FULL/EMPTY outcome through `head_v2`. Reconnect semantics, missed events, ordering, and authoritative block retrieval still need explicit design and tests.
 
-## Possible implementation packages / ownership split
+## Implementation packages and ownership
 
-Candidate small work packages:
+The merged [implementation plan](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/implementation-plan.md) and [Linear project](https://linear.app/kriso/project/lodestar-eip-7732-builder-814d6faca6fd) now own the authoritative task inventory, dependencies, milestones, status, and evidence. The plan contains 20 core tasks, proposal-linked conditional packages, and a deferred hardening inventory; this note should not recreate a second mutable backlog.
 
-1. Architecture note and interfaces.
-2. Builder command/service skeleton, config, and key loading.
-3. Typed event/API adapter with reconnect handling.
-4. Proposer-preference store and slot/dependent-root matcher.
-5. Local payload-source adapter.
-6. Fork-aware bid constructor and `signExecutionPayloadBid`.
-7. Baseline fixed-value/fixed-shade policy.
-8. Durable bid → payload cache with failure tests.
-9. Bid publisher and publication metrics.
-10. Selected-bid detector.
-11. Envelope constructor/signer/reveal coordinator.
-12. Stateless blob/proof/data-column path.
-13. End-to-end local harness and runbook, with the buildoor out-bidding run suggested on [#186](https://github.com/eth-protocol-fellows/cohort-seven/pull/186) as a candidate extension.
-14. Devnet-7 interop pass.
-15. Heze / FOCIL adapter after the gate.
-16. One Deathstar/integration failure case after the gate.
+Current delivery state at this reconciliation:
 
-Per-package quality bar regardless of ownership model:
+| Item | State | Evidence / next condition |
+|---|---|---|
+| `PLAN-01` | In review | GitHub plan merged; complete only after the merged version is pulled into HackMD and previewed |
+| Board setup | Done | 44 tracked Linear issues with GitHub issue sync, milestones, scope labels, cycles, and saved views |
+| `SIGN-01` | Done | Merged and tested in Lodestar #9758 |
+| `CLI-01` | In review | Package and command scaffold merged; readiness/configuration and inert-until-ready behavior still need closure |
+| `API-01` | In progress | Source-BN client and active-Builder work continues on Marko's follow-up branch |
+| `BASELINE-01`, `ENV-01`, `API-02` | Todo | Pin the current unstable baseline, establish the deterministic local network, then add block observation |
+
+The near-term activation order is:
+
+```text
+BASELINE-01 / ENV-01 / CLI-01
+→ API-01 / API-02 / BN-01
+→ BN-02 / BN-03 / BN-04
+→ BID-01 / SELECT-01 / REV-01
+→ E2E-01 / QA-01 / REL-01 / OBS-01 / OUT-01 / HANDOFF-01
+```
+
+Per-package quality bar:
 
 ```text
 one named reviewer per package
@@ -995,9 +881,9 @@ tests and docs travel in the same package
 no package merges without both fellows understanding it
 ```
 
-The ownership model itself is still to be settled with Marko before the first packages (see decision log). The options on the table are the original rotating model — one implementation owner and one reviewer per package, with ownership rotating — or whole-feature ownership with a deep cross-review for independent features, keeping closer collaboration for coupled or blocking work.
+Marko and Kris assign implementation owner and reviewer in Linear. Independent features may have one primary owner, while coupled BN/sidecar work should be designed together and still receive cross-review. Discussion lives in the Lodestar Builder Discord threads; decisions that change more than one workstream are linked in the decisions/upstream thread and copied into the plan or this note as appropriate.
 
-The first PR should establish a useful seam without importing the entire roadmap. A skeleton that loads Builder config/key material and connects to the chosen interfaces is preferable to a large “everything at once” branch.
+Conditional issues stay out of active cycles until their entry criteria pass. Deferred topics are not implementation commitments and require explicit promotion through the extension gate.
 
 ## Process notes
 
@@ -1029,25 +915,37 @@ Done:
 - Resolved builder prefix, payload deadline, EIP-7688 baseline, and Heze bitlist questions.
 - Next milestone changed from proposal submission to architecture and the first reviewable implementation task.
 
-Still open this week:
+Outstanding at the Week 5 close, now resolved or superseded:
 
-- Publish this note and swap the placeholder link in the merged proposal's resources (the July 14 monitor could not fetch the HackMD page publicly — confirm the share settings when publishing).
-- Finalise the presentation, confirm the Week 5 format with Mario, and add its link once public.
-- Continue the mentor thread the proposal review opened: take the five gating questions to Nico (and the acting-as-builder gist / Consensoor loose end).
-- Formalise the first Deathstar notebook rows.
+- The note is public on HackMD and the current GitHub/HackMD reconciliation procedure is documented.
+- The Week 5 presentation is linked in this note.
+- The broad mentor questions were replaced by the reviewed implementation plan and the accepted August 1–3 decisions.
+- The Deathstar notebook now includes the #9757 proposer-equivocation fixture and the wider conditional threat-model backlog.
 
 **Week 6 — Architecture milestone**
 
-- Decide base branch and service boundary.
-- Record interface/failure contracts.
-- Reconcile #9594, #9598, #9401, #9550, #9606, #9587, and the #624 envelope direction with the proposed skeleton.
-- Settle the collaboration split with Marko and select the first small PR plus its owner/reviewer.
-- Produce a runnable skeleton that starts, loads configuration/key material, and connects to its chosen dependencies.
+Planning and project setup:
 
-**Week 7 — First implementation slice**
+- Completed the first full implementation plan, incorporated the Lodestar review and follow-up Discord decisions, created the Linear inventory, and merged the plan on August 5.
+- Settled the core same-host sidecar boundary, one-source-BN stateful path, BN-owned EL/payload responsibilities, payload-value bid policy, immediate reveal, and conditional extension gates.
 
-- Expected focus: proposer-preference intake or bid-signing/payload-source seam, depending on the architecture decision.
-- Update this entry only after the branch and first PR are concrete.
+Initial implementation work, originally recorded only in HackMD:
+
+- Added the package scaffold and `lodestar builder` CLI wiring.
+- Added `BuilderSigner` for execution payload envelopes and bids using a local keystore.
+- Added keystore loading and `--beaconNodeUrl`, `--keystore`, `--keystorePassword`, and optional `--builderPubkey` verification arguments.
+- Wired handlers into the main Builder class and added keystore and signing tests.
+- Historical development diff: [initial Week 6 comparison](https://github.com/ChainSafe/lodestar/compare/4001398810453c5c1b4abe8c06323a76d0ba592f...markolazic01:lodestar:30de4886dcc3d132b0e206e7f87c0551e4c77dff).
+
+**Week 7 — Initial Builder merged; API-01 continues**
+
+- [Lodestar #9758](https://github.com/ChainSafe/lodestar/pull/9758) merged the initial `@lodestar/builder` package, CLI scaffold, local key loading, bid/envelope signing, source-BN wiring, `waitForGenesis`, shutdown handling, tests, and packaging cleanup.
+- `@lodestar/builder` received its first npm publication. The public generated CLI page remains hidden through merged [#9770](https://github.com/ChainSafe/lodestar/pull/9770) until the command is functional.
+- Cleanup retained from the HackMD work log includes the keystore-loader rename, single-pass keypair parsing, CI fixes, moving the clock into `@lodestar/state-transition`, and the Builder banner.
+- Merged [#9725](https://github.com/ChainSafe/lodestar/pull/9725) moved `assertEqualParams` and `NotEqualParamsError` into `@lodestar/config`; the Builder imports the shared utility.
+- Merged [#9726](https://github.com/ChainSafe/lodestar/pull/9726) added 404-aware validator genesis waiting. The Builder keeps its small duplicate, and no unreachable 404 branch was added to the BN.
+- `SIGN-01` is complete. `CLI-01` remains in review, and Marko continues `API-01` on `feat/builder-api-01`, including the narrow BN/EL readiness behavior.
+- [Lodestar #9757](https://github.com/ChainSafe/lodestar/pull/9757) and the stored local fixture establish the proposer-equivocation/unbundling test that the Lodestar Builder should replace buildoor in once its lifecycle is functional.
 
 ---
 
@@ -1055,71 +953,62 @@ Still open this week:
 
 ## PR / branch status
 
-Status checked July 13, 2026, with the July 14 monitor delta applied. The tables prioritise items that can change the Builder architecture or current baseline.
+Status checked August 5, 2026 against the live primary sources. The tables prioritise items that can change the Builder architecture or current baseline; the daily monitor remains the broader watch inventory.
 
 ### Lodestar
 
 | Item | Status | Why it matters |
 |---|---|---|
-| [v1.44.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.44.0) | Latest stable release in this sweep; July 1 | Reproducible release baseline; still alpha.11-era |
-| [#9541](https://github.com/ChainSafe/lodestar/pull/9541) — alpha.11 upgrade | Merged | Current `unstable` spec-test pin baseline |
-| [#9606](https://github.com/ChainSafe/lodestar/pull/9606) — alpha.12 upgrade | Open draft | Current spec upgrade; not yet merged to `unstable` |
-| [#9607](https://github.com/ChainSafe/lodestar/pull/9607) — alpha.12 constants | Merged into `nc/alpha.12` | Includes `PAYLOAD_DUE_BPS = 5000` and other alpha.12 constants |
-| [#9390](https://github.com/ChainSafe/lodestar/pull/9390) — EIP-7688 | Open draft | Progressive-container implementation; changes roots/types across the Builder path |
-| [#9586](https://github.com/ChainSafe/lodestar/pull/9586) — additional progressive Gloas containers | Merged into EIP-7688 branch | Alpha.12 structure follow-up, not independently on `unstable` |
-| [#9587](https://github.com/ChainSafe/lodestar/pull/9587) — glamsterdam-devnet-7 | Open draft | Current integration branch; large and not a stable release base |
-| [#9624](https://github.com/ChainSafe/lodestar/pull/9624) — builder-index bounds | Merged July 9 | Alpha.12 bid-gossip correctness and reference-test case |
-| [#9627](https://github.com/ChainSafe/lodestar/pull/9627) — bid-slot clock disparity | Merged July 9 | Correct slot-boundary gossip behavior |
-| [#9636](https://github.com/ChainSafe/lodestar/pull/9636) — payload-attestation SSE event | Merged July 10 | Completes a key standalone-builder observation channel |
-| [#9594](https://github.com/ChainSafe/lodestar/pull/9594) — Gloas Builder API | Open draft | Standardized service-boundary option; not the Builder itself |
-| [#9598](https://github.com/ChainSafe/lodestar/pull/9598) — Gloas circuit breaker | Open | Proposer fallback based on unrevealed payloads |
-| [#9401](https://github.com/ChainSafe/lodestar/pull/9401) — stateless envelope publish | Open draft | External builder reveal with blobs/KZG proofs |
-| [#9550](https://github.com/ChainSafe/lodestar/pull/9550) — BeaconEngine refactor | Open draft | May move internal interfaces the Builder wants to reuse |
-| [#7342](https://github.com/ChainSafe/lodestar/pull/7342) — FOCIL | Open draft | Strong-success adaptation target; large divergent branch |
-| [#9526](https://github.com/ChainSafe/lodestar/pull/9526) — remove Heze IL bitlist | Closed, unmerged | Superseded by consensus-specs #5410 restoring the field |
-| [#9467](https://github.com/ChainSafe/lodestar/pull/9467) — recompute envelope block hash | Closed, unmerged | Useful adversarial analysis, not current Lodestar behavior |
-| [#9538](https://github.com/ChainSafe/lodestar/pull/9538) — devnet-6 branch | Closed, unmerged | Historical devnet branch; replaced as active target by devnet-7 work |
-| [`deathstar`](https://github.com/ChainSafe/lodestar/tree/deathstar) | Exists; old branch line | Catalog plus two chaos flags; rebase required for current work |
-| [`deathstar-devnet-6`](https://github.com/ChainSafe/lodestar/tree/deathstar-devnet-6) | Exists; old devnet line | Historical devnet integration, not current alpha.12 base |
-| [#9598](https://github.com/ChainSafe/lodestar/pull/9598) | Open | Gloas circuit breaker |
-| [#9595](https://github.com/ChainSafe/lodestar/pull/9595) | open | stateless flow for local block production post-gloas - changes `publishExecutionPayloadEnvelope` |
+| [v1.45.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.45.0) | Latest stable; July 27 | Reproducible stable release, but the Builder project pins a newer `unstable` commit |
+| [#9758](https://github.com/ChainSafe/lodestar/pull/9758) — initial Builder | Merged | Establishes `@lodestar/builder`, CLI, key loading, signing, BN wiring, and tests |
+| [#9725](https://github.com/ChainSafe/lodestar/pull/9725) / [#9726](https://github.com/ChainSafe/lodestar/pull/9726) | Merged | Shared config checks and 404-aware validator genesis waiting |
+| [#9739](https://github.com/ChainSafe/lodestar/pull/9739) / [#9756](https://github.com/ChainSafe/lodestar/pull/9756) | Merged | Local-head-compatible multi-bid handling and narrow epoch-boundary filtering |
+| [#9749](https://github.com/ChainSafe/lodestar/pull/9749), [#9750](https://github.com/ChainSafe/lodestar/pull/9750), [#9751](https://github.com/ChainSafe/lodestar/pull/9751) | Merged | Exact `uint64`-safe payment, gas-limit, preference, attribute, and event propagation |
+| [#9486](https://github.com/ChainSafe/lodestar/pull/9486) / [#9598](https://github.com/ChainSafe/lodestar/pull/9598) | Merged | `head_v2` payload-status observation and the existing Gloas proposer circuit breaker |
+| [#9770](https://github.com/ChainSafe/lodestar/pull/9770) | Merged | Temporarily hides the incomplete Builder CLI page |
+| [#9594](https://github.com/ChainSafe/lodestar/pull/9594) — Builder actor/API | Open draft | Upstream API convergence to re-audit before BN-01; not a core blocker today |
+| [#9736](https://github.com/ChainSafe/lodestar/pull/9736) — FULL-parent production | Open draft | Correct parent-state operation selection and rewards remain relevant to E2E coverage |
+| [#9755](https://github.com/ChainSafe/lodestar/pull/9755) — range-sync fault ownership | Open | Local EL failures must not consume honest peer scores |
+| [#9757](https://github.com/ChainSafe/lodestar/pull/9757) — equivocation validation/Deathstar | Open draft | Supplies the core proposer-unbundling validation and test fixture |
+| [#9723](https://github.com/ChainSafe/lodestar/pull/9723) — proposer FCU coherence | Open ecosystem watch | Relevant to proposer/head behavior, but not a Builder project dependency |
+| [#9727](https://github.com/ChainSafe/lodestar/pull/9727) — deposit signature cache | Open | Builder lifecycle/fork-transition scale watch |
+| [#9689](https://github.com/ChainSafe/lodestar/pull/9689) / [#9710](https://github.com/ChainSafe/lodestar/pull/9710) | Merged August 4 | EIP-7688 boundary follow-up and envelope-by-peer quota correction |
+| [#9667](https://github.com/ChainSafe/lodestar/pull/9667) / [#9686](https://github.com/ChainSafe/lodestar/pull/9686) | Open | Range-sync fault classification and attempt-identity hardening; ecosystem watch unless baseline evidence makes it direct |
+| [#9687](https://github.com/ChainSafe/lodestar/pull/9687) / [#9711](https://github.com/ChainSafe/lodestar/pull/9711) | Open | Cross-fork light-client compatibility and remaining FCR diagnostics |
+| [#7342](https://github.com/ChainSafe/lodestar/pull/7342) — FOCIL | Open draft | Conditional future-fork adaptation, not the core base |
 
 ### consensus-specs
 
 | Item | Status | Why it matters |
 |---|---|---|
-| [v1.7.0-alpha.12](https://github.com/ethereum/consensus-specs/releases/tag/v1.7.0-alpha.12) | Released July 8 | Current project spec target |
-| [#5416](https://github.com/ethereum/consensus-specs/pull/5416) — builder withdrawal prefix `0xB0` | Merged July 3 | Resolves onboarding credential format |
-| [#5410](https://github.com/ethereum/consensus-specs/pull/5410) — restore IL bitlist | Merged July 3 | Resolves current Heze bid shape |
-| [#5414](https://github.com/ethereum/consensus-specs/pull/5414) — six-second payload deadline | Merged July 6 | `PAYLOAD_DUE_BPS = 5000` on 12-second slots |
-| [#4630](https://github.com/ethereum/consensus-specs/pull/4630) — EIP-7688 | Merged July 6 | Progressive containers/lists in the consensus baseline |
-| [#5355](https://github.com/ethereum/consensus-specs/pull/5355) — imported payload for `index == 1` gossip | Merged July 6 | Tightens PTC/payload-present validation assumptions |
-| [#5210](https://github.com/ethereum/consensus-specs/pull/5210) / [#5348](https://github.com/ethereum/consensus-specs/pull/5348) — late-payload reorg/proposer head | Merged | Core failure and fork-choice behavior |
-| [#5294](https://github.com/ethereum/consensus-specs/pull/5294) — Gloas gossip reference tests | Track current state | Source of recent Lodestar bid-validation fixes |
-| [#5060](https://github.com/ethereum/consensus-specs/pull/5060) — orphaned-envelope serving | Track | Cache retention and reorg semantics |
+| [v1.7.0-alpha.13](https://github.com/ethereum/consensus-specs/releases/tag/v1.7.0-alpha.13) | Released July 31 | Current project specification baseline |
+| [#5497](https://github.com/ethereum/consensus-specs/pull/5497) | Merged | Admits and propagates multiple bids compatible with the node's local head view |
+| [#5473](https://github.com/ethereum/consensus-specs/pull/5473) | Merged | Uses the parent block slot for payload-availability lookup across skipped slots |
+| [#5495](https://github.com/ethereum/consensus-specs/pull/5495) | Merged | Preserves accumulated PTC votes and timeliness state on known-block redelivery |
+| [#5498](https://github.com/ethereum/consensus-specs/pull/5498) / [#5499](https://github.com/ethereum/consensus-specs/pull/5499) | Merged | Correct epoch-boundary FCR vector scheduling |
+| [#5504](https://github.com/ethereum/consensus-specs/pull/5504) | Merged by August 5 | Removes the generation gate reported as still open in the August 4 monitor; regenerate and verify artifacts before classifying Lodestar skips |
+| [#5492](https://github.com/ethereum/consensus-specs/pull/5492) | Open | Unsettled epoch-boundary late-head proposer-reorg proposal; watch, do not encode as policy |
+| [#5416](https://github.com/ethereum/consensus-specs/pull/5416) / [#5414](https://github.com/ethereum/consensus-specs/pull/5414) | Merged | Builder withdrawal prefix `0xB0` and `PAYLOAD_DUE_BPS = 5000` remain settled baseline rules |
 
 ### APIs
 
 | Item | Status | Why it matters |
 |---|---|---|
-| [builder-specs #138](https://github.com/ethereum/builder-specs/pull/138) — staked Builder API | Merged | Defines standardized direct-builder API surface |
-| [beacon-APIs #580](https://github.com/ethereum/beacon-APIs/pull/580) — post-Gloas block/envelope flow | Merged; blinded path flagged | Stateful/stateless reveal routes; an implementation warning now sits on its discussion, and #624 proposes the revision |
-| [beacon-APIs #624](https://github.com/ethereum/beacon-APIs/pull/624) — remove blinded envelopes | Merged | Would make `include_payload` required, add the `Eth-Blob-Data-Included` header, and formalise the stateful/stateless split |
+| [builder-specs #165](https://github.com/ethereum/builder-specs/pull/165) | Open | Final Builder-flow request/auth/version/header work to re-audit before activating the staked API extension |
+| [beacon-APIs #630](https://github.com/ethereum/beacon-APIs/pull/630) | Open | Companion Beacon API work for the Builder flow |
+| [beacon-APIs #580](https://github.com/ethereum/beacon-APIs/pull/580) / [#624](https://github.com/ethereum/beacon-APIs/pull/624) | Merged | Defines the current stateful/stateless envelope publication split and blob-data header |
 | [beacon-APIs #590](https://github.com/ethereum/beacon-APIs/pull/590) — `head_v2` | Merged | Specifies payload-status outcome observation |
-| [Lodestar #9486](https://github.com/ChainSafe/lodestar/pull/9486) — `head_v2` implementation | Open draft | Lodestar does not yet expose the specified event on `unstable` |
-| [beacon-APIs #608](https://github.com/ethereum/beacon-APIs/pull/608) — proposer preferences | Merged | Preference API surface |
-| [beacon-APIs #614](https://github.com/ethereum/beacon-APIs/pull/614) — builders query | Merged | Builder registry/status access |
-| [beacon-APIs issue #620](https://github.com/ethereum/beacon-APIs/issues/620) — bid selection | Open | Per-builder proposer policy and demo selection behavior |
-| [Lodestar #9594](https://github.com/ChainSafe/lodestar/pull/9594) — Builder API implementation | Open draft | Concrete Lodestar API work to align with |
-| execution-apis `targetGasLimit` work | Exact PR to pin | Per-payload proposer preference plumbing into the EL |
-| [beacon-APIs #595](https://github.com/ethereum/beacon-APIs/issues/595) | Open issue | Changes an endpoint location |
-| [beacon-APIs #599](https://github.com/ethereum/beacon-APIs/issues/599) | Open issue | Introduces event changes -  how builder gets to know if bid was accepted |
+| [Lodestar #9486](https://github.com/ChainSafe/lodestar/pull/9486) | Merged | Implements `head_v2` on Lodestar |
+| [beacon-APIs #608](https://github.com/ethereum/beacon-APIs/pull/608) / [#614](https://github.com/ethereum/beacon-APIs/pull/614) | Merged | Proposer preferences and Builder registry/status surfaces |
+| [beacon-APIs issue #620](https://github.com/ethereum/beacon-APIs/issues/620) | Open | Per-Builder proposer policy and demo selection context |
+| [beacon-APIs issue #595](https://github.com/ethereum/beacon-APIs/issues/595) / [#599](https://github.com/ethereum/beacon-APIs/issues/599) | Open | Endpoint placement and selection/outcome observation checks |
+| [Lodestar #9594](https://github.com/ChainSafe/lodestar/pull/9594) | Open draft | Lodestar Builder actor/API implementation to align with after the specifications settle |
 
 ### EIPs in flight
 
 | Item | Current status | Why it matters |
 |---|---|---|
-| [EIP-7688](https://eips.ethereum.org/EIPS/eip-7688) — forward-compatible consensus structures | Review; implemented in alpha.12 specs | Current root/type baseline; Lodestar implementation still landing |
+| [EIP-7688](https://eips.ethereum.org/EIPS/eip-7688) — forward-compatible consensus structures | Current Gloas specification baseline | Root/type compatibility and cross-fork boundary work still require tracking |
 | [EIP-8237](https://eips.ethereum.org/EIPS/eip-8237) — independent CL/EL sync | Draft | Replaces `execution_requests_root` with `partial_header_hash` in the bid |
 | [EIP-8146](https://eips.ethereum.org/EIPS/eip-8146) — BAL sidecars | Draft | Adds bid commitment and separate Builder sidecar/reveal duty |
 | [EIP-7805](https://eips.ethereum.org/EIPS/eip-7805) — FOCIL | Future-fork work | Strong-success Heze adaptation context |
@@ -1129,6 +1018,10 @@ Status checked July 13, 2026, with the July 14 monitor delta applied. The tables
 
 ### Project and EPF
 
+- [Merged implementation plan](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/implementation-plan.md)
+- [Linear project](https://linear.app/kriso/project/lodestar-eip-7732-builder-814d6faca6fd)
+- [Public Living Technical Note on HackMD](https://hackmd.io/@krisos/S1a9mdB7fl)
+- [Week 5 presentation](https://docs.google.com/presentation/d/1cmC3fpu652gZFTIm2_P1lIYOfC2M_w3c5qXSUZ4B6lc)
 - [Merged project proposal](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md)
 - [Proposal PR #161](https://github.com/eth-protocol-fellows/cohort-seven/pull/161)
 - [Strong-success amendment PR #186](https://github.com/eth-protocol-fellows/cohort-seven/pull/186)
@@ -1150,9 +1043,10 @@ Status checked July 13, 2026, with the July 14 monitor delta applied. The tables
 ### Lodestar resources
 
 - [Repository](https://github.com/ChainSafe/lodestar) · [releases](https://github.com/ChainSafe/lodestar/releases) · [CONTRIBUTING](https://github.com/ChainSafe/lodestar/blob/unstable/CONTRIBUTING.md)
-- [Glamsterdam tracker #8439](https://github.com/ChainSafe/lodestar/issues/8439)
+- [Gloas mainnet-readiness checklist #9692](https://github.com/ChainSafe/lodestar/issues/9692) · [Glamsterdam tracker #8439](https://github.com/ChainSafe/lodestar/issues/8439)
 - Key paths: [`produceBlockBody.ts`](https://github.com/ChainSafe/lodestar/blob/unstable/packages/beacon-node/src/chain/produceBlock/produceBlockBody.ts) · [`executionPayloadBid.ts`](https://github.com/ChainSafe/lodestar/blob/unstable/packages/beacon-node/src/chain/validation/executionPayloadBid.ts) · [`executionPayloadBidPool.ts`](https://github.com/ChainSafe/lodestar/blob/unstable/packages/beacon-node/src/chain/opPools/executionPayloadBidPool.ts) · [`validatorStore.ts`](https://github.com/ChainSafe/lodestar/blob/unstable/packages/validator/src/services/validatorStore.ts) · [`events.ts`](https://github.com/ChainSafe/lodestar/blob/unstable/packages/api/src/beacon/routes/events.ts)
-- Active work: [alpha.12 #9606](https://github.com/ChainSafe/lodestar/pull/9606) · [EIP-7688 #9390](https://github.com/ChainSafe/lodestar/pull/9390) · [devnet-7 #9587](https://github.com/ChainSafe/lodestar/pull/9587) · [Builder API #9594](https://github.com/ChainSafe/lodestar/pull/9594) · [circuit breaker #9598](https://github.com/ChainSafe/lodestar/pull/9598) · [BeaconEngine #9550](https://github.com/ChainSafe/lodestar/pull/9550)
+- Builder delivery: [initial package #9758](https://github.com/ChainSafe/lodestar/pull/9758) · [Builder API #9594](https://github.com/ChainSafe/lodestar/pull/9594) · [FULL-parent production #9736](https://github.com/ChainSafe/lodestar/pull/9736) · [equivocation/Deathstar #9757](https://github.com/ChainSafe/lodestar/pull/9757) · [npm package](https://www.npmjs.com/package/@lodestar/builder)
+- Related watches: [range-sync fault ownership #9755](https://github.com/ChainSafe/lodestar/pull/9755) · [EIP-7688 boundaries #9689](https://github.com/ChainSafe/lodestar/pull/9689) · [Builder deposit cache #9727](https://github.com/ChainSafe/lodestar/pull/9727)
 - [FOCIL branch](https://github.com/ChainSafe/lodestar/tree/focil) · [FOCIL PR #7342](https://github.com/ChainSafe/lodestar/pull/7342)
 - [Deathstar branch](https://github.com/ChainSafe/lodestar/tree/deathstar) · [chaos catalog](https://github.com/ChainSafe/lodestar/blob/deathstar/EPBS_CHAOS_FEATURES.md)
 
@@ -1161,7 +1055,8 @@ Status checked July 13, 2026, with the July 14 monitor delta applied. The tables
 - [buildoor](https://github.com/ethpandaops/buildoor)
 - [ethereum-package](https://github.com/ethpandaops/ethereum-package)
 - [assertoor](https://github.com/ethpandaops/assertoor) · [`gloas-dev` playbooks](https://github.com/ethpandaops/assertoor/tree/master/playbooks/gloas-dev)
-- [glamsterdam-devnets](https://github.com/ethpandaops/glamsterdam-devnets) · [devnet-6](https://notes.ethereum.org/@ethpandaops/glamsterdam-devnet-6) · [devnet-7](https://notes.ethereum.org/@ethpandaops/glamsterdam-devnet-7) · [`tests-glamsterdam-devnet@v7.2.0` fixtures](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v7.2.0)
+- [glamsterdam-devnets](https://github.com/ethpandaops/glamsterdam-devnets) · [devnet-7](https://notes.ethereum.org/@ethpandaops/glamsterdam-devnet-7) · [`tests-glamsterdam-devnet@v7.2.0` fixtures](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v7.2.0) · [`tests-glamsterdam-devnet@v8.0.0` fixtures](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.0.0)
+- [Stored #9757 local equivocation fixture](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/test-plans/pr-9757-builder-equivocation.yaml)
 - Prior-art builders: [flashbots/rbuilder](https://github.com/flashbots/rbuilder) · [ralexstokes/mev-rs](https://github.com/ralexstokes/mev-rs) · [Commit-Boost](https://github.com/Commit-Boost) · [flashbots/mev-boost](https://github.com/flashbots/mev-boost) · [mevboost.pics](https://mevboost.pics)
 - [Kurtosis](https://github.com/kurtosis-tech/kurtosis) · [Lodestar simulation testing](https://chainsafe.github.io/lodestar/contribution/testing/simulation-tests/)
 
