@@ -13,6 +13,7 @@ The human-facing HackMD notes remain useful for writing and publishing. This rep
 | HackMD plan landing page | `docs/hackmd-implementation-plan-index.md` | Short index kept below HackMD's per-note character limit |
 | Living technical note | `docs/living-technical-note.md` | [HackMD](https://hackmd.io/@krisos/S1a9mdB7fl); reviewed in a separate PR |
 | Weekly updates | [docs/weekly-updates/](docs/weekly-updates/) | Kris's EPF HackMD updates |
+| Work Log | [HackMD](https://hackmd.io/@lqzic/EPF-7-work-log) | Daily dev HackMD updates |
 
 ## Weekly Updates
 
