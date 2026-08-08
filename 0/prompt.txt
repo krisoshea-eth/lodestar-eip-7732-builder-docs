@@ -1,0 +1,5 @@
+If that's the case, you're going to have to request the authorization again because it's not coming up for me, so I can't approve anything. I can't approve a GitHub project code since you haven't retriggered the authorization.
+
+Why would I replace an overlimit implementation plan on HackMD with a new landing page? Does that mean we're just redirecting people to the GitHub doc or what? I'm confused. I'll pull the updated Living Technical Note now.
+
+I think you should just mark LOD 5 or Plan 01 as done now because, you know, I'll finish that stuff up now, but it's technically done.
