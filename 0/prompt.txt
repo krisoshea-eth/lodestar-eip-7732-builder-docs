@@ -1,0 +1,50 @@
+<recommended_plugins>
+Here is a list of plugins that are available but not installed.
+
+- Airtable (airtable@openai-curated-remote)
+- Apollo.io (apollo@openai-curated-remote)
+- Asana (asana@openai-curated-remote)
+- Atlassian Rovo (atlassian-rovo@openai-curated-remote)
+- Base44 (base44@openai-curated-remote)
+- Box (box@openai-curated-remote)
+- Build iOS Apps (build-ios-apps@openai-curated-remote)
+- Build macOS Apps (build-macos-apps@openai-curated-remote)
+- Build Web Apps (build-web-apps@openai-curated-remote)
+- Cloudflare (cloudflare@openai-curated-remote)
+- Google Drive (google-drive@openai-curated-remote)
+- Granola (granola@openai-curated-remote)
+- HeyGen (heygen@openai-curated-remote)
+- HubSpot (hubspot@openai-curated-remote)
+- HyperFrames by HeyGen (hyperframes@openai-curated-remote)
+- Investment Banking (investment-banking@openai-curated-remote)
+- Linear (linear@openai-curated-remote)
+- Lovable (lovable@openai-curated-remote)
+- Monday.com (monday-com@openai-curated-remote)
+- Neon Postgres (neon-postgres@openai-curated-remote)
+- Notion (notion@openai-curated-remote)
+- OpenAI Developers (openai-developers@openai-curated-remote)
+- Outlook Calendar (outlook-calendar@openai-curated-remote)
+- Outlook Email (outlook-email@openai-curated-remote)
+- PostHog (posthog@openai-curated-remote)
+- Public Equity Investing (public-equity-investing@openai-curated-remote)
+- Replit (replit@openai-curated-remote)
+- Sales (sales@openai-curated-remote)
+- Semrush (semrush@openai-curated-remote)
+- Sentry (sentry@openai-curated-remote)
+- SharePoint (sharepoint@openai-curated-remote)
+- Slack (slack@openai-curated-remote)
+- Stripe (stripe@openai-curated-remote)
+- Supabase (supabase@openai-curated-remote)
+- Superpowers (superpowers@openai-curated-remote)
+- Teams (teams@openai-curated-remote)
+- Vercel (vercel@openai-curated-remote)
+- Wix (wix@openai-curated-remote)
+</recommended_plugins>
+
+<environment_context>
+  <cwd>/Users/Kriskate/Documents/GitHub/lodestar-eip-7732-builder-docs-1</cwd>
+  <shell>zsh</shell>
+  <current_date>2026-08-03</current_date>
+  <timezone>Europe/Dublin</timezone>
+  <filesystem><workspace_roots><root>/Users/Kriskate/Documents/GitHub/lodestar-eip-7732-builder-docs-1</root></workspace_roots><permission_profile type="managed"><file_system type="restricted"><entry access="read"><special>:root</special></entry><entry access="write"><path>/Users/Kriskate/Documents/GitHub/lodestar-eip-7732-builder-docs-1</path></entry><entry access="write"><special>:slash_tmp</special></entry><entry access="write"><special>:tmpdir</special></entry><entry access="read"><path>/Users/Kriskate/Documents/GitHub/lodestar-eip-7732-builder-docs-1/.git</path></entry><entry access="read"><path>/Users/Kriskate/Documents/GitHub/lodestar-eip-7732-builder-docs-1/.agents</path></entry><entry access="read"><path>/Users/Kriskate/Documents/GitHub/lodestar-eip-7732-builder-docs-1/.codex</path></entry></file_system></permission_profile></filesystem>
+</environment_context>
