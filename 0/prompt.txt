@@ -1,0 +1,13 @@
+Okay, I merged that plan. I'll take a pull from HackMD to make sure it's up to date. Can you mark any of the linear issues or tasks that are now considered complete after that merge as done for me?
+
+Is there anything else we need to do here? The other thing is we need to now update the Living Technical Notes. So take a look at its version on HackMD because I know some people push changes to that version, but the GitHub version is now out of sync with it. We need to make sure we pull over any changes that were made on the HackMD into the GitHub version and vice versa to make sure that they're.
+
+Diffs are correct. And then if any new changes were made to the HackMD version of the Living Technical Note, we need to pull that into the GitHub version. And then for the actual Living Technical Note, so I've just given you the updated report of the automation. That runs to keep me up to date with everything Lodestar related. So we need to update the living technical note with that. It's literally in the earlier messages in this chat, I think in the last message or the last few messages. So there's that.
+
+You now have all the context of all the relevant Discord messages that have happened recently with respect to the plan. I didn't share my Telegram messages, but you don't need them. So you've got the implementation plan, the proposal, the report, all the Discord messages.
+
+Yeah, the report is what updates all the load search stuff for the builder anyway, so that's probably one of the more relevant things. The Discord messages you already have from several messages in this chat, so go back and make sure you review all of them when updating the Living Technical Notes. Again, Telegram messages I didn't need to share with you.
+
+There's the HackMD that you need to check as well because there are changes on that that need to be made that needs to be incorporated into the GitHub version that's now not fully in sync with the HackMD version of the Living Technical Note.
+
+You should compare the plan, the updated implementation plan against the Living Technical Note to see if there's anything in the Living Technical Note that needs to be updated. Yeah, so let's start doing all that now so we can update that on GitHub and HackMD.
