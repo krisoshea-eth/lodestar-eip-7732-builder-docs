@@ -1,0 +1,21 @@
+<recommended_plugins>
+Here is a list of plugins that are available but not installed.
+
+- Atlassian Rovo (atlassian-rovo@openai-curated-remote)
+- Box (box@openai-curated-remote)
+- Google Drive (google-drive@openai-curated-remote)
+- Notion (notion@openai-curated-remote)
+- Outlook Calendar (outlook-calendar@openai-curated-remote)
+- Outlook Email (outlook-email@openai-curated-remote)
+- SharePoint (sharepoint@openai-curated-remote)
+- Slack (slack@openai-curated-remote)
+- Teams (teams@openai-curated-remote)
+</recommended_plugins>
+
+<environment_context>
+  <cwd>/Users/Kriskate/Documents/GitHub/lodestar-eip-7732-builder-docs-1</cwd>
+  <shell>zsh</shell>
+  <current_date>2026-07-30</current_date>
+  <timezone>Europe/Dublin</timezone>
+  <filesystem><workspace_roots><root>/Users/Kriskate/Documents/GitHub/lodestar-eip-7732-builder-docs-1</root></workspace_roots><permission_profile type="managed"><file_system type="restricted"><entry access="read"><special>:root</special></entry><entry access="write"><path>/Users/Kriskate/Documents/GitHub/lodestar-eip-7732-builder-docs-1</path></entry><entry access="write"><special>:slash_tmp</special></entry><entry access="write"><special>:tmpdir</special></entry><entry access="read"><path>/Users/Kriskate/Documents/GitHub/lodestar-eip-7732-builder-docs-1/.git</path></entry><entry access="read"><path>/Users/Kriskate/Documents/GitHub/lodestar-eip-7732-builder-docs-1/.agents</path></entry><entry access="read"><path>/Users/Kriskate/Documents/GitHub/lodestar-eip-7732-builder-docs-1/.codex</path></entry></file_system></permission_profile></filesystem>
+</environment_context>
