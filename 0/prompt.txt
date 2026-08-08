@@ -1,0 +1,313 @@
+ok so what have we left to do? have you reviewed the pr, applied all the changes, have you replied to all the comments, have you double checked that all the pr amendments that we have pushed accurately address allt he comments? have you diffed the hack md doc against the pr changes to see if we havent accidentlyally removed anything that we hsould not have?  also here are some important discord messages that need to be factorsed in when finaliseing the implementation plan pr so, for the bn 404:
+teku gives 404 while awaiting the genesis (link)
+in Lodestar we cannot make it a reachable path easily, as bn doesn't start without an anchor state. (we can add a simple branch on getGenesis but it will never be reached.)
+So if we want it to be functional the api needs to start before the chain initialization which is a design question and probably not an easy change to accept.
+GitHub
+teku/data/beaconrestapi/src/main/java/tech/pegasys/teku/beaconresta...
+🚀 Open-source Ethereum consensus client written in Java - Consensys/teku
+
+nflaig — 1:07 AM
+that 404 should be unreachable today, this was likely just relevant for phase0 launch
+Marko L — 10:40 AM
+do we then want to add this tiny branch to cosmetically follow the spec, or we drop this completely?
+nflaig — 10:45 AM
+already merged 😄
+I also don't wanna check what other clients do, the 404 handling is more accurate, although there should always be a genesis state today
+Marko L — 10:48 AM
+fair, and we don't wanna tweak lodestar bn to have a 404 branch in getGenesis?
+nflaig — 10:48 AM
+that is unreachable or not?
+Marko L — 10:49 AM
+it's unreachable but a cosmetic branch can be added to align with the spec, but when I think about it it is a little misleading to have it
+nflaig — 10:49 AM
+no please don't add unreachable code 😄
+Marko L — 10:51 AM
+
+good then, all of the topics from yesterday are resolved now, thanks a lot : )
+continuing with this:
+polish the existing work / close open ends
+finish API-01 task
+nflaig — 10:55 AM
+will get to review you builder pr soon, finishing up some other stuff first though
+Marko L — 10:57 AM
+thanks, no rush at all though, I have stuff to do there : )
+nflaig — 5:02 PM
+ahh will be tomorrow, we need a spec release eod ideally
+need to help there
+Marko L — 5:06 PM
+sure, no worries, I still haven't done all I wanted  Ok brilliant, I’m glad it’s up to the Lodestar team’s standard 🫡. Ok sweet sweet, sounds good! What I’ll do is I’ll incorporate both your feedback and NCs into the doc, and then I’ll do one last deep read over it and see if there is anything else that I specifically want to check before locking the initial plan if that’s ok, I’ll throw any relevant questions in here for your attention
+**krisoshea.eth** — **Yesterday at 11:19 PM**
+Very cool
+**krisoshea.eth** — **Yesterday at 11:20 PM**
+Also I’ll take note of the work that Marko has already done / has touched on above so it’s noted in the doc, I’ll also add in all the points made above that both you and Marko are speaking about now.
+I think we’ll be in a pretty good position then
+So should hopefully have a good initial plan done soon after that and I’ll then transfer everything over to the project board while marking off what has already been completed
+Marko and I will probably use linear or Plane, so I can invite both you and NC to that board too if you want to periodically check in / view the issues we’re working on
+Marko and I will also probably chat about the project inside a slack or a buzz channel as it’ll be easier for us to organise discussions on specific topics. You’re welcome to join that to when it’s set up but it might be overkill, we can always surface the relevant things / things that need your attention  in this discord thread ourselves
+**lodekeeper**
+**APP**
+ — **Yesterday at 11:28 PM**
+Done. **PR #9725 is open:** [https://github.com/ChainSafe/lodestar/pull/9725](https://github.com/ChainSafe/lodestar/pull/9725)
+
+Clean move — git tracked it as a rename so history's preserved: assertEqualParams + NotEqualParamsError + the private getSpecCriticalParams helper now live in @lodestar/config (chainConfig/params.ts), validator imports them from there, and the test + interopConfigs fixtures moved across too. Build, biome lint, type-check, and the 8 unit tests all pass.
+
+Left waitForGenesis alone — that's the one to just duplicate in the builder, since it drags in ApiClient and can't go in config.
+**Marko L** — **Yesterday at 11:29 PM**
+**@lodekeeper** this as well please
+**lodekeeper**
+**APP**
+ — **Yesterday at 11:35 PM**
+**Fix is well** — opened it: [https://github.com/ChainSafe/lodestar/pull/9726](https://github.com/ChainSafe/lodestar/pull/9726)
+
+I verified the mechanics against @lodestar/api before porting: .value() → assertOk() throws new ApiError(msg, status, …) on any non-2xx, and ApiError.status + HttpStatusCode.NOT_FOUND are real public exports — so e instanceof ApiError && e.status === NOT_FOUND catches the 404 exactly. It's spec-correct too (getGenesis returns 404 pre-genesis). The only thing your version changes is log level — 404 → info as before, everything else → warn — and the retry loop is untouched. That's the right call: strictly better observability, no behavior change.
+
+Ported it verbatim so the validator and builder copies stay identical (no test added — you didn't, and it's a log-level-only change, so a bespoke test would just make them diverge). Credited you in the PR body.
+**Marko L** — **Yesterday at 11:49 PM**
+reviewed keepers PRs - they look good 
+so, we did the following (for the doc **@krisoshea.eth**):
+decided to duplicate waitForGenesis and applied 404 handling fix to validators version
+moved assertEqualParams (with NotEqualParamsError) to @lodestar/config so that builder can use it too (with tests and the following being moved as well)
+
+left to do:
+manage bn 404 adaptation
+
+I should also proceed to:
+polish the existing work / close open ends
+finish API-01 task  Ok sweet, I’ll incorporate all those comments into the doc and we’ll convert these all to issues we can pick up from our project board so that we can start working on this properly
+nflaig — Yesterday at 11:08 PM
+I am not too worried if I didn't cover something because the stuff I looked at was pretty solid 
+Marko L — Yesterday at 11:09 PM
+I'll get more info on waitForGenesis and bn/404 situation + move assertEqualParams to @lodestar/config
+nflaig — Yesterday at 11:10 PM
+for assertEqualParams i think putting in @lodestar/config is good
+can just ask lodekeeper, statistical models are pretty good at this
+@lodekeeper where do we put assertEqualParams and waitForGenesis
+Marko L — Yesterday at 11:11 PM
+even better
+nflaig — Yesterday at 11:11 PM
+as long as the dependency tree and context makes sense, I don't care too much where to put it
+krisoshea.eth — Yesterday at 11:11 PM
+There’s a section at the start of the doc that describes what would need reviewing but if you covered the sections I mentioned above then we should be good to go. Ye if you prefer we ask questions here directly we can do that too, I just wanted to make sure that the broad implementation plan was in line with what you think is appropriate / make sure we are headed in the right direction. For instance your point on side cars was really relevant for us so I incorporated that. Had we not known that in advance it would have changed the plan materially so I just wanted to check there was nothing else like that that would need changing from the beginning. 
+lodekeeper
+APP
+ — Yesterday at 11:12 PM
+Checked both on unstable:
+
+assertEqualParams → @lodestar/config is right, and it's a clean move: it only imports from @lodestar/config + @lodestar/params already (ChainConfig, SpecJson, chainConfigToJson, deserializeBlobSchedule, activePreset, presetToJson) — zero @lodestar/api dependency. So nothing new gets pulled into config, and validator just re-imports from there. Its private getSpecCriticalParams helper lives in the same file, so the whole util/params.ts moves together.
+
+waitForGenesis is the awkward one — it needs @lodestar/api (ApiClient for api.beacon.getGenesis()), so it can't go in config (wrong dep direction: api depends on config, not the reverse). No shared package currently sits above api, so realistically either:
+duplicate the ~12 lines in the builder pkg — it's a trivial poll loop, Marko's "fine to have a duplicate" instinct is reasonable, or
+put it in @lodestar/api itself — the one shared pkg that already has ApiClient + sleep/Logger from utils (no new deps), then validator + builder both import it.
+
+I'd lean duplicate unless you want to kill that 5-year-old TODO in the same pass — the // Search for a 404 error which indicates genesis has not yet occurred comment is literally the client half of the bn-404 gap you're already discussing. If the bn starts returning 404 pre-genesis, one shared genesis-aware poller (that distinguishes "not genesis yet" from a real error) beats two copies drifting apart — and that tips it toward a single home in @lodestar/api.
+krisoshea.eth — Yesterday at 11:14 PM
+Ok brilliant I’m glad to hear that haha! That doc took a long time to make 😂
+nflaig — Yesterday at 11:14 PM
+the plan documentation is great, I read the initial sections, that looks all solid, what I meant is if I missed something specific in the review, then feel free to just ping me here
+krisoshea.eth — Yesterday at 11:14 PM
+Yooo what does lodekeeper do? 👀
+nflaig — Yesterday at 11:15 PM
+lodkeeper is saying the same as I did, so seems good, just duplicate it
+Marko L — Yesterday at 11:15 PM
+@lodekeeper can you open a PR for moving assertEqualParams from validator to config?
+nflaig — Yesterday at 11:15 PM
+whatever you like
+Marko L — Yesterday at 11:17 PM
+@lodekeeper can you open another PR patching validator's waitForGenesis with the fix from here, if the fix is well, since we're leaving it duplicated:
+https://github.com/markolazic01/lodestar/blob/dcbb50a9efc68b32ad1816abb7942e4ca62ccfaf/packages/builder/src/genesis.ts#L8  @nflaig @NC Opened this PR to ease the review process, any and all thoughts welcome. Main purpose of it is to see if I haven't messed up something serious that can damage the following work:
+https://github.com/markolazic01/lodestar/pull/1
+p.s. please check the message above as well when you got time
+cc: @krisoshea.eth
+GitHub
+Initial ePBS builder setup by markolazic01 · Pull Request #1 · ma...
+Contains:
+
+Package scaffolding - basic dirs/files setup.
+BuilderSigner - service for signing execution payload envelopes and bids with a secretkey loaded from keystore.
+Keystore loading helper.
+CLI...
+Contains:
+
+Package scaffolding - basic dirs/files setup.
+BuilderSigner - service for signing execution payload envelopes and bids with a secretkey loaded from keystore.
+Keystore loading helper.
+CLI...
+nflaig — Yesterday at 10:43 PM
+ok I left a bunch of comments, not sure I covered reviewing all but focused on the parts you mentioned here, and sorry for delay. but this looks generally pretty good
+most of my comments are really just thoughts on it, I didn't see anything that looks technically far off 
+Marko L — Yesterday at 10:45 PM
+thank you very much, thats exactly what we need, and apologies for some pieces not being polished, will manage those
+Marko L — Yesterday at 10:45 PM
+did you submit the review, I don't see nothing yet
+nflaig — Yesterday at 10:46 PM
+it's here https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/pull/2, I got side tracked a bunch, so some comments are pretty old from today
+will review your pr tomorrow
+nflaig — Yesterday at 10:50 PM
+the initial section has a paragraph on what we would like the lodestar’s teams approval for so would be great if you read through that for context
+what exactly do you want more feedback on, or do you mean just the implementation sections, if that's the case I reviewed that, but feel also just free to just ask questions directly here, might be easier
+Marko L — Yesterday at 10:51 PM
+ah sorry never mind, i was thinking about the PR
+tomorrow is great anyways
+Marko L — Yesterday at 10:52 PM
+we need a comment on this as well 🙏
+no rush though, just mentioned so it doesn't get lost
+nflaig — Yesterday at 11:01 PM
+about the todo and 404, not so sure it's relevant but worth to double check what other clients do, looks like a gap in lodestar, the todo is 5 years old 😅 . so yes seems worth to double check this and fix it.
+
+ btw lodestar bn has no 404 path for getting genesis,
+need to fix bn too if that's possible
+
+or maybe put this function in a shared place?
+yeah could be worth it, the problem is it depends on @lodestar/api, not sure right now where to put it
+
+we need assertEqualParams
+I initially thought to export it from validator but that is a bad idea for many reasons I think.
+not the validator, the builder package should not import that, maybe @lodestar/conig or param 
+nflaig — Yesterday at 11:05 PM
+yes please ping me on messages I overlooked
+Marko L — Yesterday at 11:06 PM
+for waitForGenesis it's small, I guess it is alright to have a duplicate if we don't have a proper place to put it?
+
+for assertEqualParams i think putting in @lodestar/config is good
+
+bn stuff / 404 I can check things out further
+krisoshea.eth — Yesterday at 11:07 PM
+Nice one, really appreciate you taking the time to look through that Nico! I read through the comments there, all super helpful, I’ll update the doc with all those points taken into account. If you covered the sections I mentioned below Marko’s message you tagged there, then you’ve covered everything relevant. The relevant ones were sections 2, 3, 6, 7 and 9.
+
+No worries on the delay we know you guys are pretty busy!
+nflaig — Yesterday at 11:07 PM
+ if we don't have a proper place to put it?
+maybe there is, but nothing that came to mind quickly  I've made the changes around SIGN-01 and CLI-01. That includes signing functions for envelope and bid with tests. Package setup, setup of initial CLI args, wiring of all the added things. Keystore with password submission via CLI + one optional argument builderPubkey to verify the key from keystore if user wants it. Keystore stuff is manually tested, it works, I will add tests for that soon.
+
+[https://github.com/ChainSafe/lodestar/compare/4001398810453c5c1b4abe8c06323a76d0ba592f...markolazic01:lodestar:30de4886dcc3d132b0e206e7f87c0551e4c77dff](https://github.com/ChainSafe/lodestar/compare/4001398810453c5c1b4abe8c06323a76d0ba592f...markolazic01:lodestar:30de4886dcc3d132b0e206e7f87c0551e4c77dff) (keystore tests added) 
+**Marko L** — **7/27/26, 1:10 AM**
+I'll make the first PR to the shared repo soon so this can be properly reviewed (fyi Kris, not tagging because it's late, p.s. we also need to configure the repo).
+**krisoshea.eth** — **7/27/26, 2:23 PM**
+Great work! We can add these updates / changes to the implementation plan on GitHub / hackmd.
+**krisoshea.eth** — **7/27/26, 2:24 PM**
+Ok brilliant thanks
+**Marko L** — **7/27/26, 2:27 PM**
+Image
+we're more on like 3-4% but it is what it is lol
+**krisoshea.eth** — **7/27/26, 2:50 PM**
+Yoooo where did you find this visual??? That’s so cool 🔥🔥🔥🔥
+**nflaig** — **7/27/26, 2:56 PM**
+still need to review your proposal, sorry guys, will take a look today hopefully, if not tomorrow am
+**Marko L** — **7/27/26, 2:59 PM**
+it's claude design again xD
+**Marko L** — **7/27/26, 2:59 PM**
+no worries, thanks 🙏
+**krisoshea.eth** — **7/27/26, 3:02 PM**
+Thanks Nico that would great, would really appreciate that!
+**krisoshea.eth** — **7/27/26, 3:03 PM**
+Nice!
+**Marko L** — **7/28/26, 4:48 PM**
+hey guys, I implemented waitForGenesis inside the builder here: [https://github.com/markolazic01/lodestar/blob/dcbb50a9efc68b32ad1816abb7942e4ca62ccfaf/packages/builder/src/genesis.ts#L8](https://github.com/markolazic01/lodestar/blob/dcbb50a9efc68b32ad1816abb7942e4ca62ccfaf/packages/builder/src/genesis.ts#L8) 
+It resolves the todo request for 404 path support present inside the validator's waitForGenesis: [https://github.com/ChainSafe/lodestar/blob/82546f11da199dcb23e670e65cf7f82f19767c7e/packages/validator/src/genesis.ts#L13](https://github.com/ChainSafe/lodestar/blob/82546f11da199dcb23e670e65cf7f82f19767c7e/packages/validator/src/genesis.ts#L13)
+ Should I make a PR to add it there as well, or maybe put this function in a shared place? btw lodestar bn has no 404 path for getting genesis, but that is not aligned with the spec, so it makes sense to have this for connection to other bns. [https://github.com/ethereum/beacon-APIs/blob/master/apis/beacon/genesis.yaml#L28](https://github.com/ethereum/beacon-APIs/blob/master/apis/beacon/genesis.yaml#L28)
+Also related to moving things into a shared place, we need assertEqualParams identical to the validator's, can we move it to another package?
+I initially thought to export it from validator but that is a bad idea for many reasons I think.  Ye just to follow up on this, the doc is definitely long but i think it orients us really well and outlines very clearly how we plan to progress and maps out what we can realistically achieve during the fellowship along with stretch and strong goals. Its hard to break down what exactly needs the most attention, the initial section has a paragraph on what we would like the lodestar’s teams approval for so would be great if you read through that for context, the sections that definitely need reviewing thereafter are sections 2, 3, 6, 7, and 9. The rest can be ignored as they are mostly for us. If you guys get around to doing that it would be a huge help as well add all that feedback to this doc and then add all of this stuff to our project board for tracking. It should be pretty straightforward to execute on this project from there as we will have a really strong system in place which will make iterating on the original plan very easy as we learn more by doing and track other changes that are relevant to the builder.
+krisoshea.eth — 7/24/26, 12:17 PM
+Also just a heads up that i still need to update the living technical note with the latest info we have so if ignore that doc for now, it also probably doesn’t need to be reviewed as it’s basically a catch all context doc for me and Marko  where we track everything that impacts the builder, it’s defo a doc that’s more so for us but feel free to take a look if you want, ill have the updated version up next week after we gather your feedback 
+krisoshea.eth — 7/24/26, 3:56 PM
+Side note, has the lodestar team experimented with slack agents / slack tools? Read this yesterday, looks like the next slack evolution, very cool
+https://x.com/jack/status/2080056638820450400?s=46&t=ShDXbfDYO04iAoYQr4gbXw
+nflaig — 7/24/26, 3:56 PM
+we don't use slack
+krisoshea.eth — 7/24/26, 3:56 PM
+Oh what do you use? Just discord?
+nflaig — 7/24/26, 3:57 PM
+discord, telegram, signal, github mostly
+krisoshea.eth — 7/24/26, 3:58 PM
+This is built on nostr btw
+krisoshea.eth — 7/24/26, 3:59 PM
+Fair fair, I use telegram, signal and GitHub a lot obvs, I find discord very weird haha it’s hard to get used to. Mine is also very cluttered. Although I do like this discord thread feature
+krisoshea.eth — 7/24/26, 3:59 PM
+Which makes sense given jacks passion for bitcoin
+nflaig — 7/24/26, 3:59 PM
+let's use a different channel for this stuff, I ping you in a sec there
+krisoshea.eth — 7/24/26, 4:00 PM
+I also way prefer signal to telegram, I find telegram is just rife with bots and fake accounts
+Marko L — 7/24/26, 10:53 PM
+hey guys, can I add DOMAIN_REQUEST_AUTH constant from the builder spec to @lodestar/params?
+https://github.com/ethereum/builder-specs/blob/main/specs/gloas/builder.md#constants
+Since it will be used by both proposer and the builder.
+nflaig — 7/25/26, 12:15 AM
+that shouldn't be required unless you implement the builder api
+Marko L — 7/25/26, 12:21 AM
+I went scaffolding in that direction, should I hold off?
+Anyways I can use it locally and move it to params later.
+nflaig — 7/25/26, 12:22 AM
+I would have to check, but doesn't my builder api have this already? I mean feel free to add it to your branch too if it helps
+https://github.com/ChainSafe/lodestar/pull/9594/changes#diff-d93a2e42fedd0be80e9c60b7e11015dd2ee52892b4910cb5d6d001bc7d387128 it's in there too but not sure when this can be merged
+Marko L — 7/25/26, 12:25 AM
+I see you have it, sorry I forgot about this PR entirely 😅
+will you implement verifyRequestAuthSignature in there?
+because that's what I was heading for now
+nflaig — 7/25/26, 12:27 AM
+probably not, maybe the beacon node wants to verify before forwarding to builder but it's not really needed
+nflaig — 7/25/26, 12:28 AM
+but feel free to add that, shouldn't be a huge merge issue, could even bring the constants to unstable, just not sure the builder spec is final tbh
+Marko L — 7/25/26, 12:29 AM
+no worries about it, I just wanted to clean out some 'independent' parts while I'm doing scaffolding
+I'll add it once your PR is merged, since you got the types, constants and everything
+nflaig — 7/25/26, 12:35 AM
+that might take some time, I wouldn't count on it in the next 2 weeks
+https://github.com/ChainSafe/lodestar/pull/9595 should be mergable next week though
+Marko L — 7/25/26, 12:38 AM
+got it, thanks, I'll continue accordingly
+Marko L — 7/25/26, 6:20 PM
+added BuilderSigner logic here (signs only bids for now): https://github.com/markolazic01/lodestar/blob/1cdc6d75565b1f71291f7206b87e88171dbd752b/packages/builder/src/services/builderSigner.ts 
+next: envelope signing (✅), loading keystore through CLI(✅) + tests    Ye just to follow up on this, the doc is definitely long but i think it orients us really well and outlines very clearly how we plan to progress and maps out what we can realistically achieve during the fellowship along with stretch and strong goals. Its hard to break down what exactly needs the most attention, the initial section has a paragraph on what we would like the lodestar’s teams approval for so would be great if you read through that for context, the sections that definitely need reviewing thereafter are sections 2, 3, 6, 7, and 9. The rest can be ignored as they are mostly for us. If you guys get around to doing that it would be a huge help as well add all that feedback to this doc and then add all of this stuff to our project board for tracking. It should be pretty straightforward to execute on this project from there as we will have a really strong system in place which will make iterating on the original plan very easy as we learn more by doing and track other changes that are relevant to the builder.
+krisoshea.eth — 7/24/26, 12:17 PM
+Also just a heads up that i still need to update the living technical note with the latest info we have so if ignore that doc for now, it also probably doesn’t need to be reviewed as it’s basically a catch all context doc for me and Marko  where we track everything that impacts the builder, it’s defo a doc that’s more so for us but feel free to take a look if you want, ill have the updated version up next week after we gather your feedback 
+krisoshea.eth — 7/24/26, 3:56 PM
+Side note, has the lodestar team experimented with slack agents / slack tools? Read this yesterday, looks like the next slack evolution, very cool
+https://x.com/jack/status/2080056638820450400?s=46&t=ShDXbfDYO04iAoYQr4gbXw
+nflaig — 7/24/26, 3:56 PM
+we don't use slack
+krisoshea.eth — 7/24/26, 3:56 PM
+Oh what do you use? Just discord?
+nflaig — 7/24/26, 3:57 PM
+discord, telegram, signal, github mostly
+krisoshea.eth — 7/24/26, 3:58 PM
+This is built on nostr btw
+krisoshea.eth — 7/24/26, 3:59 PM
+Fair fair, I use telegram, signal and GitHub a lot obvs, I find discord very weird haha it’s hard to get used to. Mine is also very cluttered. Although I do like this discord thread feature
+krisoshea.eth — 7/24/26, 3:59 PM
+Which makes sense given jacks passion for bitcoin
+nflaig — 7/24/26, 3:59 PM
+let's use a different channel for this stuff, I ping you in a sec there
+krisoshea.eth — 7/24/26, 4:00 PM
+I also way prefer signal to telegram, I find telegram is just rife with bots and fake accounts
+Marko L — 7/24/26, 10:53 PM
+hey guys, can I add DOMAIN_REQUEST_AUTH constant from the builder spec to @lodestar/params?
+https://github.com/ethereum/builder-specs/blob/main/specs/gloas/builder.md#constants
+Since it will be used by both proposer and the builder.
+nflaig — 7/25/26, 12:15 AM
+that shouldn't be required unless you implement the builder api
+Marko L — 7/25/26, 12:21 AM
+I went scaffolding in that direction, should I hold off?
+Anyways I can use it locally and move it to params later.
+nflaig — 7/25/26, 12:22 AM
+I would have to check, but doesn't my builder api have this already? I mean feel free to add it to your branch too if it helps
+https://github.com/ChainSafe/lodestar/pull/9594/changes#diff-d93a2e42fedd0be80e9c60b7e11015dd2ee52892b4910cb5d6d001bc7d387128 it's in there too but not sure when this can be merged
+Marko L — 7/25/26, 12:25 AM
+I see you have it, sorry I forgot about this PR entirely 😅
+will you implement verifyRequestAuthSignature in there?
+because that's what I was heading for now
+nflaig — 7/25/26, 12:27 AM
+probably not, maybe the beacon node wants to verify before forwarding to builder but it's not really needed
+nflaig — 7/25/26, 12:28 AM
+but feel free to add that, shouldn't be a huge merge issue, could even bring the constants to unstable, just not sure the builder spec is final tbh
+Marko L — 7/25/26, 12:29 AM
+no worries about it, I just wanted to clean out some 'independent' parts while I'm doing scaffolding
+I'll add it once your PR is merged, since you got the types, constants and everything
+nflaig — 7/25/26, 12:35 AM
+that might take some time, I wouldn't count on it in the next 2 weeks
+https://github.com/ChainSafe/lodestar/pull/9595 should be mergable next week though
+Marko L — 7/25/26, 12:38 AM
+got it, thanks, I'll continue accordingly
+Marko L — 7/25/26, 6:20 PM
+added BuilderSigner logic here (signs only bids for now): https://github.com/markolazic01/lodestar/blob/1cdc6d75565b1f71291f7206b87e88171dbd752b/packages/builder/src/services/builderSigner.ts
+next: envelope signing (✅), loading keystore through CLI(✅) + tests
