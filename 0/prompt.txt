@@ -1,0 +1,16 @@
+# Files mentioned by the user:
+
+## ah RIP, need @wemeetagain 😁 chainsafe admins help Image maybe @Matthew Keil ca…: /Users/Kriskate/.codex/attachments/91d45f6e-73c2-43bd-aa46-3d0e7000f388/pasted-text.txt
+
+## My request for Codex:
+Hello, hello. Okay. Okay, I'll check that the HackMD documents are up to date with what's on GitHub. Are there any other updates that need to be made to the Living Technical Note or the implementation plan? I've given you the up-to-date Discord messages, the up-to-date report. You don't need our Telegram messages. You can see the Living Technical Note and HackMD on a living technical note and implementation plan on HackMD. You also should have a good idea of what's been merged by Marco Lazic into the Lodestar upstream repo and what's been updated on his personal GitHub Lodestar fork, as well as the Lodestar fork that we're sharing under my repos, so maybe check against that. But other than that, I'll pull the documents.
+
+I guess what other stuff is there to do? So there's the Linear board itself. I want to explore, do any of the Linear issues now need to be updated further or need to be changed? Or are we not taking advantage of any other Linear features that we should be? Particularly, we have gates set up on Linear, but they don't seem to follow the epics that we've set up, which is fine. I think the gates take priority over the epics because the gates are like sub-epics, sort of, but I'm not sure. So I want to verify that.   discord messages: 
+
+I've just shared the GitHub project board with NC from Lodestar, but I want to see if there are any other improvements we need to make to the GitHub project board by leveraging any GitHub features that I'm unaware of, given the issues that we've created. I think that's pretty much it.
+
+I need to do my write-up for week seven, which I'll start soon. I don't need to do that now. Can you make sure all my latest write-ups are also included in this repo? Because I think there's one or two missing. I have to do my week seven write-up, but there might be one or two missing from this repo now.
+
+And then we're going to move on to actually picking up issues. Marco is adding a separate doc called the error log, which he'll add himself. I'm trying to think, is there anything else that needs to be added here? I'll also share the Discord messages, the latest ones. And also I did like a research roundup of stuff that we've left to do for setting up the repo, like the forked repo and our anything else that might be relevant? Because I think we've got all the tools we need, but there was a few recommendations that I was given that I want to explore setting up if we should or shouldn't set them up.
+
+Also, it looks like I've hit the character limit on HackMD for one of the documents, I think the implementation plans, and I don't want to pay for the premium. Like, I might pay for the premium, but it's just annoying if I have to. So that might be a bit of a problem on HackMD.
