@@ -1,0 +1,3 @@
+Okay, I'll send that message, but should we create a commit to the current plan PR with everything in those messages taken into account? Like we need to obviously update the implementation plan based on that feedback and advice from Nico. So we should probably do that now.
+
+And then once I get answers to the questions in the last message that you just created there, we can update the plan once more. Can you do that now? Okay.
