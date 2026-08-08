@@ -1,0 +1,5 @@
+Hello, hello, hello. Okay, so are you sure we're leveraging every available feature we should be leveraging across GitHub and Linear? Like, there seems to be loads of cool things that are interesting, like milestones, projects, views, issues, discussions, pull requests, whatever. Just make sure we're leveraging everything we need across GitHub and also check Linear as well.
+
+Look through the Linear and GitHub docs to see if there's anything else we could be leveraging for this project organization and this project itself. If there are any more views we need to add, or anything else we need to add to the board.
+
+Yeah, for the HackMD thing, what do you recommend I should do? Do you like leave the short landing page on HackMD and redirect to the GitHub or like what are the options there? I don't really want to pay for extra usage on HackMD. And yeah, is there anything else we need to do on this on any of the above.
