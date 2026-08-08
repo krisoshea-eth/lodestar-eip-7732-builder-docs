@@ -1,0 +1,3 @@
+Okay, is there any other improvements? Can you fix those issues in the cycles that you mentioned there? Or do I have to manually add them all? Like, I would have thought the cycles would have been auto-assigned, but I'm not sure how it works. And obviously, if something doesn't get done in the cycle, it can't be considered done, you know? Is there anything else, other improvements you can make to Linear based on the current setup?
+
+Thanks.
