@@ -1,0 +1,5 @@
+<environment_context>
+  <current_date>2026-07-31</current_date>
+  <timezone>Europe/Dublin</timezone>
+  <filesystem><workspace_roots><root>/Users/Kriskate/Documents/GitHub/lodestar-eip-7732-builder-docs-1</root></workspace_roots><permission_profile type="managed"><file_system type="restricted"><entry access="read"><special>:root</special></entry><entry access="write"><path>/Users/Kriskate/Documents/GitHub/lodestar-eip-7732-builder-docs-1</path></entry><entry access="write"><special>:slash_tmp</special></entry><entry access="write"><special>:tmpdir</special></entry><entry access="read"><path>/Users/Kriskate/Documents/GitHub/lodestar-eip-7732-builder-docs-1/.git</path></entry><entry access="read"><path>/Users/Kriskate/Documents/GitHub/lodestar-eip-7732-builder-docs-1/.agents</path></entry><entry access="read"><path>/Users/Kriskate/Documents/GitHub/lodestar-eip-7732-builder-docs-1/.codex</path></entry></file_system></permission_profile></filesystem>
+</environment_context>
