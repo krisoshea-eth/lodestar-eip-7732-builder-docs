@@ -1,0 +1,7 @@
+Hello. Okay, so walk me through what needs to be done here. You said review and merge local follow-up changes. Can you not do that?
+
+You said save and download a backup of each current HackMD node, but the HackMD nodes I thought you said were out of date relative to the GitHub, so why does that matter?
+
+It looks like I can't pull from main into GitHub into HackMD because the HackMD character limit I'm hitting. I don't know what you mean by check, but source and preview modes only then mark plan 01 as done. I think HackMD says 100,000 characters, not 100,000 words, because it says I'm hitting the character limit. Why are we keeping? Oh yeah, sorry. You haven't created a PR for this, so you probably should create a PR for all of this and update it.
+
+Is there any other improvements to the Linear setup that we could have that we're not leveraging in terms of how Linear is organized, how the issues are organized, and how we've set them up? Are we fully expressing all use of Linear and is it easy to navigate everything now that it's set up? Like I need to make sure that Linear is set up correctly and then the GitHub project. We don't necessarily need to use GitHub project, it is set up. But is there any other further changes or improvements we could make to how this is mirroring Linear on GitHub? Not necessarily through a project, but a project is probably best and I need to make sure that it's mirroring Linear as well as possible.
