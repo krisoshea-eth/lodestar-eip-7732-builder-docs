@@ -1,0 +1,63 @@
+can you set this all up for me? These settings will not create additional costs. Linear Free currently includes 250 issues, two teams, unlimited members and the core project/cycle features, so this 44-issue project is comfortably within the limits. [Linear pricing](https://linear.app/pricing)
+Cycles
+In Team settings → Cycles:
+Duration: 1 week
+Start day: Monday
+Cooldown: 0 weeks
+Upcoming cycles: 15
+Leave automatic addition of active issues off initially
+Manually add only ready or active Core work
+Keep Backlog, Conditional and Deferred issues out of cycles
+Linear supports one-week cycles, configurable start days and zero cooldown. [Linear cycle settings](https://linear.app/docs/use-cycles)
+Saved views
+Create these as shared project-scoped issue views:
+Core execution
+Project: Lodestar EIP-7732 Builder
+Scope: Core or Supporting
+Status: Todo, In Progress or In Review
+Group: Status
+Sort: Priority
+
+Decisions and upstream
+Project: Lodestar EIP-7732 Builder
+Label: Open decision or Upstream
+Group: Milestone
+
+Extension gate
+Project: Lodestar EIP-7732 Builder
+Scope: Conditional or Deferred
+Group: Scope
+Subgroup by Milestone if offered
+
+Saved views are shareable and available without an Enterprise initiative view. [Linear custom views](https://linear.app/docs/custom-views)
+Git automation
+Use these guarded settings:
+Copying an issue branch name: move to In Progress
+PR becomes ready for review: move to In Review
+PR merged: no automatic move to Done
+Move to Done manually only after the issue’s tests, evidence and documentation are complete
+Include LOD-xx in every implementation branch and PR
+Do not enable automatic draft-PR conversion. Linear supports branch and PR-driven workflow automation. [GitHub integration](https://linear.app/docs/github-integration)
+Conditional-child template
+Create a team template called Conditional child, but do not make it the default.
+Preset:
+Project: Lodestar EIP-7732 Builder
+Status: Backlog
+Label: Conditional
+No default assignee, cycle, due date, estimate or milestone
+Description sections:
+Scope rule
+Entry criteria
+Tasks
+Done when
+Evidence
+Stop rule
+Owner
+Reviewer
+Use it only if an extension package is activated. [Linear issue templates](https://linear.app/docs/issue-templates)
+The only additional worthwhile improvements are:
+Subscribe to the Decisions and upstream view for newly added issues.
+Favourite the project, execution guide and three saved views.
+Post the planned short project update each Friday.
+There is no reason to add Initiatives, Triage, SLAs, Releases, Agent Loops, coding sessions or AI-credit features.
+One invitation caveat: Free allows unlimited members, but private teams and guest accounts are not listed as Free features. Nico and NC would therefore probably be full workspace members. That is safe if this workspace contains only the Lodestar project, but check before inviting them.
