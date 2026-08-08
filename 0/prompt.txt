@@ -1,0 +1,580 @@
+Okay, okay. I got some responses from the Lodestar team. I just want to make sure that our plan, the planning doc, is definitely fully up to date before I merge it.
+
+So basically what I want you to do is check these replies against the current version of the planning doc. Check everything that's on the GitHub PR for the planning doc. I want you to check the HackMD doc. I think the HackMD doc is still pretty out of date compared to the actual, compared to the actual implementation plan, but let's check it anyway.
+
+See, is there anything from the old planning doc on the HackMD that actually was, were, like, because people could have made changes in the HackMD planning doc that should have been added to the GitHub version of the implementation plan that I missed? As in, like, they might just be out of sync, but there could be stuff from the HackMD that's still needed in the actual planning doc that we merge, like the implementation plan that we merge on GitHub. I could be wrong about that, but let's just double check.
+
+And then I will give you the latest automated run, I guess, updating me on everything relevant to Lodestar for Builder to see if there's anything there that needs to be incorporated into the implementation plan based on those changes. So let's do all the above. If there's anything you don't have access to or can't check, like the ACMD, let me know. I will paste the Discord messages in here for context.
+
+And yeah, let's just make sure the planning doc is ready and I'll merge it. Also, we need to check the linear board which we've already created. So Marco has already marked some things as resolved and manually done some of those edits. So then if there's anything on the linear board that we can now mark as resolved or need to change the status of or need to change at all based on merging this implementation plan or anything else, let's do that as well. And if we need to update the linear board based on any changes we're about t o make to the implementation plan, let's do that too. Yeah, I'll pass you on all the information you need now.    builder api specs are getting finalized too in the next 1-2 weeks so will work on the implementation in lodestar, timing wise this should line up well for you guys, I am hoping my code is done before you get there so I will not block you there 
+**krisoshea.eth** — **8/3/26, 6:11 PM**
+brilliant news, ye that timing couldnt be better really, really appreciate you prioritising that!
+just adding this here for context and for **@lodekeeper** to be aware of: Marko and I are splitting the Builder work into a small set of threads so implementation discussions are easier to follow.
+
+We will use Linear for issue status, ownership and dependencies, GitHub for code and review, and these threads for design and implementation discussion.
+
+Latest implementation plan:
+[https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/pull/2](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/pull/2)
+
+Linear project:
+[https://linear.app/kriso/project/lodestar-eip-7732-builder-814d6faca6fd](https://linear.app/kriso/project/lodestar-eip-7732-builder-814d6faca6fd)
+
+The implementation plan is the current source of truth. The Living Technical Note is useful background info and research, but parts of it need to be brought up to date.
+
+If a discussion affects more than one workstream, we will link the final decision in the project decisions and upstream thread as well.   Gm @nflaig @NC Thanks again for reviewing the plan. I have now done the final pass over the updated document, the pr review thread, the follow-up discussion here, Marko’s current Builder PR, and the latest project-monitoring report (my automation that checks in on all the prs/specs relevant to builder etc).
+As mentioned yesterday, I've addressed all the review comments and have incorporated all of your really helpful feedback into our plan. The follow-up decisions on duplicating waitForGenesis, distinguishing the 404 case, importing assertEqualParams from config, and keeping staked Builder API authentication outside the core are also recorded in the doc now.
+As you have probably seen above, Marko’s draft has advanced since the snapshot in the plan. It now also includes shutdown handling, the shared assertEqualParams integration, updated signer tests, and packaging cleanup. I am treating that as in-progress work across CLI-01, SIGN-01, and API-01.
+Before we lock v1.0, could you confirm the following implementation points? 
+1: For the Builder execution fee recipient, should it be supplied on each candidate request or through a preparation or registration call? Should it be required to match the Builder’s on-chain execution address? I am also assuming this candidate-production surface is operator-controlled and not exposed as an unauthenticated public payload-building endpoint.
+
+2: For the first stateful implementation, are you happy for us to reuse the existing BN production-cache model, adding the smallest secondary mapping or dedicated cache needed before a selecting block root exists? The plan assumes one source BN, no stateless or multi-BN failover in v1, and eviction after successful envelope publication.
+
+3:Should v1 actively support both current-slot and next-slot candidate requests? For the initial policy, should there be one candidate and bid per slot, or should we support replacement bids when the payload or head changes? If replacements are expected, should stale work be explicitly cancelled following a head change?
+
+4: For envelope publication, should the sidecar explicitly request consensus_and_equivocation rather than relying on the endpoint default? If the pinned Lodestar baseline still lacks the equivocation check, we will add the narrow BN validation and prove it with the Deathstar test. We also plan bounded immediate retries, recording a late outcome after PAYLOAD_DUE, rather than retrying indefinitely or introducing strategic withholding.
+Finally, unless you guys object to any of this, the remaining v1 assumptions are:
+-We will start from a pinned current unstable baseline and track consensus #5497 and Lodestar #9731, #9736, and #9723 as upstream dependencies, rebasing when appropriate. If any of these must land before BN-02 or BID-01 begins, please flag that.
+-The BN owns EL access, parent and proposer context, payload construction, value, balance enforcement, reveal material, and publication validation.
+-The sidecar sanity-checks and signs the exact BN-produced bid without reconstructing it, recomputing its value, or silently clamping it.
+-The payload fee recipient pays the Builder, bid.fee_recipient pays the proposer, bid.value equals the execution payload value, and execution_payment is zero.
+-Missing preferences, inactive Builder state, insufficient balance, malformed input, or unavailable reveal material results in no bid or a fail-closed reveal.
+-Selection detection starts with the standard block event plus block retrieval. New interfaces use /builder or /beacon, and confirmed specification gaps are proposed upstream.
+-Bid publication is configurable but defaults to immediate. Reveal begins immediately after exact selection.
+-Core means one local key, one source BN, the stateful reveal path, Node.js, and local Kurtosis first.
+-HA, multi-BN or stateless failover, remote signing, advanced bidding policy, staked Builder API authentication, and circuit-breaker design remain outside v1.
+krisoshea.eth — 7/31/26, 2:37 PM
+If all of these assumptions are correct, ill merge the planning doc after i take into account your answers to the questions above. After that we will create the board issues, and move into implementation. 
+nflaig — 8/1/26, 1:08 PM
+ For the Builder execution fee recipient, should it be supplied on each candidate request or through a preparation or registration call?
+you could supply it when requesting the bid probably? but I do see a problem, we need to prepare an execution payload beforehand, and also trigger this somehow, lodestar currently only does this if we have a proposer for next epoch, maybe need to extend our prepareNextSlot logic, and maybe add a new api to prepare a bid? I could imagine the builder could just say "please prepare a bid on this branch" and the bn does it in prepare next slot, would need to think more about a clean design here, there are many ways to achieve this
+
+For the first stateful implementation, are you happy for us to reuse the existing BN production-cache model, adding the smallest secondary mapping or dedicated cache needed before a selecting block root exists? The plan assumes one source BN, no stateless or multi-BN failover in v1, and eviction after successful envelope publication.
+ideally we can reuse the cache, for now I don't really mind it to be stateful only, the builder runs on the same host as the node itself as a sidecar, I wouldn't but too much effort into it right now to make it stateless and multi-bn
+
+Should v1 actively support both current-slot and next-slot candidate requests? For the initial policy, should there be one candidate and bid per slot, or should we support replacement bids when the payload or head changes? If replacements are expected, should stale work be explicitly cancelled following a head change?
+you can resubmit a bid of head changes, this could be achieve by keeping track of the head of the node via sse, but in general, at the time you submit the bid, if head is strong there is no risk that it's gonna get reorged, of course there are better strategies, if you know head is weak, you might wanna submit for parent block and head, same foes for FULL/EMPTY
+4: For envelope publication, should the sidecar explicitly request consensus_and_equivocation rather than relying on the endpoint default? If the pinned Lodestar baseline still lacks the equivocation check, we will add the narrow BN validation and prove it with the Deathstar test. We also plan bounded immediate retries, recording a late outcome after PAYLOAD_DUE, rather than retrying indefinitely or introducing strategic withholding.
+yes, the broadcast validation should be consensus_and_equivocation, that's a good reminder for me to finally implement that, just assume that we have it for now, this is anyways only relevant in a case if the proposer tries to unbundle the payload
+nflaig — 8/1/26, 1:11 PM
+plesae add links to the pr 😂
+https://github.com/ethereum/consensus-specs/pull/5497 we merged yesterday
+https://github.com/ChainSafe/lodestar/pull/9723 what the hell is this (lodekeeper hallucinated something it seems) 
+ok but don't worry, these pr won't affect you
+https://github.com/ChainSafe/lodestar/pull/9739 this one is relevant as it changes how you can submit bids, but if you submit bids per head view of the beacon node the builder is connected to you are fine, this becomes more complicated if you wanna flood publish bids for different branches, for that we'd need to relax the gossip validation of the local beaocn node itself 
+we run validateApiExecutionPayloadBid if you submit a bid via api, but need to relax that to support flood publishing on different branches, becasue the head view of peers can be different, but that is a stretch goal, it would be kinda nice to have a builder that can bid on these branches, that will be interesting for the non-finality testnet to see how bid propagation works, with #5497 spec change, we made it really strict, my worry is that it could limit bids from propagating correctly, but that remains to be tested 
+nflaig — 8/1/26, 1:18 PM
+these sounds correct to me 👍
+Marko L — 8/3/26, 3:44 PM
+@nflaig Opened the PR here, per your request: https://github.com/ChainSafe/lodestar/pull/9758
+cc: @krisoshea.eth 
+
+Do you prefer merging it as is or can I continue to add changes here?
+GitHub
+feat: builder initial setup by markolazic01 · Pull Request #9758 ...
+Motivation
+PR for submitting initial work on the ePBS builder.
+Description
+Features:
+
+Package scaffolding - basic dirs/files setup.
+BuilderSigner - service for signing execution payload envelopes a...
+Motivation
+PR for submitting initial work on the ePBS builder.
+Description
+Features:
+
+Package scaffolding - basic dirs/files setup.
+BuilderSigner - service for signing execution payload envelopes a...
+krisoshea.eth — 8/3/26, 3:47 PM
+Sorry for the slow reply. It is a long weekend here in Ireland and today is a bank holiday, so I’m only getting back to this now. I really appreciate the detailed response, it is super helpful!
+
+Your point about the fee recipient and payload preparation makes sense. The payload needs to be prepared before the complete bid can be returned, so I’ll stop treating the exact request shape as settled.
+
+We’ll trace the existing prepareNextSlot and payload preparation flow, then work out whether extending that flow or adding a small prepare-bid endpoint is the cleanest option. Once we have an actual route and lifecycle worked out, I’ll send it back here for a quick check before we lock it in.
+
+For the payload itself, I’ll treat the fee recipient as a builder-controlled configuration value that reaches the BN before preparation. That will remain separate from bid.fee_recipient, which is the proposer payment address.
+
+One part I don’t think we settled is current-slot versus next-slot support. Would you prefer v1 to actively support both, or should next-slot preparation be the primary path, with current-slot requests only working when suitable prepared state already exists?
+
+Because v1 uses a same-host sidecar, I’ll also treat the preparation route as operator-controlled and bounded, rather than a public endpoint for arbitrary payload work.
+
+On the cache, great. We’ll reuse the existing BN production cache where possible, add only the smallest extra mapping if one is needed before a selecting block root exists, and keep v1 stateful with one same-host source BN. We won’t spend core project time on stateless or multi-BN support.
+On head changes, I’ll update the plan so the Builder tracks the connected BN’s head through SSE, submits bids compatible with that head view, and can submit a fresh bid when the head changes. The strong-head, same-view path will be the initial target.
+
+One small detail is still unclear. For v1, can preparation for the old head simply be superseded and removed through the bounded cache and expiry rules, rather than adding an explicit cancellation path? An already-published bid would remain published, and the Builder would submit a new bid for the new parent tuple.
+
+Bidding across the parent and head, handling FULL and EMPTY alternatives, and flood publishing across different branch views will remain stretch work.
+
+For envelope publication, we’ll explicitly request consensus_and_equivocation and assume the BN provides that validation. We’ll keep the Deathstar test for proposer unbundling, use bounded immediate retries, and record a late outcome after PAYLOAD_DUE.
+
+Thanks for the PR links too 😂
+
+consensus-specs #5497 is merged, so we’ll use its head-compatible bid rules:
+https://github.com/ethereum/consensus-specs/pull/5497
+
+You are right about #9723. That came from the lodekeeper output, so I’ll remove it as a Builder dependency:
+https://github.com/ChainSafe/lodestar/pull/9723
+
+Lodestar #9739 has now merged too. We’ll rebase onto it and align the API submission path with its validation:
+https://github.com/ChainSafe/lodestar/pull/9739
+
+Relaxed local validation and multi-branch propagation will stay as a possible non-finality testnet experiment, not part of v1.
+
+Once we settle the current-slot versus next-slot scope and the stale-work handling, I think that closes the remaining plan-level questions. We can then update the plan and bring the proposed preparation API back after tracing the existing Lodestar flow.  nflaig — 8/3/26, 4:25 PM
+Would you prefer v1 to actively support both, or should next-slot preparation be the primary path, with current-slot requests only working when suitable prepared state already exists?
+the question here is rather when you want to submit the bid, I think this should be configurable, it makes sense to broadcast it a bit earlier, not exactly at t=0 of the proposal slot otherwise you are racing against the proposer and you don't really know what their cutoff is when they select the bid from p2p, eg. current lodestar just select whatever it has when the local block is built, once we have the builder-api there will be some timeout, but imo it makes sense to propagate the bid a bit sooner
+
+For v1, can preparation for the old head simply be superseded and removed through the bounded cache and expiry rules, rather than adding an explicit cancellation path? An already-published bid would remain published, and the Builder would submit a new bid for the new parent tuple.
+what cache do you mean? the bn I am pretty sure already cleans up the payload cache if I am not wrong
+nflaig — 8/3/26, 4:26 PM
+let's get that merged 
+will make followup work easier to review
+Marko L — 8/3/26, 4:39 PM
+sure, i'll then close the open ends so the workflows pass
+nflaig — 8/3/26, 4:42 PM
+also working on consensus_and_equivocation and adding proposer equivocation feature to deathstar
+using buildoor for now, but soon can test this with lodestar builder
+@Marko L I have lodekeeper help out getting this merged
+Marko L — 8/3/26, 4:48 PM
+I'm reviewing his work now 😁  thanks
+krisoshea.eth — 8/3/26, 5:01 PM
+Ah yes, that makes sense. I was mixing up when we prepare the payload with when we publish the bid.
+
+I’ll update the plan so those are handled separately. We’ll prepare early enough such that the full bid is ready, then make the publication timing configurable and send it before the proposal slot rather than waiting until t=0 and racing the proposer. I think we can experiment using Kurtosis to settle on the first sensible default.
+
+And ye, by cache I meant Lodestar’s existing BN payload cache, not a new cache in the sidecar. We’ll trace the current cleanup behaviour first in that case. If it already clears stale payload work when the head changes, we won’t add another cancellation path. The Builder will just prep and publish a new bid for the new parent, while anything already published stays published.
+
+There’s only one point I still want to confirm. Does the execution payload feeRecipient need to be the Builder’s on-chain execution address, or can it be a separate configured address passed in when the payload or bid is prepared? its not super important but im just curious
+nflaig — 8/3/26, 5:02 PM
+while anything already published stays published.
+you can't unpublish a bid
+krisoshea.eth — 8/3/26, 5:03 PM
+Also, @NC @nflaig I’ve got the Linear board set up now with all 44 issues from the plan, including the core work, extension options, deferred follow-ups, dependencies and milestones.
+
+if either of you wants access to look through it or just to have oversight to judge our progress as the weeks pass, just let me know. I think I’ll need an email address to add you
+
+Marko and I are also going to set up a Buzz channel for the day-to-day issue discussions. There’s no pressure at all to join since it means downloading another app, but you’re both very welcome if it would be useful. We’ll keep bringing anything that needs your input back into this Discord thread either way.
+nflaig — 8/3/26, 5:03 PM
+Does the execution payload feeRecipient need to be the Builder’s on-chain execution address, or can it be a separate configured address passed in when the payload or bid is prepared?
+it can be whatever address the builder controls, doesn't need to match the address in the withdrawal credentials, but for simplicity can use that one
+krisoshea.eth — 8/3/26, 5:03 PM
+ok good to know, i wasnt sure about that, like if a builder could quickly cancel a bid
+nflaig — 8/3/26, 5:03 PM
+what is should not be is the proposers address
+krisoshea.eth — 8/3/26, 5:04 PM
+ok gotcha, perfect makes sense! thanks a mill
+nflaig — 8/3/26, 5:04 PM
+can you set up a discord bridge maybe?
+we could also create another thread in ⁠🖥-lodestar-developer so we can keep this thread more focused 
+krisoshea.eth — 8/3/26, 5:05 PM
+em ye i can look inot that, wont i need permissions for this discord channel to do that though?
+krisoshea.eth — 8/3/26, 5:06 PM
+i presume you mean for linear and not buzz?
+krisoshea.eth — 8/3/26, 5:06 PM
+ye as in have a thread that just autopublishes changes to the linear project?
+nflaig — 8/3/26, 5:06 PM
+I have no idea, never used them, it's probably not worth it to relay messages tbh
+just send me the diff 😄
+krisoshea.eth — 8/3/26, 5:07 PM
+ok fair fair haha
+we'll just ping you for reviews, linear is just a good project management tool i like to use, so its easy to track things, buzz is just a nice chat app like a new version of slack based on nostr  I think you can use whatever works best for you, no opinion, would be a + if lodekeeper can follow it too so he has all context for what's going on
+**krisoshea.eth** — **8/3/26, 5:09 PM**
+oh ok fair fair, ill see if i can figure something out such that lodekeeper retains all the context
+**nflaig** — **8/3/26, 5:10 PM**
+can't this be accessed through the browser?
+I don't install new  apps locally sorry
+I don't even have slack lol
+browser works good
+**krisoshea.eth** — **8/3/26, 5:17 PM**
+linear can be accessed through the browser, buzz cant afaik
+**krisoshea.eth** — **8/3/26, 5:17 PM**
+totally fair
+**krisoshea.eth** — **8/3/26, 5:17 PM**
+haha fair fair
+**nflaig** — **8/3/26, 5:19 PM**
+config to test proposer equivocations
+# Local end-to-end test for PR #9757.
+#
+# Participant 1 runs the PR Lodestar BN and the Deathstar VC. The lifecycle-managed
+# Buildoor instance is wired directly to participant 1. On each Deathstar proposer
+# duty, the VC publishes the honest block and a second signature-valid block root.
+# Once its lifecycle deposit is finalized, Buildoor bids on the honest block and
+
+message.txt
+3 KB
+[https://github.com/ChainSafe/lodestar/pull/9757](https://github.com/ChainSafe/lodestar/pull/9757) only need reviews from **@Lodestar | ETH** on this
+**nflaig** — **8/3/26, 5:28 PM**
+Marko and I are also going to set up a Buzz channel for the day-to-day issue discussions. There’s no pressure at all to join since it means downloading another app, but you’re both very welcome if it would be useful. We’ll keep bringing anything that needs your input back into this Discord thread either way.
+so based on that seems like it's probably anyways your "private" channel to use? for public discussions we can use this thread, or if it's a bigger topic we can always create a dedicated thread to keep context isolated   nflaig — 8/3/26, 5:31 PM
+@wemeetagain or someone with chainsafe access has to do the first publish of the new package, otherwise I believe the next release will fail
+krisoshea.eth — 8/3/26, 5:32 PM
+ye like basically telegram is a bit annoying for us as we cant separate chats into topics, for discord we dont want to clog the lodestar discord with all our separate chats and personally i find discord hard to use for this purpose, so i was going to use slack but buzz just seems like a new kid on the block that would be fun to try so figured we would try that. its purpose is basically so we can have separate threads and chats for individual issues or sbu topics relevant to the builder so we can easily track things and find things we talked about before if that makes sense? would be nice to have you guys there too but ye since you cant download slack or buzz its kind of hard to navigate haha. Actually we can access slack on the browser so maybe we should use that so you guys can access it?
+krisoshea.eth — 8/3/26, 5:33 PM
+nice thanks for this
+krisoshea.eth — 8/3/26, 5:34 PM
+ye we can defo use this thread for continued discussions / relevant questions we have for you guys and to keep lodekeeper up to date.
+nflaig — 8/3/26, 5:34 PM
+telegram is a bit annoying for us as we cant separate chats into topics
+you can create a group (or whatever they call it) and create topics there
+I don't have a opinion on what you guys use as long as info that should be public is public
+krisoshea.eth — 8/3/26, 5:35 PM
+true actually, i just find from past experience slack is just way nicer for this type of organisation
+krisoshea.eth — 8/3/26, 5:36 PM
+gotcha, is there any way we could configure like a builder channel or thread in discord and create permanent sub channels within it or would that not be possible?
+would happily keep this all within discord if you guys would prefer 
+nflaig — 8/3/26, 5:37 PM
+merged
+krisoshea.eth — 8/3/26, 5:37 PM
+also @nflaig @NC can you drop your email here so i can invite you to our linear board? you can access it via the browser and would be nice if you have the ability to periodically check in on it if youre curious or want to, no stress if you think its unnecessary, im setting up github sync so the issues will be viewable on marko and Is shared repo anyway
+krisoshea.eth — 8/3/26, 5:38 PM
+first builder pr down, nice work @Marko L !
+nflaig — 8/3/26, 5:38 PM
+nflaig@protonmail.com don't sell it lol
+krisoshea.eth — 8/3/26, 5:38 PM
+haha love a proton mail email
+nflaig — 8/3/26, 5:38 PM
+anyways this email is public, I use it on EIP and on github
+krisoshea.eth — 8/3/26, 5:38 PM
+will do my best not to 😂 
+ok invited you there
+nflaig — 8/3/26, 5:41 PM
+worked
+Image
+krisoshea.eth — 8/3/26, 5:41 PM
+sweet!
+hope you like it, spent a few hours organising it all today
+nflaig — 8/3/26, 5:41 PM
+https://linear.app/kriso/team/LOD/all for later
+krisoshea.eth — 8/3/26, 5:43 PM
+any thoughts on this Nico? or should we just move ahead with our own set up?
+nflaig — 8/3/26, 5:43 PM
+just do whatever works, I think it's not worth to look into a bridge or similar
+if you want NC or myself to join, feel free to share a link
+Marko L — 8/3/26, 5:44 PM
+thanks for merging this, a big day today 🙏 😁
+nflaig — 8/3/26, 5:45 PM
+ah RIP, need @wemeetagain 😁 chainsafe admins help
+Image
+maybe @Matthew Keil can do this too?
+krisoshea.eth — 8/3/26, 5:46 PM
+ok fair fair and its not worth setting up a separate lodestar builder channel where we could add sub threads or would that be annoying to set up?
+nflaig — 8/3/26, 5:47 PM
+we can do that too if you wanna stay on discord
+just tell me what you need and prefer
+krisoshea.eth — 8/3/26, 5:48 PM
+maybe it would be better to do that so you guys can see it easily and lodekeeper has all the context?
+Marko L — 8/3/26, 5:48 PM
+@krisoshea.eth should we store this somewhere so we don't lose it?
+krisoshea.eth — 8/3/26, 5:48 PM
+basically would just need a lodestar builder channel that we have permissions to add sub threads too i think
+krisoshea.eth — 8/3/26, 5:49 PM
+ye good shout ill just add it to my repo where i have the implementation plan etc
+so its separate from the actual forked lodestar repo
+nflaig — 8/3/26, 5:51 PM
+so we wanna move to the other channel?
+Marko L — 8/3/26, 5:52 PM
+sure
+nflaig — 8/3/26, 5:52 PM
+⁠lodestar-builder for reference
+krisoshea.eth — 8/3/26, 5:52 PM
+ye thats perfect, looks like we have permissions to add sub-threads so ill create them now
+or over the next few days as they become relevant
+thanks for that!
+wemeetagain [CS],  — 8/3/26, 6:00 PM
+Rip. I can fix it but it will have to be in several hours
+ [CS], 
+nflaig — 8/3/26, 6:00 PM
+no rush, just has to be before the next release
+NC — Yesterday at 1:43 AM
+I prefer looking at github issue so would be great to have one synced up. Or is there any additional functionality from linear board? I most likely will just check the board once in a while, not going to modify or move anything around 
+krisoshea.eth — Yesterday at 11:42 AM
+Hey NC, no worries I have linear connected to the forked repo Marko and I are working on, so all the linear issues are synced to that repo and can be viewed there too. If you want linear access justt drop your email and I’ll add you. If not, the GitHub issues will be auto synced so you can track there too. Only issue is the issues on GitHub aren’t organised nearly as well as linear as linear has a much nicer feature set, I can see if I can clean up the GitHub set up though if it makes life easier for you if you want to take a look at issues or follow our progress. The linear board imo is just a way better project management tool vs what GitHub has. There are a lot more features and things we will use but if you just want to view an issue on GitHub you shouldn’t be missing out on too much. If you just want to check the board I think GitHub should be ok, I’ll just try and organise it better for you 🙂 
+Marko L — Yesterday at 3:14 PM
+New branch for finishing API-01 task:
+https://github.com/markolazic01/lodestar/tree/feat/builder-api-01
+GitHub
+GitHub - markolazic01/lodestar at feat/builder-api-01
+🌟 Ethereum Consensus client for the Zig and TypeScript ecosystem - markolazic01/lodestar
+nflaig — Yesterday at 3:26 PM
+https://www.npmjs.com/package/@lodestar/builder is released 🔥
+Marko L — Yesterday at 3:27 PM
+wonderful 🎉
+Marko L — Yesterday at 4:26 PM
+On builder initialization we need to make a simple BN syncing status check. I noticed the validators service which tracks syncing status:
+https://github.com/ChainSafe/lodestar/blob/92d84f9b7ff05a5f1a216ce776a782ac615fa3ee/packages/validator/src/services/syncingStatusTracker.ts
+I'm throwing it in for a discussion, can this one be moved and shared between the validator and the builder? Do we want the full service in the builder and should it be any different than this one?
+This is pretty isolated so we don't need to make a decision right away, I can add only a basic assertion for now.
+nflaig — Yesterday at 5:17 PM
+the question is whether or not runOnResynced is useful, from what I remember this was added to refetch duties
+nflaig — Yesterday at 9:23 PM
+https://chainsafe.github.io/lodestar/next/run/builder-management/builder-cli we should probably hide this in the docs for now until it's functional, or at some work in progress 🚧  sign
+Marko L — Yesterday at 9:25 PM
+agree, do we need to disable doc generating in the repo or should this be removed some other way?
+I can make a PR for it now if it is doc gen thing
+nflaig — Yesterday at 9:26 PM
+just removing it from the sidebar
+Marko L — Yesterday at 9:29 PM
+https://github.com/ChainSafe/lodestar/pull/9770
+GitHub
+chore: hide builder-cli doc by markolazic01 · Pull Request #9770 ...
+chore: hide builder-cli doc by markolazic01 · Pull Request #9770 ...
+Marko L — Yesterday at 10:47 PM
+should we use it to guard bid retrieval? I guess it doesn't make sense to retrieve/sign/propagate the bid if BN is not in sync?
+nflaig — Yesterday at 10:58 PM
+there is a "not while syncing" helper, it doesn't make sense to prepare bids for far behind heads, it needs to be synced, also EL needs to be synced 
+Marko L — Yesterday at 11:01 PM
+got it, should I then cover our basic needs now with simple assertions, and then afterwards I can make it into a service with that helper?  nflaig — 7/21/26, 2:53 PM
+@soham @Ken Kaneki let's coordinate here
+soham — 7/21/26, 2:54 PM
+thanks @nflaig for adding, hello @Ken Kaneki !
+nflaig — 7/21/26, 2:58 PM
+I think a good first step is to think about what adversarial features we wanna add next, right now all that deathstar does is reorg payload (ie. always build on EMPTY) and withhold ptc in the block
+also ethpandaops has a malicious prysm node that already covers a few scenarios, we should try to come up with different test cases
+Image
+few obvious and easy to add features are
+late payload reveal
+late blob reveal or blob withholding
+payload equivocation
+
+and to make deathstar more polished and easy to use we should make every feature configurable, ideally at runtime and via a UI, not just cli
+
+this deathstar branch is currently also outdated, need to be rebased against unstable once that has all changes for alpha.12 merged
+also cc @NC if you are interested in following along, similar to lodestar builder, you probably also have some ideas of features we could add
+Ken Kaneki [CS],  — 7/21/26, 3:43 PM
+thank you for putting us in a group @nflaig , hey ser @soham
+NC — 7/22/26, 4:58 AM
+FYI there is a wishlist that you guys can brainstorm with https://github.com/ChainSafe/lodestar/blob/deathstar/EPBS_CHAOS_FEATURES.md . Don't read them blindly as they might not be correct.
+nflaig — 7/22/26, 12:23 PM
+this is AI generated btw, there might be some ideas in there, but also a lot of cases there don't make much sense, but in general, using AI to explore edge cases and attack scenarios in the spec/clients is a great way to approach this
+soham — 7/24/26, 5:09 PM
+sorry for delay i was going over the devnet7 EIPs and here are some of my raw notes https://hackmd.io/@zemse/B1-9fZ-HGe
+i've also made hacky setup to run local devnets with deathstar https://github.com/zemse/devnetr
+nflaig — 7/24/26, 5:12 PM
+will take a look next week
+i've also made hacky setup to run local devnets with deathstar https://github.com/zemse/devnetr
+is interesting, so the main argument for it vs. kurtosis is build times?
+soham — 7/24/26, 5:28 PM
+just a bit, on mac building the client image for linux image is slower. but this is just for dev / fast iteration for deathstar use case. otherwise this is quite fragile and with docker its more reproducable
+nflaig — 7/24/26, 5:29 PM
+are you using Dockerfile.dev? rebuilds should take less than 30 seconds if you only modify src
+soham — 7/26/26, 10:39 PM
+i agree that this works
+Noted down a list of few features that we can add into deathstar https://hackmd.io/@zemse/rJxK0lVBzl
+nflaig — 7/29/26, 1:59 PM
+cc @Marko L @krisoshea.eth so you are aware of this channel, not fully related to lodestar builder, but maybe later once we talk about malicious features for the builder
+nflaig — 7/29/26, 1:59 PM
+sorry, will try to look at that soon
+Marko L — 7/29/26, 1:59 PM
+yeah, we're following
+nflaig — 7/29/26, 2:00 PM
+I also added more deathstar features, see ⁠Eth R&D⁠ for latest status
+this needs a lot of polishing still, don't really like how the feature flags look and work, but I think having all off by default is good since some of these features would conflict with each other and not produce the outcome we want
+Marko L — 7/29/26, 2:01 PM
+@krisoshea.eth should we add this to our doc as well?
+nflaig — 7/29/26, 2:02 PM
+so for context, one of the overlapping features of lodestar builder and deathstar is the configurability, meaning changing behavior at runtime instead of via static cli flags, and ideally via UI, although could start with just having the api available, build in the UI later on top
+Marko L — 7/29/26, 2:03 PM
+think we mention that part in the doc already, we have it in mind 🫡
+soham — 7/29/26, 2:39 PM
+i was using flags for throw away local devnet runs, but being able to config on runtime makes sense. can i experiment this with joining devnet-7? 
+do you know a better way to get devnet7 ETH than this? https://faucet.glamsterdam-devnet-7.ethpandaops.io/ 
+nflaig — 7/29/26, 2:41 PM
+I would recommend to simulate scenario on local kurtosis first, that's usually what I do, I don't run all clients but the specific ones I wanna test, and usually lodestar becasue I know it works properly
+krisoshea.eth — 7/29/26, 6:49 PM
+yep we can defo add this under our deathstar section, we can keep track of this for sure
+krisoshea.eth — 7/29/26, 6:50 PM
+yep already added a section on deathstar and how we can integrate builder into deathstar or test adversarial builder scenarios with deathstar, one of our stretch / strong goals
+nflaig — 7/29/26, 7:35 PM
+there are few scenarios where deathstar can be helpful, eg. proposer equivocation. this would mostly test that the lodestar beacon node is properly working and does not publish the execution payload envelope if there is an equivocation
+NC — 7/30/26, 10:49 PM
+Can Deathstar currently build blocks on the wrong parent variant on purpose? Might be worth to see if some clients prune or retain dangling variant in their block tree https://github.com/ethereum/consensus-specs/issues/5496
+GitHub
+childless payload-status variants are never FFG-tested, so `get_hea...
+Description In pre-Gloas, filter_block_tree keeps a block in the filtered block tree if at least one of its children is kept. A childless block is kept only if it passes the FFG test itself ie. con...
+Description In pre-Gloas, filter_block_tree keeps a block in the filtered block tree if at least one of its children is kept. A childless block is kept only if it passes the FFG test itself ie. con...
+nflaig — 8/1/26, 12:55 PM
+I think this is impossible to simulate on a real network, even on kurtosis, it seems really hard, tests can simulate this of course and it seems like a correctness issue to me
+nflaig — 8/1/26, 12:58 PM
+great list, I left a few comments, what seems missing is proposer equivocation and unbundling attacks, but that is something we need both lodestar builder and deathstar to simulate as you need a malicious builder + proposer
+https://hackmd.io/@zemse/rJxK0lVBzl cc @Marko L @krisoshea.eth there is also stuff related to builder on there, but in general, there is an overlap that also a proposer can do, eg. Payload withholding is something either can simulate, there is a very small difference in how the network handles this so could be worth to test from a proposer and builder angle
+HackMD
+Deathstar features for glamsterdam devnet - HackMD   # Lodestar EIP-7732 Builder — current project brief
+
+- **As of:** 2026-08-04T13:31:37+01:00 (Europe/Dublin)
+- **Last incorporated report:** `reports/2026-08-04.md`
+- **Latest run status:** complete
+- **Monitoring history:** 2026-07-14 through 2026-08-04, fully reconciled below
+
+## What changed in the latest update
+
+The latest sweep found four material changes:
+
+1. [Lodestar #9751](https://github.com/ChainSafe/lodestar/pull/9751) merged at `ba70101`, completing exact `UintBn64` handling for execution payment, bid gas limit, and `targetGasLimit` through proposer preferences, `PayloadAttributesV4`, and events.
+2. [Lodestar #9756](https://github.com/ChainSafe/lodestar/pull/9756) merged at `f6a0d68`, narrowly ignoring direct-parent bids at epoch boundaries. A broader same/next-slot restriction considered during review was retracted and is not part of the merged behavior.
+3. Consensus [#5498](https://github.com/ethereum/consensus-specs/pull/5498) and [#5499](https://github.com/ethereum/consensus-specs/pull/5499) merged, correcting an omitted epoch-boundary FCR update and a duplicate same-slot FCR run in the vector schedule.
+4. The [2026-08-04 public ePBS archive](https://github.com/ethereum/eth-rnd-archive/blob/master/epbs/2026-08-04.json) reports nine 2026-08-03 reorgs concentrated at epoch transitions after skipped slots and discusses transition-computation caching plus timing/minimum-bid hypotheses. This remains archive-sourced and telemetry-unverified.
+
+The Lodestar changes are on unstable, not stable v1.45.0.
+
+## Latest verified baseline
+
+- **Consensus specification:** [v1.7.0-alpha.13](https://github.com/ethereum/consensus-specs/releases/tag/v1.7.0-alpha.13), signed tag commit `e762dd6`, published 2026-07-31. It includes dependent-root validation, parent-slot payload availability, local-head-compatible multiple bids, and the already-known-block early return that preserves accumulated PTC votes.
+- **Lodestar stable:** [v1.45.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.45.0), commit `6051fa3`, published 2026-07-27. It is code-identical to v1.45.0-rc.0 apart from release metadata and excludes the later Gloas unstable work described here.
+- **Active public devnet:** [glamsterdam-devnet-7](https://notes.ethereum.org/@ethpandaops/glamsterdam-devnet-7), still marked WIP and pinned to consensus alpha.12 plus execution fixtures v7.2.0. Its static public sheet does not establish runtime health.
+- **Latest execution fixtures:** [glamsterdam-devnet@v8.0.0](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.0.0), commit `d681ca4`. This begins the devnet-8 fixture series and makes EIP-8070 `engine_getBlobsV4` support mandatory for participating ELs, but [the tracker](https://github.com/ethereum/execution-specs/issues/3167) still gives no launch date and no public devnet-8 launch has been verified.
+- **Canonical human note:** [public HackMD](https://hackmd.io/@krisos/S1a9mdB7fl), readable on 2026-08-04 but still labelled with a 2026-07-14 last sweep. It is a human-maintained baseline, not evidence that later implementation work has landed.
+
+## Settled architecture and protocol decisions
+
+- Builder deposit request type is `0x03`; Builder withdrawal credentials use prefix `0xB0`. Devnet-7 uses deposit contract `0x0000bff46984e3725691fa540a8c7589300d8282` and exit contract `0x000064d678505ad48f8ccb093bc65613800e8282`.
+- Builder lifecycle currently includes a 64-request deposit cap, 64-epoch minimum withdrawability delay, payload-builder eligibility, and a system-call contract-disable path with reduced throughput limits.
+- `PAYLOAD_DUE_BPS=5000`, placing the payload-availability deadline six seconds into a 12-second slot.
+- [Consensus #5497](https://github.com/ethereum/consensus-specs/pull/5497) admits and propagates multiple bids compatible with the node's local head view, including relevant FULL/EMPTY paths; incompatible-branch bids are ignored.
+- [Consensus #5473](https://github.com/ethereum/consensus-specs/pull/5473) looks up payload availability at the parent block slot, preventing skipped-slot timely-head errors.
+- [Consensus #5495](https://github.com/ethereum/consensus-specs/pull/5495) returns early for an already-known block, preserving PTC votes and timeliness state on redelivery.
+- Proposer-preference APIs are merged; invalid preferences are ignored. Dependent-root age/boundary-child rules are settled upstream and implemented by Lodestar [#9695](https://github.com/ChainSafe/lodestar/pull/9695).
+- One signed execution payload envelope supports stateful and stateless publication shapes via `Eth-Blob-Data-Included`; `consensus_and_equivocation` remains the Builder-facing validation target.
+- `head_v2` EMPTY→FULL second emission is a SHOULD; other FULL/EMPTY edge emissions remain implementation-specific.
+- ProduceBlockV4 carries execution value for multi-beacon-node selection. Local building remains the floor, local wins ties, and remote policy uses matched/unmatched preference rules in the still-open API work.
+- Lodestar forwards a bid only when it exceeds the tuple's high bid by `min(max(0.0001 ETH, 3%), 0.01 ETH)`; local acceptance and gossip forwarding are intentionally distinct.
+- Bid fields that contribute to SSZ roots must remain exact `uint64` values through parsing, caching, signing, hashing, proposer preferences, `PayloadAttributesV4`, and events. Lodestar [#9749](https://github.com/ChainSafe/lodestar/pull/9749), [#9750](https://github.com/ChainSafe/lodestar/pull/9750), and [#9751](https://github.com/ChainSafe/lodestar/pull/9751) implement this on unstable; JavaScript `number` is unsafe for unbounded values above `2^53`.
+
+## Open actions and unresolved architecture questions
+
+### P0 — Consensus and interoperability safety
+
+1. Land and devnet-test [Lodestar #9755](https://github.com/ChainSafe/lodestar/pull/9755). Preserve local-versus-peer fault ownership through wrapped errors so EL outages cannot exhaust honest peer scores.
+2. Complete cross-client #5497 rollout. Lodestar [#9739](https://github.com/ChainSafe/lodestar/pull/9739) and the narrow epoch-boundary filter [#9756](https://github.com/ChainSafe/lodestar/pull/9756) are merged; Teku [#11049](https://github.com/Consensys/teku/pull/11049) is open; Prysm's earlier [#17237](https://github.com/OffchainLabs/prysm/pull/17237) is superseded and a replacement remains to be identified.
+3. Finish FULL-parent production in draft [#9736](https://github.com/ChainSafe/lodestar/pull/9736): operation selection, rewards, voluntary exits, and execution requests must use the correct pre- or post-payload parent state.
+
+### P1 — Sync, fork choice, and production
+
+4. Finish the range-sync parent [#9667](https://github.com/ChainSafe/lodestar/pull/9667) and envelope/signature-aware attempt identity [#9686](https://github.com/ChainSafe/lodestar/pull/9686). The batch classification child [#9693](https://github.com/ChainSafe/lodestar/pull/9693) is merged.
+5. Keep [#9723](https://github.com/ChainSafe/lodestar/pull/9723) under review for proposer-head/EL forkchoice coherence, safe-hash ancestry, local/remote preference separation, and publication rollback.
+6. Close EIP-7688 boundary gaps in [#9689](https://github.com/ChainSafe/lodestar/pull/9689): correct cross-Gloas state roots and explicit post-Gloas req/resp bounds for blocks, envelopes, and data columns.
+7. Complete [#9727](https://github.com/ChainSafe/lodestar/pull/9727) Builder-deposit signature caching and demonstrate fork-transition scale without hiding verification failures.
+8. Resolve remaining delivery seams in the [mainnet checklist](https://github.com/ChainSafe/lodestar/issues/9692): fork transition, sync/non-finality cache pressure, FCR compliance, Builder actor/API attachment, envelope equivocation, remote/local fallback, performance, and a stable release vehicle.
+
+### P1 — API and Builder service integration
+
+9. Reconcile open [builder-specs #165](https://github.com/ethereum/builder-specs/pull/165), [beacon-APIs #630](https://github.com/ethereum/beacon-APIs/pull/630), [keymanager-APIs #87](https://github.com/ethereum/keymanager-APIs/pull/87), and [#88](https://github.com/ethereum/keymanager-APIs/pull/88). Keep request-auth object/versioning, `Date`, `X-Timeout-Ms`, `Eth-Consensus-Version`, batched preferences, per-key configuration, and the trusted/off-protocol payment boundary aligned.
+10. Keep Teku [#11026](https://github.com/Consensys/teku/pull/11026) under interoperability test. Signed bid-response deserialization is corrected, but the client remains open and unwired.
+11. Finish the draft Lodestar Builder actor [#9594](https://github.com/ChainSafe/lodestar/pull/9594) and resolve the envelope-equivocation TODO left by merged block-production [#9595](https://github.com/ChainSafe/lodestar/pull/9595).
+
+### P2 — Tests, successor devnet, and unsettled research
+
+12. Regenerate alpha.13 FCR artifacts after merged [#5498](https://github.com/ethereum/consensus-specs/pull/5498)/[#5499](https://github.com/ethereum/consensus-specs/pull/5499), gate generation on open approved [#5504](https://github.com/ethereum/consensus-specs/pull/5504), and verify artifacts before blaming Lodestar's remaining skipped vectors.
+13. Profile the archive-reported epoch-transition reorg pressure: transition-state caching, skipped slots, duty prefetch, bid-request timing, minimum-bid fallback, and blob-heavy local production. Treat the archive as a watch signal, not verified telemetry.
+14. Keep devnet-7 and devnet-8 baselines separate. Do not infer launch or health from fixtures, image tags, an incomplete checklist, or an unavailable dashboard.
+15. [Consensus #5492](https://github.com/ethereum/consensus-specs/pull/5492) remains an unsettled epoch-boundary late-head proposer-reorg proposal.
+16. Circuit-breaker threshold, recovery, fault class, and Builder-versus-relay identity remain unsettled. Public discussion includes one-failure/one-epoch and two-failures-within-five-epochs proposals, with relay-signer collateral risk.
+17. PTC late-slot import-freeze and shorter attestation-deadline ideas remain non-normative research and require distributed, mainnet-like evidence.
+
+## Current implementation and testing consequences
+
+- Exercise same-Builder bids on competing parents, FULL/EMPTY branches, and reorged heads; include pre-parent arrival, later recovery, duplicate suppression, incompatible-branch ignore, and minimum-increment forwarding.
+- At epoch boundaries, prove the narrow direct-parent rejection does not suppress otherwise valid gossip for peers. Cover skipped slots, proposer-boost suppression, transition-state caching, and both local and remote bid selection.
+- Serialize, cache, hash, sign, compare, and emit execution payment, gas limit, and `targetGasLimit` exactly; test `2^53±1` and `uint64` max through proposer preferences, `PayloadAttributesV4`, events, and a cross-client SSZ-root comparison.
+- Regenerate corrected FCR vectors after consensus #5498/#5499, then re-run Lodestar's alpha.13 suite before classifying the two remaining skips.
+- Profile epoch-transition proposal work with duty prefetch enabled/disabled, parent-state regeneration, blob-heavy local production, late bid requests, and minimum-bid fallback. Do not convert archive discussion into a health assertion.
+- Test local EL connection refusal, timeout, pruning, syncing, invalid payload, malformed peer response, and mid-stream reorg separately. Assert only peer-attributable failures affect peer scores.
+- For skipped slots, query parent payload availability using the parent block slot. For FULL parents, select operations and compute rewards from the payload-applied state while preserving original parent state where the transition requires it.
+- Range-sync attempt identity must include block, envelope, and signature. Retry classification must distinguish previous, current, and both batches without discarding validated prefixes or losing the original attempt.
+- Test weak/strong head selection, safe-hash ancestry, proposer-boost suppression, local publication rollback, and FCR pause/restart under non-finality and deep sync.
+- Test EIP-7688 state roots across the fork and enforce fork-specific req/resp size bounds. Keep light-client proof/cross-fork work in draft [#9687](https://github.com/ChainSafe/lodestar/pull/9687) on the compatibility matrix.
+- Exercise Builder onboarding at fork transition, cached signature fallback, 10,000-deposit scale, lifecycle exit batching, contract-disable throughput, recurring win/withhold rules, and reveal failure.
+- Builder API integration tests must cover signed auth, mandatory headers, timeout propagation, batched preferences, local tie wins, matched/unmatched remote bids, maximum payment policy, signed bid wrappers, winning-Builder URL round trip, and stateful/stateless production.
+- Preserve metrics that distinguish accepted from forwarded bids, local from remote faults, EMPTY from FULL head transitions, reveal failures, FCR pause/reset, cache hit/fallback, epoch-transition latency, and post-state-cache failures.
+
+## Active watch items
+
+- `builder-multi-branch-bids` — Lodestar [#9739](https://github.com/ChainSafe/lodestar/pull/9739) and epoch-boundary [#9756](https://github.com/ChainSafe/lodestar/pull/9756) are merged; [Teku #11049](https://github.com/Consensys/teku/pull/11049) and a Prysm replacement remain active.
+- `epbs-epoch-transition-reorg-pressure` — the [2026-08-04 public archive](https://github.com/ethereum/eth-rnd-archive/blob/master/epbs/2026-08-04.json) reports epoch-transition reorg concentration; caching and timing/minimum-bid causes remain hypotheses because telemetry was unavailable.
+- `lodestar-range-sync-local-el-peer-scoring` — [#9755](https://github.com/ChainSafe/lodestar/pull/9755) active; compare [Prysm #17274](https://github.com/OffchainLabs/prysm/pull/17274).
+- `gloas-payload-availability-parent-slot` — Lodestar merged; [Prysm #17269](https://github.com/OffchainLabs/prysm/pull/17269) and approved [Teku #11032](https://github.com/Consensys/teku/pull/11032) active.
+- `lodestar-full-parent-state-production` — draft [#9736](https://github.com/ChainSafe/lodestar/pull/9736), five commits.
+- `lodestar-9667-range-sync-envelope-fault-classification` — parent [#9667](https://github.com/ChainSafe/lodestar/pull/9667) and child [#9686](https://github.com/ChainSafe/lodestar/pull/9686) active.
+- `lodestar-proposer-fcu-coherence` — [#9723](https://github.com/ChainSafe/lodestar/pull/9723) active.
+- `lodestar-builder-deposit-signature-cache` — [#9727](https://github.com/ChainSafe/lodestar/pull/9727) active.
+- `lodestar-9390-9689-eip7688-boundary-hardening` — [#9689](https://github.com/ChainSafe/lodestar/pull/9689) active.
+- `lodestar-9687-gloas-light-client-cross-fork` — [#9687](https://github.com/ChainSafe/lodestar/pull/9687) active.
+- `lodestar-gloas-mainnet-readiness-checklist` — [issue #9692](https://github.com/ChainSafe/lodestar/issues/9692) active.
+- `lodestar-9595-production-seam-gaps` — Builder actor [#9594](https://github.com/ChainSafe/lodestar/pull/9594) and envelope equivocation remain active.
+- `builder-flow-apis-devnet8` — [builder #165](https://github.com/ethereum/builder-specs/pull/165), [beacon #630](https://github.com/ethereum/beacon-APIs/pull/630), keymanager [#87](https://github.com/ethereum/keymanager-APIs/pull/87)/[#88](https://github.com/ethereum/keymanager-APIs/pull/88), Teku [#11026](https://github.com/Consensys/teku/pull/11026), and SSV [#2962](https://github.com/ssvlabs/ssv/issues/2962) active.
+- `consensus-compliance-kzg-generation` — [#5504](https://github.com/ethereum/consensus-specs/pull/5504) open and approved; corrected FCR artifact generation and verification remain pending.
+- `lodestar-gloas-fcr-vector-coverage` — consensus [#5498](https://github.com/ethereum/consensus-specs/pull/5498)/[#5499](https://github.com/ethereum/consensus-specs/pull/5499) merged; Lodestar regeneration and diagnostics [#9711](https://github.com/ChainSafe/lodestar/pull/9711) remain active.
+- `lodestar-gloas-devnet7-fixes-unstable-gap` — envelope-by-peer quota [#9710](https://github.com/ChainSafe/lodestar/pull/9710) active.
+- `prysm-epoch-boundary-duty-prefetch` — approved [#17268](https://github.com/OffchainLabs/prysm/pull/17268) remains open; keep duty fetching off Lodestar's slot-zero proposal hot path.
+- `gloas-epoch-boundary-proposer-reorg` — [#5492](https://github.com/ethereum/consensus-specs/pull/5492) active and unsettled.
+- `builder-relay-circuit-breaker-scope` and `ptc-late-slot-import-freeze` — active research watches, not normative rules.
+- `devnet-7-alpha12-baseline`, `execution-fixtures-v8-0-0-devnet8`, and `lodestar-v1-45-0-stable-release` — active delivery baselines; no devnet-8 launch or new Lodestar stable release verified.
+- `epf7-week5-builder-delivery-transition` — presentation delivered; development-strategy and initial implementation phase remain the latest verified project status.
+
+## Resolved or superseded in the latest update
+
+- `lodestar-pr-9751` resolved by merge `ba70101`; exact `targetGasLimit` propagation is now folded into the settled exact-`uint64` rule.
+- `lodestar-pr-9756` resolved by merge `f6a0d68`; only the narrow epoch-boundary direct-parent filter landed.
+- `consensus-specs-pr-5498` and `consensus-specs-pr-5499` resolved by merges `f49ea20` and `95bdc67`; artifact regeneration remains active under FCR coverage.
+
+## Source health
+
+Run status is complete: all six critical public lanes succeeded on 2026-08-04. Their last-successful cursors advanced independently; unchanged baseline identifiers were retained.
+
+- Canonical HackMD: success; publicly readable, note last-sweep marker still 2026-07-14.
+- Consensus specs: success; alpha.13 at `e762dd6` remains latest; #5498/#5499 merged and #5504 remains open.
+- Lodestar: success; stable v1.45.0 unchanged; unstable cursor advanced through #9751 at `ba70101` and #9756 at `f6a0d68`, while #9755 remains open.
+- Beacon APIs: success; #630 remains open with 13 commits.
+- Active devnet sheet: success; devnet-7 remains WIP on alpha.12/v7.2.0. This is configuration evidence, not health evidence.
+- Execution fixtures: success; v8.0.0 remains latest and no devnet-8 launch is verified.
+- eth-rnd public archive: EPBS through 2026-08-04; payload-builders and protocol-fellowship through 2026-08-03; APIs through 2026-07-29. Archive lag, omissions, and fidelity limits apply.
+- Assertoor Gloas playbooks: success; no later material Builder lifecycle change was exposed.
+- ethPandaOps Lab devnet-7: noncritical failure; no static text, so the archive reorg report could not be corroborated as runtime-health evidence.
+- Potuz circuit-breaker note: noncritical failure; no readable public text, so only surrounding archive discussion is used.
+- SSV SIP-94 candidate: direct-page timeout; previous successful open/62-commit cursor retained and not refreshed.
+- State maintenance: pre-update bundle validated byte-for-byte; all five updated JSON files passed syntax, schema, required-key, timestamp, and unique-ID checks.
+
+Discord coverage: Ethereum R&D and EPF public archive checked subject to archive lag/omissions; live authenticated Discord and ChainSafe/Lodestar message history remain unavailable.
+
+## Active source-graph candidates
+
+No new candidate was added on 2026-08-04.
+
+Recommended for user-reviewed promotion:
+
+- `candidate-ethpandaops-genesis-image-tags` — [genesis-generator tags](https://hub.docker.com/r/ethpandaops/ethereum-genesis-generator/tags), durable image-publication evidence only.
+- `candidate-lodestar-gloas-mainnet-checklist` — [Lodestar issue #9692](https://github.com/ChainSafe/lodestar/issues/9692), durable project-delivery index.
+- `candidate-teku-alpha13-devnet8-checklist` — [Teku issue #11033](https://github.com/Consensys/teku/issues/11033), successor-client readiness, not launch evidence.
+- `candidate-execution-specs-devnet8-release-tracker-3167` — [tracker #3167](https://github.com/ethereum/execution-specs/issues/3167), durable fixture/follow-up/launch metadata lane.
+
+Retained active candidates: ethPandaOps Lab (unreadable static telemetry), Potuz circuit-breaker note (unreadable), SSV [issue #2962](https://github.com/ssvlabs/ssv/issues/2962), and SSV [SIP #94](https://github.com/ssvlabs/SIPs/pull/94) with its prior successful cursor.
+
+## Current suggested canonical-note updates
+
+Review [the 2026-08-04 proposal](../proposed-note-updates/2026-08-04.md). It contains exactly one publishable block covering completed exact-`uint64` handling, the narrow epoch-boundary bid filter, corrected FCR vector scheduling, and the archive-sourced epoch-transition performance watch. It is a proposal only; no HackMD write was performed.
+
+## Historical report coverage
+
+This brief reconciles every dated report and coverage audit present in `reports/`:
+
+- `reports/2026-07-14.md`
+- `reports/2026-07-14-1345.md`
+- `reports/2026-07-14-coverage-audit.md`
+- `reports/2026-07-15.md`
+- `reports/2026-07-16.md`
+- `reports/2026-07-20.md`
+- `reports/2026-07-20-1339.md`
+- `reports/2026-07-21.md`
+- `reports/2026-07-22.md`
+- `reports/2026-07-23.md`
+- `reports/2026-07-24.md`
+- `reports/2026-07-25.md`
+- `reports/2026-07-26.md`
+- `reports/2026-07-27.md`
+- `reports/2026-07-28.md`
+- `reports/2026-07-29.md`
+- `reports/2026-07-30.md`
+- `reports/2026-07-31.md`
+- `reports/2026-08-01.md`
+- `reports/2026-08-02.md`
+- `reports/2026-08-03.md`
+- `reports/2026-08-04.md`
