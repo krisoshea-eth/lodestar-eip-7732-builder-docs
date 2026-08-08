@@ -1,0 +1,1 @@
+ok but did you yourself audit the iupdated implementation plan to check if anything else is unclear or should be clarifgied or confirmed with the lodestar team before moving ahead? like we need to be sure that everyhgin in yha plan is airtight and correct and that the lodestar team is ok with all of it
