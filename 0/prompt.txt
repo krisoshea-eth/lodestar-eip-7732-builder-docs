@@ -1,0 +1,3 @@
+Okay, I don't know how to do step five, "favor the remaining resources." I don't know. I've already done the, yeah. I've already done the Git automation.
+
+So the main issue is creating views. The way you've described that is not clear to me. You need to describe step five and step two in much more detail to me because it's not clear based on load or Linear's current setup.
