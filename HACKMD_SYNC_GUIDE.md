@@ -48,9 +48,6 @@ While a review PR is still open, use that PR branch if you want HackMD to pull t
 
 - Repo/docs updates: the active PR branch for that change.
 - Full implementation plan: keep `docs/implementation-plan.md` canonical in GitHub; use the landing-page exception below for HackMD.
-- Marko's weekly updates: these are mirrored from Marko's public HackMD notes. Pushing changes back to those HackMD notes requires Marko to sync them from his own HackMD/GitHub setup.
-
-The Kris weekly update files were moved from `docs/weekly-updates/week-NN.md` to `docs/weekly-updates/kris/week-NN.md`. If any Kris HackMD note was linked to the old root-level path, update the linked GitHub file before the next push or pull.
 
 ## Link One HackMD Note To GitHub
 

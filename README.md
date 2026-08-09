@@ -2,8 +2,6 @@
 
 This repository mirrors the Lodestar EIP-7732 Builder project documents as raw Markdown so the Lodestar team can review and comment through GitHub pull requests.
 
-The human-facing HackMD notes remain useful for writing and publishing. This repo gives the same material a GitHub review surface. The full implementation plan exceeds HackMD's per-note character limit, so GitHub is canonical for the plan and its HackMD note is a short landing page.
-
 ## Documents
 
 | Document | GitHub file | Source |
