@@ -5,8 +5,8 @@ This doc tracks weekly implementation, project-board, review, and coordination w
 ### Week 6
 
 Kris:
- - Turned the accepted proposal into the implementation-plan draft: core outcome, definition of done, 16 accepted decisions, 20 core issues across four epics, dependencies, milestone gates, Ready criteria, acceptance evidence, conditional packages, and upstream change-control rules.
- - Split the first repeatable Builder loop from later PTC, payment, blob, reliability, integration, security, and handoff evidence so the board could track minimum success separately from strong/stretch work.
+ - Turned the accepted proposal into the implementation-plan draft: core outcome, definition of done, accepted decisions, milestone gates, Ready criteria, acceptance evidence, conditional packages, and upstream change-control rules.
+ - Built the initial issue taxonomy for the Builder work, separating the first repeatable Builder loop from later PTC, payment, blob, reliability, integration, security, and handoff evidence.
  - Stood up the GitHub review surface for the plan and supporting docs, mirrored the proposal, plan, and living note, and opened the implementation-plan review with Nico and NC.
  - Kept tracking findings flowing into the Week 7 baseline audit instead of prematurely closing issues against a moving `unstable` target.
 
@@ -30,7 +30,7 @@ Kris:
  - Worked through the implementation-plan review comment by comment, recorded dispositions, and folded accepted decisions into the plan and issue boundaries.
  - Tightened the issue contracts around the complete unsigned bid from the beacon node, Builder-owned fee recipient, production/publication timing split, head-change handling, API namespaces, validation ownership, and cache reuse.
  - Recorded Beacon API gaps directly in the implementation issues, especially the unsigned-bid namespace gap (#595) and bid-selection signal gap (#599), instead of treating them as permanent Lodestar-specific endpoints.
- - Kept the reviewed plan aligned with Marko's first Builder package so the v1.0 plan and upstream #9758 described the same implementation boundary.
+ - Kept the reviewed plan, issue boundaries, and Marko's first Builder package aligned so the v1.0 plan and upstream #9758 described the same implementation boundary.
 
 Marko:
 
@@ -54,8 +54,8 @@ Merged: [feat: builder initial setup #9758](https://github.com/ChainSafe/lodesta
 
 Kris:
  - Merged the implementation plan as v1.0, reconciled the GitHub/HackMD planning surfaces, refreshed the living technical note, and made GitHub canonical for the full plan.
- - Converted the plan into the Linear board and public GitHub Project mirror, auditing ownership, dependencies, evidence fields, and project views for the Lodestar team.
- - Reorganised issue state after implementation exposed the TEST-01 and MET-01 split, taking the tracked inventory from 44 to 46 issues and marking PLAN-01, BOARD-01, CLI-01, SIGN-01, and the original API-01 complete or reorganised.
+ - Converted the plan into the Linear board and public GitHub Project mirror, expanding it into the full tracked backlog for the Lodestar team with ownership, dependencies, evidence fields, and reviewer-facing project views.
+ - Reworked the backlog as implementation exposed the TEST-01 and MET-01 split, moving the tracked inventory from 44 to 46 issues across Linear and the GitHub mirror.
  - Preserved the proposer-equivocation scenario as a versioned Kurtosis test plan and kept the board aligned with current upstream work around #9781, #9757, v1.46.0-rc.0, and the moving Builder API boundary.
 
 Marko:
