@@ -23,22 +23,34 @@ Use these exact file paths when linking notes from HackMD.
 
 | HackMD note | GitHub branch | GitHub file |
 | --- | --- | --- |
-| Proposal note | `main` after the repo-docs PR is merged | `docs/proposal.md` |
-| Implementation-plan landing page | `main` after the matching docs PR is merged | `docs/hackmd-implementation-plan-index.md` |
-| Living technical note | `main` after the living-note PR is merged | `docs/living-technical-note.md` |
-| Week 0 update | `main` after the repo-docs PR is merged | `docs/weekly-updates/week-00.md` |
-| Week 1 update | `main` after the repo-docs PR is merged | `docs/weekly-updates/week-01.md` |
-| Week 2 update | `main` after the repo-docs PR is merged | `docs/weekly-updates/week-02.md` |
-| Week 3 update | `main` after the repo-docs PR is merged | `docs/weekly-updates/week-03.md` |
-| Week 4 update | `main` after the repo-docs PR is merged | `docs/weekly-updates/week-04.md` |
-| Week 5 update | `main` after the repo-docs PR is merged | `docs/weekly-updates/week-05.md` |
-| Week 6 update | `main` after the weekly-update PR is merged | `docs/weekly-updates/week-06.md` |
+| Proposal note | `main` | `docs/proposal.md` |
+| Implementation-plan landing page | `main` | `docs/hackmd-implementation-plan-index.md` |
+| Living technical note | `main` | `docs/living-technical-note.md` |
+| Kris Week 0 update | `main` | `docs/weekly-updates/kris/week-00.md` |
+| Kris Week 1 update | `main` | `docs/weekly-updates/kris/week-01.md` |
+| Kris Week 2 update | `main` | `docs/weekly-updates/kris/week-02.md` |
+| Kris Week 3 update | `main` | `docs/weekly-updates/kris/week-03.md` |
+| Kris Week 4 update | `main` | `docs/weekly-updates/kris/week-04.md` |
+| Kris Week 5 update | `main` | `docs/weekly-updates/kris/week-05.md` |
+| Kris Week 6 update | `main` | `docs/weekly-updates/kris/week-06.md` |
+| Kris Week 7 update | `main` | `docs/weekly-updates/kris/week-07.md` |
+| Kris Week 8 update | `main` | `docs/weekly-updates/kris/week-08.md` |
+| Marko Week 0 update | `main` | `docs/weekly-updates/marko/week-00.md` |
+| Marko Week 1 update | `main` | `docs/weekly-updates/marko/week-01.md` |
+| Marko Week 2 update | `main` | `docs/weekly-updates/marko/week-02.md` |
+| Marko Week 3 update | `main` | `docs/weekly-updates/marko/week-03.md` |
+| Marko Week 4 update | `main` | `docs/weekly-updates/marko/week-04.md` |
+| Marko Week 5 update | `main` | `docs/weekly-updates/marko/week-05.md` |
+| Marko Week 6 update | `main` | `docs/weekly-updates/marko/week-06.md` |
+| Marko Week 7 update | `main` | `docs/weekly-updates/marko/week-07.md` |
 
 While a review PR is still open, use that PR branch if you want HackMD to pull the current PR content before it is merged:
 
-- Repo docs and weekly updates: `review/repo-docs`
-- Implementation plan: `review/implementation-plan`
-- Living technical note: `review/living-technical-note`
+- Repo/docs updates: the active PR branch for that change.
+- Full implementation plan: keep `docs/implementation-plan.md` canonical in GitHub; use the landing-page exception below for HackMD.
+- Marko's weekly updates: these are mirrored from Marko's public HackMD notes. Pushing changes back to those HackMD notes requires Marko to sync them from his own HackMD/GitHub setup.
+
+The Kris weekly update files were moved from `docs/weekly-updates/week-NN.md` to `docs/weekly-updates/kris/week-NN.md`. If any Kris HackMD note was linked to the old root-level path, update the linked GitHub file before the next push or pull.
 
 ## Link One HackMD Note To GitHub
 
@@ -50,8 +62,8 @@ Repeat this for each note you want to sync.
 3. Choose **Push to GitHub** if the HackMD note is currently the source of truth.
 4. Choose the repository `krisoshea-eth/lodestar-eip-7732-builder-docs`.
 5. Choose the target branch:
-   - Use `main` after the matching review PR is merged.
-   - Use the matching `review/...` branch only while reviewing pre-merge content.
+   - Use `main` for merged content.
+   - Use the matching PR branch only while reviewing pre-merge content.
 6. Enter the matching file path from the table above.
 7. If HackMD asks about line-break rendering, choose the GitHub/CommonMark-compatible option.
 8. Save a named version in HackMD, for example `Sync bootstrap`.

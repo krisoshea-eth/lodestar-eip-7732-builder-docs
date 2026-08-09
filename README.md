@@ -2,30 +2,32 @@
 
 This repository mirrors the Lodestar EIP-7732 Builder project documents as raw Markdown so the Lodestar team can review and comment through GitHub pull requests.
 
-The human-facing HackMD notes remain useful for writing and publishing. This repo gives the same material a GitHub review surface. The full implementation plan exceeds HackMD's per-note character limit, so GitHub is canonical and its HackMD note is a short landing page.
+The human-facing HackMD notes remain useful for writing and publishing. This repo gives the same material a GitHub review surface. The full implementation plan exceeds HackMD's per-note character limit, so GitHub is canonical for the plan and its HackMD note is a short landing page.
 
 ## Documents
 
 | Document | GitHub file | Source |
 | --- | --- | --- |
 | Project proposal | [docs/proposal.md](docs/proposal.md) | Accepted EPF proposal in `eth-protocol-fellows/cohort-seven` |
-| Implementation plan | `docs/implementation-plan.md` | Canonical full plan; [HackMD landing page](https://hackmd.io/@krisos/SyPZNJp4fg); reviewed in a focused PR |
-| HackMD plan landing page | `docs/hackmd-implementation-plan-index.md` | Short index kept below HackMD's per-note character limit |
-| Living technical note | `docs/living-technical-note.md` | [HackMD](https://hackmd.io/@krisos/S1a9mdB7fl); reviewed in a separate PR |
-| Weekly updates | [docs/weekly-updates/](docs/weekly-updates/) | Kris's EPF HackMD updates |
-| Work Log | [docs/work-log.md](docs/work-log.md) | Daily dev updates |
+| Implementation plan | [docs/implementation-plan.md](docs/implementation-plan.md) | Canonical full plan in GitHub |
+| HackMD plan landing page | [docs/hackmd-implementation-plan-index.md](docs/hackmd-implementation-plan-index.md) | Short index for the public [HackMD plan URL](https://hackmd.io/@krisos/SyPZNJp4fg) |
+| Living technical note | [docs/living-technical-note.md](docs/living-technical-note.md) | [HackMD](https://hackmd.io/@krisos/S1a9mdB7fl) and GitHub mirror |
+| Weekly updates | [docs/weekly-updates/](docs/weekly-updates/) | Kris and Marko's EPF HackMD updates |
+| Work log | [docs/work-log.md](docs/work-log.md) | Weekly project-board, implementation, and review progress |
 
 ## Weekly Updates
 
-| Week | File | HackMD |
+| Week | Kris | Marko |
 | --- | --- | --- |
-| Week 0 | [docs/weekly-updates/week-00.md](docs/weekly-updates/week-00.md) | [Update 0](https://hackmd.io/@krisos/rJZ18M_-fg) |
-| Week 1 | [docs/weekly-updates/week-01.md](docs/weekly-updates/week-01.md) | [Update 1](https://hackmd.io/@krisos/S1jkvupWfx) |
-| Week 2 | [docs/weekly-updates/week-02.md](docs/weekly-updates/week-02.md) | [Update 2](https://hackmd.io/@krisos/SJ7J9cRffx) |
-| Week 3 | [docs/weekly-updates/week-03.md](docs/weekly-updates/week-03.md) | [Update 3](https://hackmd.io/@krisos/BkiFy_KXMx) |
-| Week 4 | [docs/weekly-updates/week-04.md](docs/weekly-updates/week-04.md) | [Update 4](https://hackmd.io/@krisos/ByrVRrG4Mx) |
-| Week 5 | [docs/weekly-updates/week-05.md](docs/weekly-updates/week-05.md) | [Update 5](https://hackmd.io/@krisos/rysfyco4Mg) |
-| Week 6 | [docs/weekly-updates/week-06.md](docs/weekly-updates/week-06.md) | [Update 6](https://hackmd.io/@krisos/SyM9AhPrfg) |
+| Week 0 | [GitHub](docs/weekly-updates/kris/week-00.md) / [HackMD](https://hackmd.io/@krisos/rJZ18M_-fg) | [GitHub](docs/weekly-updates/marko/week-00.md) / [HackMD](https://hackmd.io/@lqzic/week-0-update) |
+| Week 1 | [GitHub](docs/weekly-updates/kris/week-01.md) / [HackMD](https://hackmd.io/@krisos/S1jkvupWfx) | [GitHub](docs/weekly-updates/marko/week-01.md) / [HackMD](https://hackmd.io/@lqzic/week-1-update) |
+| Week 2 | [GitHub](docs/weekly-updates/kris/week-02.md) / [HackMD](https://hackmd.io/@krisos/SJ7J9cRffx) | [GitHub](docs/weekly-updates/marko/week-02.md) / [HackMD](https://hackmd.io/@lqzic/week-2-update) |
+| Week 3 | [GitHub](docs/weekly-updates/kris/week-03.md) / [HackMD](https://hackmd.io/@krisos/BkiFy_KXMx) | [GitHub](docs/weekly-updates/marko/week-03.md) / [HackMD](https://hackmd.io/@lqzic/week-3-update) |
+| Week 4 | [GitHub](docs/weekly-updates/kris/week-04.md) / [HackMD](https://hackmd.io/@krisos/ByrVRrG4Mx) | [GitHub](docs/weekly-updates/marko/week-04.md) / [HackMD](https://hackmd.io/@lqzic/week-4-update) |
+| Week 5 | [GitHub](docs/weekly-updates/kris/week-05.md) / [HackMD](https://hackmd.io/@krisos/rysfyco4Mg) | [GitHub](docs/weekly-updates/marko/week-05.md) / [HackMD](https://hackmd.io/@lqzic/week-5-update) |
+| Week 6 | [GitHub](docs/weekly-updates/kris/week-06.md) / [HackMD](https://hackmd.io/@krisos/SyM9AhPrfg) | [GitHub](docs/weekly-updates/marko/week-06.md) / [HackMD](https://hackmd.io/@lqzic/week-6-update) |
+| Week 7 | [GitHub](docs/weekly-updates/kris/week-07.md) / [HackMD](https://hackmd.io/@krisos/BJ_rpGBUMl) | [GitHub](docs/weekly-updates/marko/week-07.md) / [HackMD](https://hackmd.io/@lqzic/week-7-update) |
+| Week 8 | [GitHub](docs/weekly-updates/kris/week-08.md) / [HackMD](https://hackmd.io/@krisos/B11rp1LUfg) | |
 
 ## Syncing With HackMD
 

@@ -1,8 +1,14 @@
-# EPF 7 - Work Log
+# EPF 7 - Weekly Work Log
 
-This doc stores information of work done on ePBS builder. Development started in week 6 of EPF 7.
+This doc tracks weekly implementation, project-board, review, and coordination work for the Lodestar EIP-7732 Builder. It is deliberately lighter than the weekly write-ups and focuses on project movement after the proposal was accepted.
 
 ### Week 6
+
+Kris:
+ - Wrote and refined the full implementation plan after the Lodestar team discussions, turning the proposal into evidence gates, twenty core issues, conditional packages, and reviewable delivery criteria.
+ - Opened the plan for GitHub review, set up the docs repository review surface, and routed tracking findings into the Week 7 baseline audit instead of expanding scope prematurely.
+
+Marko:
 
 Tasks completed (with links): [`CLI-01`](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/f5b241698ef387f58f0e22a8bc2920704050ece6/docs/implementation-plan.md#cli-01--add-packagesbuilder-and-the-lodestar-builder-command), [`SIGN-01`](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/f5b241698ef387f58f0e22a8bc2920704050ece6/docs/implementation-plan.md#sign-01--add-one-local-builder-keystore-and-signer-boundary)
 
@@ -17,6 +23,12 @@ Features added:
 Diff: https://github.com/ChainSafe/lodestar/compare/4001398810453c5c1b4abe8c06323a76d0ba592f...markolazic01:lodestar:30de4886dcc3d132b0e206e7f87c0551e4c77dff
 
 ### Week 7
+
+Kris:
+ - Worked through the implementation-plan review, folding accepted decisions into the plan and issue boundaries around fee recipient ownership, complete unsigned bids from the beacon node, publication timing, API namespaces, and validation ownership.
+ - Prepared the v1.0 plan for merge and board conversion while keeping the baseline audit open until the moving upstream Gloas work could be checked against a pinned target.
+
+Marko:
 
 Targeting: `API-01`
 
@@ -35,6 +47,12 @@ Changes made:
 Merged: [feat: builder initial setup #9758](https://github.com/ChainSafe/lodestar/pull/9758)
 
 ### Week 8
+
+Kris:
+ - Merged the implementation plan as v1.0, reconciled the GitHub and HackMD planning surfaces, refreshed the living technical note, and converted the plan into the Linear board plus public GitHub project mirror.
+ - Organised the project tracking views and preserved the proposer-equivocation scenario as a versioned test plan so it can be rerun once `lodestar builder` has the required lifecycle and bid flow.
+
+Marko:
 
 Targeting: `API-01` (continuation) `CLI-01` (filling what was missing)
 
