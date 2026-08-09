@@ -1,6 +1,16 @@
 # EPF 7 - Weekly Work Log
 
-This doc tracks weekly implementation, project-board, review, and coordination work for the Lodestar EIP-7732 Builder. It is deliberately lighter than the weekly write-ups and focuses on project movement after the proposal was accepted.
+This is the canonical chronological delivery log for the Lodestar EIP-7732 Builder. It tracks weekly implementation, project-board, review, and coordination movement from the accepted proposal onward. It is deliberately lighter than the fellows' full weekly write-ups. The implementation plan owns accepted scope and dependencies; the Living Technical Note owns current technical state, decisions, risks, and upstream watches.
+
+### Week 5
+
+Kris:
+
+ - Opened the proposal as [EPF7 PR #161](https://github.com/eth-protocol-fellows/cohort-seven/pull/161), revised it through review, and merged it on July 13.
+ - Added the post-merge strong-success changes in [EPF7 PR #186](https://github.com/eth-protocol-fellows/cohort-seven/pull/186): incorporated Nico's additional goal, separated the compound outcomes, and linked the blocking work.
+ - Recorded the Lodestar/buildoor benchmark suggestion for a Kurtosis network and sharpened the delivery split: Builder core, Heze/FOCIL as strong-success work, and Deathstar plus advanced bid policy as stretch work.
+ - Advanced the monitored baseline from alpha.11/devnet-6 assumptions to alpha.12 and devnet-7 WIP, including the `tests-glamsterdam-devnet@v7.2.0` fixture reference, the then-open beacon-APIs #624 envelope direction, and the Prysm EIP-7688 flag check.
+ - Resolved the Builder credential prefix, payload deadline, EIP-7688 baseline, and Heze bitlist questions, then moved the next milestone from proposal submission to architecture and the first reviewable implementation task.
 
 ### Week 6
 
@@ -50,6 +60,13 @@ Changes made:
 
 Merged: [feat: builder initial setup #9758](https://github.com/ChainSafe/lodestar/pull/9758)
 
+Additional landed and review milestones:
+ - Published the first `@lodestar/builder` npm package after the initial merge.
+ - Merged [#9766](https://github.com/ChainSafe/lodestar/pull/9766), replacing the stale `tsgo` package scripts with `tsc` for the workspace TypeScript 7 migration.
+ - Merged [#9725](https://github.com/ChainSafe/lodestar/pull/9725) and [#9726](https://github.com/ChainSafe/lodestar/pull/9726), establishing the shared `assertEqualParams` utility and the reviewed 404-aware genesis-wait behavior used by the Builder.
+ - Kept the generated Builder CLI page out of the public sidebar through [#9770](https://github.com/ChainSafe/lodestar/pull/9770) until the command is functionally ready.
+ - Preserved [#9757](https://github.com/ChainSafe/lodestar/pull/9757) and its local buildoor fixture as the proposer-equivocation/unbundling test to rerun with Lodestar Builder once its lifecycle works.
+
 ### Week 8
 
 Kris:
@@ -75,3 +92,15 @@ Opened a draft (Thursday):
 Created [TEST-01] and [MET-01] tasks for tests and metrics to be in one place - they are drafty now but we can tighten them up later.
 
 Reviewing: https://github.com/ChainSafe/lodestar/pull/9757
+
+### Current checkpoint — 9 August 2026
+
+Kris and Marko:
+
+- Reconciled the reviewed implementation plan and Living Technical Note against the Week 6–8 write-ups, the August 9 monitor, live Lodestar primary sources, current Discord context, Linear, and the GitHub issue mirror.
+- Preserved Marko's closed `CLI-01` and `API-01` statuses while creating `REVIEW-01` for the still-open [Lodestar #9781](https://github.com/ChainSafe/lodestar/pull/9781) review, later-Builder lifecycle decision, responsibility documentation, and merge evidence. `TEST-01` remains the focused test matrix and `MET-01` owns metrics and metrics-server lifecycle work.
+- [Lodestar #9781](https://github.com/ChainSafe/lodestar/pull/9781) is ready for review at head `250ae7bff1d8dfcb535604a410f9e6ffc962ef90`. Nico's August 9 pass was positive overall and left seven unresolved threads. The implementation-changing point is whether the sidecar waits while a Builder is deposited or activated after startup, or fails fast with an explicit operator error.
+- [Lodestar #9757](https://github.com/ChainSafe/lodestar/pull/9757) merged the BN-owned `consensus_and_equivocation` validation and Deathstar proposer-equivocation machinery. The stored buildoor fixture remains ready to rerun with Lodestar Builder once the honest lifecycle works.
+- Advanced the immutable audit target from rc.0 to [Lodestar v1.46.0-rc.1](https://github.com/ChainSafe/lodestar/releases/tag/v1.46.0-rc.1) at `e2b315e`. Merged #9790/#9792 protect state close and QUIC resource cleanup. [#9793](https://github.com/ChainSafe/lodestar/pull/9793) closed without merge because its self-signal/force-exit approach did not generalize, especially for default container PID 1; the underlying stuck worker handle remains unidentified and forced termination remains a process-manager responsibility.
+- Audited every completed project issue. PLAN-01, BOARD-01, and SIGN-01 retain sufficient completion evidence; CLI-01/API-01 remain closed by project decision, with all unfinished work assigned to REVIEW-01, TEST-01, or MET-01. The tracked inventory is now 47 issues.
+- Recorded [Prysm #17268](https://github.com/OffchainLabs/prysm/pull/17268) as merged and updated the successor execution-fixture reference to `tests-glamsterdam-devnet@v8.1.0`, without treating either as a public devnet-8 launch or a new Builder workstream.
