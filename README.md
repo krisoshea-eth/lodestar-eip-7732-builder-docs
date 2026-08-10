@@ -9,7 +9,7 @@ This repository mirrors the Lodestar EIP-7732 Builder project documents as raw M
 | Project proposal | [docs/proposal.md](docs/proposal.md) | Accepted EPF proposal in `eth-protocol-fellows/cohort-seven` |
 | Implementation plan | [docs/implementation-plan.md](docs/implementation-plan.md) | Canonical full plan in GitHub |
 | HackMD plan landing page | [docs/hackmd-implementation-plan-index.md](docs/hackmd-implementation-plan-index.md) | Short index for the public [HackMD plan URL](https://hackmd.io/@krisos/SyPZNJp4fg) |
-| Living technical note | [docs/living-technical-note.md](docs/living-technical-note.md) | [HackMD](https://hackmd.io/@krisos/S1a9mdB7fl) and GitHub mirror |
+| Living technical note | [docs/living-technical-note.md](docs/living-technical-note.md) | Canonical GitHub note with a public [HackMD mirror](https://hackmd.io/@krisos/S1a9mdB7fl) |
 | Weekly updates | [docs/weekly-updates/](docs/weekly-updates/) | Kris and Marko's EPF HackMD updates |
 | Work log | [docs/work-log.md](docs/work-log.md) | Weekly project-board, implementation, and review progress |
 

@@ -1,6 +1,16 @@
 # EPF 7 - Weekly Work Log
 
-This doc tracks weekly implementation, project-board, review, and coordination work for the Lodestar EIP-7732 Builder. It is deliberately lighter than the weekly write-ups and focuses on project movement after the proposal was accepted.
+This is the canonical chronological delivery log for the Lodestar EIP-7732 Builder. It tracks weekly implementation, project-board, review, and coordination movement from the accepted proposal onward. It is deliberately lighter than the fellows' full weekly write-ups. The implementation plan owns accepted scope and dependencies; the Living Technical Note owns current technical state, decisions, risks, and upstream watches.
+
+### Week 5
+
+Kris:
+
+ - Opened the proposal as [EPF7 PR #161](https://github.com/eth-protocol-fellows/cohort-seven/pull/161), revised it through review, and merged it on July 13.
+ - Added the post-merge strong-success changes in [EPF7 PR #186](https://github.com/eth-protocol-fellows/cohort-seven/pull/186): incorporated Nico's additional goal, separated the compound outcomes, and linked the blocking work.
+ - Recorded the Lodestar/buildoor benchmark suggestion for a Kurtosis network and sharpened the delivery split: Builder core, Heze/FOCIL as strong-success work, and Deathstar plus advanced bid policy as stretch work.
+ - Advanced the monitored baseline from alpha.11/devnet-6 assumptions to alpha.12 and devnet-7 WIP, including the `tests-glamsterdam-devnet@v7.2.0` fixture reference, the then-open beacon-APIs #624 envelope direction, and the Prysm EIP-7688 flag check.
+ - Resolved the Builder credential prefix, payload deadline, EIP-7688 baseline, and Heze bitlist questions, then moved the next milestone from proposal submission to architecture and the first reviewable implementation task.
 
 ### Week 6
 
@@ -50,6 +60,13 @@ Changes made:
 
 Merged: [feat: builder initial setup #9758](https://github.com/ChainSafe/lodestar/pull/9758)
 
+Additional landed and review milestones:
+ - Published the first `@lodestar/builder` npm package after the initial merge.
+ - Merged [#9766](https://github.com/ChainSafe/lodestar/pull/9766), replacing the stale `tsgo` package scripts with `tsc` for the workspace TypeScript 7 migration.
+ - Merged [#9725](https://github.com/ChainSafe/lodestar/pull/9725) and [#9726](https://github.com/ChainSafe/lodestar/pull/9726), establishing the shared `assertEqualParams` utility and the reviewed 404-aware genesis-wait behavior used by the Builder.
+ - Kept the generated Builder CLI page out of the public sidebar through [#9770](https://github.com/ChainSafe/lodestar/pull/9770) until the command is functionally ready.
+ - Preserved [#9757](https://github.com/ChainSafe/lodestar/pull/9757) and its local buildoor fixture as the proposer-equivocation/unbundling test to rerun with Lodestar Builder once its lifecycle works.
+
 ### Week 8
 
 Kris:
@@ -75,3 +92,19 @@ Opened a draft (Thursday):
 Created [TEST-01] and [MET-01] tasks for tests and metrics to be in one place - they are drafty now but we can tighten them up later.
 
 Reviewing: https://github.com/ChainSafe/lodestar/pull/9757
+
+### Current checkpoint — 10 August 2026
+
+Kris and Marko:
+
+- Reconciled the reviewed implementation plan and Living Technical Note against the Week 6–8 write-ups, the partial August 10 monitor, direct Lodestar and devnet primary-source checks, current Discord context, Linear, and the GitHub issue mirror. Unavailable monitor cursors were not advanced and no runtime-health claim was inferred.
+- Preserved Marko's closed `CLI-01` and `API-01` statuses while keeping `REVIEW-01` In Progress for the still-open [Lodestar #9781](https://github.com/ChainSafe/lodestar/pull/9781) review, later-Builder lifecycle implementation, responsibility documentation, and merge evidence. `TEST-01` remains the focused test matrix and `MET-01` owns metrics and metrics-server lifecycle work.
+- [Lodestar #9781](https://github.com/ChainSafe/lodestar/pull/9781) is open, review-required, and not draft at head `ce6e28d47d7d1ac81b64be8e2709118e73d6593c`, with 28 commits and four unresolved review threads. The reviewed later-Builder direction is to keep an unknown configured key inert and retry with cancellation until it is deposited or activated, while preserving a returned non-active lifecycle status as a distinct operator-visible result. Implementation and regression evidence remain open.
+- Audited the current #9781 tests. Successful index resolution, returned non-active status, version mismatch, status-lookup failure, and the five current `BuilderStatusTracker` cases are covered. Unknown-key polling and later activation, cancellation, readiness recovery, bounded error detail, genesis logging, and CLI cases remain in `TEST-01`.
+- [Lodestar #9757](https://github.com/ChainSafe/lodestar/pull/9757) merged the BN-owned `consensus_and_equivocation` validation and Deathstar proposer-equivocation machinery. The stored buildoor fixture remains ready to rerun with Lodestar Builder once the honest lifecycle works.
+- Advanced the immutable audit target from rc.0 to [Lodestar v1.46.0-rc.1](https://github.com/ChainSafe/lodestar/releases/tag/v1.46.0-rc.1) at `e2b315e`. Merged #9790/#9792 protect state close and QUIC resource cleanup. [#9793](https://github.com/ChainSafe/lodestar/pull/9793) closed without merge because its self-signal/force-exit approach did not generalize, especially for default container PID 1; the underlying stuck worker handle remains unidentified and forced termination remains a process-manager responsibility.
+- Kept draft release [#9788](https://github.com/ChainSafe/lodestar/pull/9788) and circuit-breaker follow-up [#9780](https://github.com/ChainSafe/lodestar/pull/9780) as baseline watches. Neither changes the accepted core Builder architecture, and #9788 is not evidence that v1.46.0 stable has shipped.
+- Audited every completed project issue. PLAN-01, BOARD-01, and SIGN-01 retain sufficient completion evidence; CLI-01/API-01 remain closed by project decision, with all unfinished work assigned to REVIEW-01, TEST-01, or MET-01. The tracked inventory is now 47 issues.
+- Moved `API-02` into In Progress for Kris in Cycle 2 and synchronized that state across the implementation plan, Living Technical Note, Linear, and the public GitHub Project mirror. `ENV-01` remains its dependency for end-to-end evidence.
+- Recorded [Prysm #17268](https://github.com/OffchainLabs/prysm/pull/17268) as merged and updated the successor execution-fixture reference to `tests-glamsterdam-devnet@v8.1.0`, without treating either as a public devnet-8 launch or a new Builder workstream.
+- Recorded the four devnet-7 Tysm/Prysm host removals in `1ca063f` and the Dora image override in `df1dfc7` as configuration movement only, without inferring devnet health.

@@ -7,7 +7,7 @@ This file records where each mirrored Markdown document came from.
 | `docs/proposal.md` | <https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md> | Seeded from the accepted EPF proposal. If there is a separate canonical HackMD proposal note, link it to this file from HackMD. |
 | `docs/implementation-plan.md` | <https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/implementation-plan.md> | Canonical reviewed implementation plan. The full file is kept in GitHub because it exceeds HackMD's per-note character limit. |
 | `docs/hackmd-implementation-plan-index.md` | <https://hackmd.io/@krisos/SyPZNJp4fg> | Short public HackMD landing page for the canonical GitHub implementation plan. |
-| `docs/living-technical-note.md` | <https://hackmd.io/@krisos/S1a9mdB7fl> | Mirrored from HackMD and reconciled through GitHub review. |
+| `docs/living-technical-note.md` | <https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/living-technical-note.md> | Canonical moving technical note. Manually sync the reviewed GitHub version to the public [HackMD mirror](https://hackmd.io/@krisos/S1a9mdB7fl). |
 | `docs/work-log.md` | <https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/work-log.md> | Project work log for weekly implementation, board, and review progress. |
 | `docs/test-plans/pr-9757-builder-equivocation.yaml` | <https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/test-plans/pr-9757-builder-equivocation.yaml> | Versioned test-plan artifact from the Builder equivocation validation work. |
 | `docs/weekly-updates/kris/week-00.md` | <https://hackmd.io/@krisos/rJZ18M_-fg> | Kris EPF weekly update mirror. |
