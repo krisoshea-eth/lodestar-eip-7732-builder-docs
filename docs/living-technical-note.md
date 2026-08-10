@@ -11,7 +11,7 @@
 | Builder lifecycle identifiers | Deposit request type `0x03`; Builder withdrawal credentials prefix `0xB0` |
 | Payload deadline | `PAYLOAD_DUE_BPS = 5000`, six seconds into a 12-second slot; PTC payload attestation remains at `7500` |
 | Last reconciliation | August 10, 2026: the partial August 10 monitor, direct Lodestar and devnet primary-source checks, Builder PR #9781 review threads and tests, Lodestar/Deathstar Discord context, Week 6–8 updates, implementation plan, Linear, and GitHub issue mirror |
-| Next milestone | Resolve and merge #9781, finish `BASELINE-01` and `ENV-01`, progress the separated `TEST-01`/`MET-01` work, then pick up `API-02` and activate the reviewed BN preparation/candidate design |
+| Next milestone | Resolve and merge #9781, finish `BASELINE-01` and `ENV-01`, continue the active `API-02` event/API audit and separated `TEST-01` work, then activate the reviewed BN preparation/candidate design while `MET-01` proceeds separately |
 
 This is the working document for the Lodestar EIP-7732 Builder project, an EPF cohort 7 project by [Kris O'Shea](https://github.com/krisoshea-eth) and [Marko Lazic](https://github.com/markolazic01), mentored by [Nico Flaig](https://github.com/nflaig) (ChainSafe, EIP-7732 co-author). The [project proposal](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md) remains the stable public scope, while the [merged implementation plan](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/implementation-plan.md) owns accepted delivery decisions and issue boundaries. This note carries moving technical context, implementation findings, upstream state, code-path maps, adversarial cases, and research watches. Linear owns issue status, ownership, dependencies, and evidence.
 
@@ -891,7 +891,8 @@ Current delivery state at this reconciliation:
 | `REVIEW-01` | In progress | Resolve four #9781 review threads, implement the reviewed unknown-key inert wait/retry behavior, document responsibility boundaries, and record final merge evidence |
 | `TEST-01` | In progress | Main returned-state and tracker polling cases landed in #9781; unknown-key/later-activation, cancellation, readiness recovery, bounded-error, genesis-log, and CLI evidence remain |
 | `MET-01` | Todo | Add the metrics server and bounded process, signer, Builder-status/balance, and readiness metrics with clean shutdown evidence |
-| `BASELINE-01`, `ENV-01`, `API-02` | Todo | Pin the current unstable baseline, establish the deterministic local network, then add block observation |
+| `BASELINE-01`, `ENV-01` | Todo | Pin the current unstable baseline and establish the deterministic local network |
+| `API-02` | In progress | Assigned to Kris in Cycle 2; audit the block/SSE surface and prepare the bounded event path while retaining `ENV-01` as the dependency for end-to-end evidence |
 
 The near-term activation order is:
 
