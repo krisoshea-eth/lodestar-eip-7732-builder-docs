@@ -108,3 +108,12 @@ Kris and Marko:
 - Moved `API-02` into In Progress for Kris in Cycle 2 and synchronized that state across the implementation plan, Living Technical Note, Linear, and the public GitHub Project mirror. `ENV-01` remains its dependency for end-to-end evidence.
 - Recorded [Prysm #17268](https://github.com/OffchainLabs/prysm/pull/17268) as merged and updated the successor execution-fixture reference to `tests-glamsterdam-devnet@v8.1.0`, without treating either as a public devnet-8 launch or a new Builder workstream.
 - Recorded the four devnet-7 Tysm/Prysm host removals in `1ca063f` and the Dora image override in `df1dfc7` as configuration movement only, without inferring devnet health.
+
+### Week 10
+
+Kris:
+
+- Began `API-02` from Lodestar `unstable` at `1dde9abaa66ca4d4f3500e8fb06106fa635a066d`, auditing the standard `block` SSE payload, Lodestar's post-import emission order, `getBlockV2` fork metadata and retrieval path, and the accepted-bid notification gap in beacon-APIs #599.
+- Implemented a Builder `BlockObserver` that subscribes through the source BN REST client, retrieves post-Gloas signed blocks by root with bounded retry, deduplicates concurrent and sequential observations, preserves exact bid values, and hands observations to isolated registered callbacks without adding p2p, reveal, selection, metrics, or recovery behavior.
+- Added 18 focused tests covering stream wiring, fork-correct output, sequential and concurrent duplicates, event-before-block 404 retry, retry exhaustion, error classification, cancellation, unsupported forks, metadata/body disagreement, bounded eviction, self-build sentinel handling, stream failures, callback isolation, and shared abort-signal use.
+- Confirmed that standard `block` plus `getBlockV2` is sufficient for correctness. Staged the #599 implementation evidence separately; an enriched event remains an efficiency and interoperability improvement rather than a prerequisite.
