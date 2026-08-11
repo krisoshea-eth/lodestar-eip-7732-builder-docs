@@ -1,6 +1,8 @@
 # Draft evidence comment for beacon-APIs #599
 
-> Draft for Kris to review and post after the API-02 Lodestar PR is available. Do not post automatically.
+> Draft only. Kris may manually post this as a comment on ethereum/beacon-APIs #599 after the API-02 PR is opened
+> against ChainSafe/lodestar and its implementation evidence is stable. Do not post automatically. This is not a
+> beacon-APIs code PR.
 
 We implemented the interim Builder observation path in Lodestar using the standard `block` event followed by `getBlockV2` for the event's block root.
 

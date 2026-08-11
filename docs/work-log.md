@@ -109,7 +109,7 @@ Kris and Marko:
 - Recorded [Prysm #17268](https://github.com/OffchainLabs/prysm/pull/17268) as merged and updated the successor execution-fixture reference to `tests-glamsterdam-devnet@v8.1.0`, without treating either as a public devnet-8 launch or a new Builder workstream.
 - Recorded the four devnet-7 Tysm/Prysm host removals in `1ca063f` and the Dora image override in `df1dfc7` as configuration movement only, without inferring devnet health.
 
-### Week 10
+### Week 9
 
 Kris:
 
