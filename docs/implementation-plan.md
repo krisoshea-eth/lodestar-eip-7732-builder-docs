@@ -7,7 +7,7 @@
 **Working model:** one shared feature branch; merge `unstable` regularly; split only when review benefits from it  
 **Formal product name:** `lodestar builder` / `packages/builder`  
 **Optional EPF mission codename:** Forgestar  
-**Status:** v1.0 merged on 5 August 2026. All plan-review comments are resolved and no plan-level architecture question remains open. This execution copy was reconciled on 11 August against Lodestar v1.46.0-rc.1, the merged equivocation work, Builder PR #9781, the TEST-01/MET-01/REVIEW-01 issue split, the latest Lodestar-team discussion, and the Linear/GitHub backlog. The full plan remains canonical on GitHub because it exceeds HackMD's per-note character limit. Moving implementation details continue to be refined through their owning issues without reopening the accepted architecture.
+**Status:** v1.0 merged on 5 August 2026. All plan-review comments are resolved and no plan-level architecture question remains open. This execution copy was reconciled on 14 August against Lodestar v1.46.0, merged Builder PR #9781, its open #9819/#9827 follow-ups, the integrated API-02 fork draft, the TEST-01/MET-01/REVIEW-01 issue split, and the Linear/GitHub backlog. The full plan remains canonical on GitHub because it exceeds HackMD's per-note character limit. Moving implementation details continue to be refined through their owning issues without reopening the accepted architecture.
 
 > **Project documents:** [Merged proposal](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md) · [Canonical Living Technical Note](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/living-technical-note.md) · [HackMD mirror](https://hackmd.io/@krisos/S1a9mdB7fl) · [Presentation slides](https://docs.google.com/presentation/d/1cmC3fpu652gZFTIm2_P1lIYOfC2M_w3c5qXSUZ4B6lc) · [Lodestar repository](https://github.com/ChainSafe/lodestar) · [Maintained Beacon API Builder flow](https://github.com/ethereum/beacon-APIs/blob/master/validator-flow.md#builder-optional)
 
@@ -454,7 +454,7 @@ The exact preparation route, initial publication offset, and cache hook remain i
 
 ### Verified implementation baseline at final review
 
-This snapshot was refreshed on 11 August 2026. It records work that can narrow the board issues without treating a draft, an open follow-up, or partially verified work as Done.
+This snapshot was refreshed on 14 August 2026. It records work that can narrow the board issues without treating a draft, an open follow-up, or partially verified work as Done.
 
 | Source | Verified state | Effect on this plan |
 |---|---|---|
@@ -468,13 +468,14 @@ This snapshot was refreshed on 11 August 2026. It records work that can narrow t
 | [Lodestar #9736](https://github.com/ChainSafe/lodestar/pull/9736) | Open draft: correct FULL-parent state use for block production and reward calculation | Audit and reuse it in `BN-02` when available; do not build a parallel FULL-parent path in the Builder project |
 | [Lodestar #9757](https://github.com/ChainSafe/lodestar/pull/9757) | Merged on 7 August: adds `consensus_and_equivocation` handling and Deathstar proposer-equivocation support, with buildoor used for the first end-to-end proof | Reuse the BN capability in `REV-01` and `QA-01`; retain the Lodestar Builder fixture so the project proves the same rejection once its honest loop works |
 | [Lodestar #9594](https://github.com/ChainSafe/lodestar/pull/9594), [builder-specs #165](https://github.com/ethereum/builder-specs/pull/165), and [beacon-APIs #630](https://github.com/ethereum/beacon-APIs/pull/630) | #9594 closed without merge on 5 August; the Builder API specifications and replacement Lodestar implementation are still moving | Not a core dependency. Re-audit the settled route and auth shapes before `BN-01` or `EXT-BUILDER-API-01`; do not depend on the abandoned draft and keep staked Builder API request authentication conditional |
-| [Lodestar #9758](https://github.com/ChainSafe/lodestar/pull/9758) | Merged at `74a3175`: initial `@lodestar/builder` package and CLI scaffolding, local keystore, bid/envelope signing and tests, source-BN wiring, `waitForGenesis`, shutdown, shared `assertEqualParams`, and active-Builder resolution. The first package was also published to npm | `SIGN-01` is Done with merged review and CI evidence. Remaining CLI/source-BN implementation is now reviewed through #9781, with tests and metrics split into `TEST-01` and `MET-01` |
-| [Lodestar #9766](https://github.com/ChainSafe/lodestar/pull/9766) | Merged: aligns the Builder package build and type-check scripts with the workspace TypeScript 7 migration by using `tsc` | Record the CI follow-up under completed `CLI-01`; any remaining #9781 implementation review belongs to `REVIEW-01` |
+| [Lodestar #9758](https://github.com/ChainSafe/lodestar/pull/9758) | Merged at `74a3175`: initial `@lodestar/builder` package and CLI scaffolding, local keystore, bid/envelope signing and tests, source-BN wiring, `waitForGenesis`, shutdown, shared `assertEqualParams`, and active-Builder resolution. The first package was also published to npm | `SIGN-01` is Done with merged review and CI evidence. Later CLI/source-BN implementation merged through #9781, with remaining tests and metrics split into `TEST-01` and `MET-01` |
+| [Lodestar #9766](https://github.com/ChainSafe/lodestar/pull/9766) | Merged: aligns the Builder package build and type-check scripts with the workspace TypeScript 7 migration by using `tsc` | Record the CI follow-up under completed `CLI-01`; #9781 post-merge reconciliation belongs to `REVIEW-01` |
 | [Lodestar #9770](https://github.com/ChainSafe/lodestar/pull/9770) | Merged: hides the generated Builder CLI page from the public docs sidebar while the command is not yet functional | Keep the page hidden or clearly marked work in progress until the command is functionally ready and the open `REVIEW-01` work is closed, then restore it as part of `HANDOFF-01`; the administrative closure of `CLI-01` alone is not the publication signal |
-| [Lodestar #9781](https://github.com/ChainSafe/lodestar/pull/9781) | Open draft and review-required at head `251347b7b5c5723a84ca6851e603604cdc75cd80` with 33 commits and eight unresolved Nico review threads on 11 August. It contains Builder identity and status tracking, BN/EL readiness, execution fee-recipient and timeout CLI wiring, plus identity/tracker tests. The branch uses the API client's standard `.value()` response path and asynchronous API-error response mocks. The reviewed later-Builder direction is to keep an unknown configured key inert and retry until it is deposited or activated, while preserving a returned non-active lifecycle status as a distinct operator-visible result | Preserve Marko's completed `CLI-01` and `API-01` statuses. Track the remaining review, later-Builder lifecycle implementation, responsibility documentation, and merge in `REVIEW-01`; keep the regression matrix and metrics in `TEST-01` and `MET-01` |
-| [Lodestar v1.46.0-rc.1](https://github.com/ChainSafe/lodestar/releases/tag/v1.46.0-rc.1), [#9790](https://github.com/ChainSafe/lodestar/pull/9790), [#9792](https://github.com/ChainSafe/lodestar/pull/9792), and [#9793](https://github.com/ChainSafe/lodestar/pull/9793) | rc.1 at `e2b315e` supersedes rc.0 as the newest immutable audit target. #9790 protects state persistence/database close during a stuck network-worker shutdown and #9792 fixes a QUIC resource leak. #9793 closed without merge because its self-signal/force-exit approach did not generalize, especially for default container PID 1. The underlying stuck handle remains unidentified | Advance `BASELINE-01` to rc.1 and test state persistence, process-manager timeout, and Builder restart/cache/reveal recovery. Retain #9793 as diagnostic history, not an active implementation requirement or root-cause fix |
+| [Lodestar #9781](https://github.com/ChainSafe/lodestar/pull/9781) | Merged as `2a04194b900ef972c6f469d06017d5c972be5714` after Nico approved head `3fe4ef4980645144668f8f634884c72a69f83677` and required checks passed. It contains Builder identity and status tracking, BN/EL readiness, execution fee-recipient and timeout CLI wiring, unknown/pending Builder polling with cancellation, identity checks, and tests. Twelve review-thread markers remain in the GitHub UI; #9819 owns test-helper deduplication and open #9827 carries abort-loop and logging nits | Preserve Marko's completed `CLI-01` and `API-01` statuses. Track only post-merge thread-marker and follow-up reconciliation in `REVIEW-01`; keep the broader regression matrix and metrics in `TEST-01` and `MET-01` |
+| [Lodestar v1.46.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.46.0) | Latest stable at `3873dd5b032d0ad82581fc3416e9628b4f6f2642`, published 12 August. It predates merged #9781 | Use as the newest immutable release target while `BASELINE-01` records the exact working `unstable` pin |
+| [Lodestar v1.46.0-rc.1](https://github.com/ChainSafe/lodestar/releases/tag/v1.46.0-rc.1), [#9790](https://github.com/ChainSafe/lodestar/pull/9790), [#9792](https://github.com/ChainSafe/lodestar/pull/9792), and [#9793](https://github.com/ChainSafe/lodestar/pull/9793) | Historical release-candidate baseline now superseded by v1.46.0. #9790 protects state persistence/database close during a stuck network-worker shutdown and #9792 fixes a QUIC resource leak. #9793 closed without merge because its self-signal/force-exit approach did not generalize, especially for default container PID 1. The underlying stuck handle remains unidentified | Advance `BASELINE-01` to v1.46.0 plus an exact working `unstable` pin and test state persistence, process-manager timeout, and Builder restart/cache/reveal recovery. Retain #9793 as diagnostic history, not an active implementation requirement or root-cause fix |
 
-The board preserves Marko's `CLI-01`, `API-01`, and `SIGN-01` **Done** statuses. `REVIEW-01` and `TEST-01` are **In progress** for the open #9781 review and separated regression work; `API-02` is **In review**, while `MET-01` remains **Todo**. `ENV-01` remains a dependency for API-02's end-to-end evidence. Landed upstream prerequisites may narrow a consuming issue, but do not automatically complete it.
+The board preserves Marko's `CLI-01`, `API-01`, and `SIGN-01` **Done** statuses. `REVIEW-01` remains **In progress** for #9781 thread-marker and follow-up reconciliation, and `TEST-01` remains **In progress** for separated regression work. `API-02` is **In review**, while `MET-01` remains **Todo**. `ENV-01` remains a dependency for API-02's end-to-end evidence. Landed upstream prerequisites may narrow a consuming issue, but do not automatically complete it.
 
 ### Board hierarchy and pickup model
 
@@ -627,7 +628,7 @@ flowchart TD
         API2["API-02<br/>block observer"]
         TEST["TEST-01<br/>Gate-A tests"]
         MET["MET-01<br/>Builder metrics"]
-        REVIEW["REVIEW-01<br/>#9781 review and merge"]
+        REVIEW["REVIEW-01<br/>#9781 follow-up closure"]
         ENV --> API1
         ENV --> API2
         CLI --> SIGN
@@ -803,14 +804,14 @@ flowchart TD
 
 **Why:** The Builder is a first-class protocol role in the Lodestar product line and should have the same clear package/CLI status as `validator`, `beacon`, and `bootnode`.
 
-**Board status:** Done by Marko's project-status decision. The open #9781 review and merge work is not discarded; it is transferred to `REVIEW-01`, while tests and metrics remain in `TEST-01` and `MET-01`.
+**Board status:** Done by Marko's project-status decision. The later #9781 implementation is merged; its post-merge thread-marker and follow-up reconciliation remains in `REVIEW-01`, while tests and metrics remain in `TEST-01` and `MET-01`.
 
 **Tasks**
 
 - [x] Reuse and extend the merged `packages/builder` and `lodestar builder` scaffolding from [Lodestar #9758](https://github.com/ChainSafe/lodestar/pull/9758) rather than recreating it.
 - [x] Complete command registration through existing CLI conventions.
 - [x] Add configuration for the source BN, network/chain, local keystore, Builder execution fee recipient, timeouts, and logging. The bounded bid-publication offset remains in `BID-01`; metrics configuration and server wiring remain in `MET-01`.
-- [x] Implement the startup, readiness, health, signal-handling, and shutdown scope Marko closed. The later-Builder startup lifecycle and final #9781 review/merge remain in `REVIEW-01`.
+- [x] Implement the startup, readiness, health, signal-handling, and shutdown scope Marko closed. The later-Builder startup lifecycle merged in #9781; post-merge reconciliation remains in `REVIEW-01`.
 - [x] Prevent signing/publication until the implemented key, BN, chain, and Builder-state checks pass; retain the BN-authoritative preparation guard in the later bid path.
 - [x] Use structured logs without secret material. Bounded metric labels remain in `MET-01`.
 - [x] Keep the generated Builder CLI page hidden from the public sidebar, as established by [Lodestar #9770](https://github.com/ChainSafe/lodestar/pull/9770), until the command is functionally ready and `REVIEW-01` closes.
@@ -837,7 +838,7 @@ flowchart TD
 
 **Why:** The sidecar relies on one operator-controlled BN for chain truth, payload creation, balance validation, and reveal material.
 
-**Board status:** Done by Marko's project-status decision. The later-Builder lifecycle implementation, remaining #9781 review feedback, responsibility documentation, and merge evidence are transferred to `REVIEW-01`.
+**Board status:** Done by Marko's project-status decision. The later-Builder lifecycle implementation and responsibility documentation landed with #9781 and the Builder docs; post-merge thread-marker and follow-up reconciliation remains in `REVIEW-01`.
 
 **Tasks**
 
@@ -845,16 +846,16 @@ flowchart TD
 - [x] Keep the small Builder `waitForGenesis` copy aligned with validator behavior from [Lodestar #9726](https://github.com/ChainSafe/lodestar/pull/9726): 404 is expected waiting, other failures are warnings, and the abort signal stops polling.
 - [x] Do not add a Lodestar BN `getGenesis` 404 branch while the API cannot start before anchor-state initialization; retain client handling for Teku and other spec-compliant BNs.
 - [x] Import `assertEqualParams` from `@lodestar/config` after [Lodestar #9725](https://github.com/ChainSafe/lodestar/pull/9725) and verify the source BN's spec-critical chain parameters before becoming Ready.
-- [x] Verify expected genesis/fork/network identity and required BN capabilities within the implementation scope Marko closed; retain final review points in `REVIEW-01`.
+- [x] Verify expected genesis/fork/network identity and required BN capabilities within the implementation scope Marko closed; retain post-merge follow-up points in `REVIEW-01`.
 - [x] Query Builder state by configured pubkey/index and require the expected active Builder version.
 - [x] Record the resolved Builder index, lifecycle status, and BN-reported balance returned by the same status lookup.
 - [x] Expose current Builder status/balance through structured diagnostics without treating that snapshot as an independent per-bid solvency decision. The bounded metric remains in `MET-01`.
 - [x] Observe and report the source BN's sync, optimistic-execution, and EL-availability state at sidecar startup/readiness, and keep the sidecar inert while the source is not ready.
 - [x] Keep the authoritative `not while syncing` and optimistic-execution guard in the BN preparation/candidate path. Return a typed syncing or unavailable result instead of recreating chain-readiness policy in the sidecar.
 - [x] Reuse the smallest suitable existing BN helper without importing validator only for `runOnResynced`.
-- [x] Implement the typed timeout, cancellation, response-bound, and redacted-error scope Marko closed. The remaining BN-error-detail review points stay in `REVIEW-01`, with regression coverage in `TEST-01`.
-- [x] Transfer the reviewed later-deposited or later-activated Builder lifecycle implementation to `REVIEW-01`, with the agreed regression in `TEST-01`.
-- [x] Transfer the BN-authoritative-input and sidecar-sanity-check documentation to `REVIEW-01`.
+- [x] Implement the typed timeout, cancellation, response-bound, and redacted-error scope Marko closed. Broader regression coverage remains in `TEST-01`.
+- [x] Land the reviewed later-deposited or later-activated Builder lifecycle implementation in #9781, with broader cancellation regression work retained in `TEST-01`.
+- [x] Record the BN-authoritative-input and sidecar-sanity-check boundary in the implementation plan and Living Technical Note.
 
 **Done when:** The sidecar connects only to the expected BN/chain, resolves the intended active Builder, exposes its current BN-reported status/balance, and reports precise readiness failures.
 
@@ -872,6 +873,8 @@ flowchart TD
 - [x] Add duplicate, event-before-block, and unsupported-fork tests; deeper reconnect/replay hardening follows only after the happy path works.
 
 **Done when:** One BN event leads to one bounded evaluation of the corresponding signed block, with no direct p2p subscription.
+
+**Current evidence:** Fork draft [krisoshea-eth/lodestar#48](https://github.com/krisoshea-eth/lodestar/pull/48) has integrated merged #9781 at `1aae68a26fba53c2da1f361f2491042eae220f70`. It has 25 focused observer tests and 45 passing Builder package tests on Node 24.13.0. The upstream Lodestar PR and `ENV-01` real-BN smoke remain before issue closure.
 
 **Operational handoff:** Node 24.13.0 uses Lodestar's npm `eventsource` fallback. The current Builder CLI configures one source BN, while the shared API client can otherwise serve REST calls from fallback URLs and pins SSE to its first URL. The Beacon API event contract defines no SSE `id` or `Last-Event-ID` resumption, so conforming clients cannot be assumed to replay a missed selection notification. `ENV-01` owns the real-process shutdown smoke; `REL-01` owns bounded same-source reconciliation; deferred multi-BN and long-gap behavior remain in their existing tracking issues.
 
@@ -907,19 +910,20 @@ flowchart TD
 
 #### `REVIEW-01` — Close the #9781 foundation review and lifecycle implementation
 
-**Why:** Preserving Marko's completed CLI-01/API-01 status must not hide the implementation work that is still visible in the live #9781 review.
+**Why:** Preserving Marko's completed CLI-01/API-01 status must not hide the post-merge review bookkeeping and accepted follow-ups that remain visible on #9781.
 
 **Tasks**
 
-- [ ] Resolve all remaining Nico review threads on [Lodestar #9781](https://github.com/ChainSafe/lodestar/pull/9781).
-- [ ] Implement the reviewed behavior for an unknown configured Builder key: remain inert and retry with cancellation until the key is deposited or activated, while keeping a returned non-active lifecycle status distinct and operator-visible.
-- [ ] Refactor Builder-status response handling to use the API client's standard `.value()` or `.assertOk()` path and retain bounded, useful error details.
-- [ ] Retain the current Gloas health-endpoint assumption while Gloas-capable clients are expected to implement it; revisit only if interoperability evidence exposes a gap.
-- [ ] Document BN-authoritative inputs and the sidecar's sanity checks.
-- [ ] Link every resulting behavior regression to `TEST-01` and keep metrics-only work in `MET-01`.
-- [ ] Merge #9781 with required checks passing and record the final commit, review, and release status.
+- [ ] Reconcile all twelve remaining review-thread markers on [Lodestar #9781](https://github.com/ChainSafe/lodestar/pull/9781): five outdated threads, two accepted or already-applied threads, one test-helper follow-up tracked by [#9819](https://github.com/ChainSafe/lodestar/issues/9819), and four logging or abort-loop nits carried by [#9827](https://github.com/ChainSafe/lodestar/pull/9827).
+- [x] Implement the reviewed behavior for an unknown configured Builder key: remain inert and retry with cancellation until the key is deposited or activated, while keeping pending, exited, and unknown states distinct and operator-visible.
+- [x] Refactor Builder-status response handling to use the API client's standard `.value()` path and retain useful API error details.
+- [x] Retain the current Gloas health-endpoint assumption while Gloas-capable clients are expected to implement it; revisit only if interoperability evidence exposes a gap.
+- [x] Document BN-authoritative inputs and the sidecar's sanity checks in the implementation plan and Living Technical Note.
+- [x] Link broader behavior regressions to `TEST-01`, metrics-only work to `MET-01`, and shared test-helper cleanup to #9819.
+- [x] Merge #9781 with required checks passing and record final evidence: merge `2a04194b900ef972c6f469d06017d5c972be5714`, Nico approval on `3fe4ef4980645144668f8f634884c72a69f83677`, and unreleased status because v1.46.0 predates the merge.
+- [ ] Review and land, supersede, or explicitly reassign [#9827](https://github.com/ChainSafe/lodestar/pull/9827), then close the corresponding #9781 markers without silently resolving maintainer feedback.
 
-**Done when:** #9781 has merged, its review threads and lifecycle implementation are resolved, the responsibility boundary is documented, and all resulting tests or metrics are linked to their owning follow-up.
+**Done when:** #9781's merged implementation and approval are recorded, all remaining review markers are explicitly reconciled, #9827 is resolved or reassigned, the responsibility boundary is documented, and all resulting tests, metrics, or shared-helper work are linked to their owning follow-up.
 
 ### Epic B — BN payload, bid, and stateful reveal support
 
@@ -1574,7 +1578,7 @@ The Lodestar review pass and confirmed follow-up decisions from 27 July–4 Augu
 | Envelope publication validation mode | accepted | Explicitly request `consensus_and_equivocation`; keep the validation BN-owned and test proposer unbundling with Deathstar |
 | [consensus-specs #5497](https://github.com/ethereum/consensus-specs/pull/5497) and [Lodestar #9739](https://github.com/ChainSafe/lodestar/pull/9739) | accepted and landed | Reuse head-compatible bid validation and per-parent seen-bid behavior; do not implement the superseded single-bid model |
 | [Lodestar #9723](https://github.com/ChainSafe/lodestar/pull/9723) | clarification | Do not treat it as a Builder-project dependency or use it to block the plan |
-| Initial Lodestar Builder package and signer | accepted and landed | Reuse merged [Lodestar #9758](https://github.com/ChainSafe/lodestar/pull/9758); preserve Marko's `SIGN-01`, `CLI-01`, and `API-01` Done statuses. `REVIEW-01` owns the open [#9781](https://github.com/ChainSafe/lodestar/pull/9781) review/lifecycle implementation/documentation/merge work, while `TEST-01` and `MET-01` own their separated scopes |
+| Initial Lodestar Builder package and signer | accepted and landed | Reuse merged [Lodestar #9758](https://github.com/ChainSafe/lodestar/pull/9758) and [#9781](https://github.com/ChainSafe/lodestar/pull/9781); preserve Marko's `SIGN-01`, `CLI-01`, and `API-01` Done statuses. `REVIEW-01` owns only #9781 thread-marker and #9827 follow-up reconciliation, while `TEST-01` and `MET-01` own their separated scopes |
 | Builder startup and bid work while syncing | accepted | Let the sidecar observe and report startup readiness, but keep the authoritative syncing, optimistic-execution, and EL-readiness guard in the BN preparation/candidate path. Reuse the smallest suitable helper; do not import validator only for `runOnResynced`, while leaving a broader package dependency open to a later evidence-based audit |
 | Exact bid and payload `uint64` values | accepted and landed | Preserve the exact types from [Lodestar #9749](https://github.com/ChainSafe/lodestar/pull/9749), [#9750](https://github.com/ChainSafe/lodestar/pull/9750), and [#9751](https://github.com/ChainSafe/lodestar/pull/9751) through Builder hashing/signing and test the unsafe JavaScript-number boundary |
 | Epoch-boundary head-compatible bid validation | accepted and landed | Reuse the narrow rule in [Lodestar #9756](https://github.com/ChainSafe/lodestar/pull/9756) and add a focused regression without adopting the retracted broader restriction |
@@ -1607,6 +1611,6 @@ The Lodestar review pass and confirmed follow-up decisions from 27 July–4 Augu
 - [x] Add milestones, weeks, sizes, lanes, statuses, dependencies, and evidence fields.
 - [ ] Complete remaining owner and reviewer assignments as issues approach Ready.
 - [x] Preserve `CLI-01` as Done by project decision and keep `ENV-01` Todo in Cycle 2 until its environment work starts; Marko remains the recorded CLI owner.
-- [x] Confirm implementation started in Week 8 with no hidden planning dependency; merged #9758 and open #9781 provide the implementation evidence.
+- [x] Confirm implementation started in Week 8 with no hidden planning dependency; merged #9758 and #9781 provide the foundation evidence, and API-02 fork draft #48 supplies the current block-observer evidence.
 - [ ] Publish and preview the short HackMD landing page, then click-test its links to the canonical GitHub plan, review history, Living Technical Note, Linear project, and GitHub Project mirror.
 - [x] Confirm every diagram still matches the authoritative issue dependencies and accepted decisions after the final feedback pass, including the `REVIEW-01`/`TEST-01`/`MET-01` split.
