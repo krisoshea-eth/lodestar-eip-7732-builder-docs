@@ -9,10 +9,10 @@
 | Parent work | [BN-01 / LOD-15](https://linear.app/kriso/issue/LOD-15/bn-01-confirm-or-add-the-bn-route-and-event-surface-for-lodestar) |
 | Upstream discussion | [ethereum/beacon-APIs #599](https://github.com/ethereum/beacon-APIs/issues/599) |
 | Builder evidence | [API-02 PR #48](https://github.com/krisoshea-eth/lodestar/pull/48) |
-| Lodestar proof of concept | Pending; no PoC issue or branch identified as of 2026-08-14 |
+| Lodestar proof of concept | Nico's unpublished [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder) branch at `99fd8fa9ad`; event change introduced in [`679e12d8e2`](https://github.com/ChainSafe/lodestar/commit/679e12d8e2) |
 | Target repository | [`ethereum/beacon-APIs`](https://github.com/ethereum/beacon-APIs) |
-| Beacon APIs audit base | [`ba859db`](https://github.com/ethereum/beacon-APIs/commit/ba859dbca9076ba19dedc095c59afa7b05a66819) |
-| Last updated | 2026-08-14 |
+| Beacon APIs audit base | [`159622d`](https://github.com/ethereum/beacon-APIs/commit/159622d983a703eb03a8a37bb1edeab7ffc3b6bc) |
+| Last updated | 2026-08-24 |
 
 ## Abstract
 
@@ -20,7 +20,7 @@ This working draft proposes extending the existing Beacon API `block` event from
 
 The extension gives an external Builder enough selection identity to reject unrelated blocks without retrieving every imported post-Gloas block. The two fields are a negative filter, not proof that the complete selected bid matches a locally signed bid. It does not remove `block` plus `getBlockV2` as the compatibility and complete-verification fallback.
 
-The preferred shape reflects the current Lodestar discussion with Nico. It is not cross-client consensus yet. The proposal must be checked against a Lodestar proof of concept and reviewed by other consensus-client teams before it can be treated as an interoperable contract. The static client audit in this document establishes likely implementation seams, not client support.
+The preferred shape reflects the current Lodestar discussion with Nico and is now implemented on his unpublished `nflaig/builder` development branch. It is not cross-client consensus yet. The proposal must still be reviewed by other consensus-client teams before it can be treated as an interoperable contract. The static client audit in this document establishes likely implementation seams, not client support.
 
 ## Motivation
 
@@ -182,9 +182,13 @@ The current Lodestar Builder implementation demonstrates:
 
 ### Lodestar proof of concept
 
-Marco's [builder foundation PR #9781](https://github.com/ChainSafe/lodestar/pull/9781) has merged. His current [PR #9827](https://github.com/ChainSafe/lodestar/pull/9827) is a lifecycle and logging follow-up and does not implement the event extension. The producer PoC therefore remains a separate pending artifact.
+Nico's unpublished [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder) branch now provides the producer and consumer proof of concept. Commit [`679e12d8e2`](https://github.com/ChainSafe/lodestar/commit/679e12d8e2) adds optional `builderIndex` and `blockHash` fields to Lodestar's `block` event codec and emits both fields for every imported post-Gloas block from `signedExecutionPayloadBid.message`. The serializer tests cover an external Builder index, omission for the legacy shape, and `BUILDER_INDEX_SELF_BUILD` encoded as the quoted decimal `UINT64_MAX` value.
 
-Marco's proof of concept should record:
+The same branch adds a Builder `Revealer` that consumes the enriched fields and falls back to `getBlockV2` when they are absent. That one-shot fallback demonstrates mixed-version compatibility. API-02 remains the stronger complete-block path because it adds fork metadata checks, structural validation, bounded retry, and root deduplication. If Nico's branch becomes an upstream PR, the two implementations should be reconciled rather than keeping parallel fetch paths.
+
+The branch also records a two-node minimal-preset Kurtosis run in `packages/builder/DESIGN.md`, with the external Builder winning and revealing payloads. That is useful implementation evidence, but the branch is unpublished and unreviewed. It does not establish cross-client agreement or replace SPEC-01's upstream review.
+
+The proof of concept records:
 
 - the issue, branch, commit, and PR;
 - the exact event emission and serialization changes;
@@ -199,19 +203,20 @@ Marco's proof of concept should record:
 | Evidence | Status | Link or note |
 | --- | --- | --- |
 | API-02 Builder consumer | Implemented on fork; upstream review pending | [PR #48](https://github.com/krisoshea-eth/lodestar/pull/48) |
-| Lodestar producer PoC | Pending | Add issue and PR when available |
-| External-Builder example | Pending | |
-| Self-build example | Pending | |
-| Pre-Gloas compatibility test | Pending | |
-| Post-Gloas serialization tests | Pending | |
+| Lodestar producer PoC | Implemented on unpublished branch | [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder), event commit [`679e12d8e2`](https://github.com/ChainSafe/lodestar/commit/679e12d8e2) |
+| External-Builder example | Covered by event serializer test and devnet Builder flow | [`eventSerdes.test.ts`](https://github.com/ChainSafe/lodestar/blob/nflaig/builder/packages/api/test/unit/beacon/eventSerdes.test.ts) and [`DESIGN.md`](https://github.com/ChainSafe/lodestar/blob/nflaig/builder/packages/builder/DESIGN.md) |
+| Self-build example | Covered by serializer test | `BUILDER_INDEX_SELF_BUILD` serializes as `"18446744073709551615"` |
+| Pre-Gloas compatibility test | Covered at codec level | Legacy event shape omits both optional fields |
+| Post-Gloas serialization tests | Covered at codec level | Both fields serialize with existing event conventions |
+| Imported non-head test | Pending focused evidence | Producer remains on the existing per-import emission path; add an explicit regression before treating this behavior as PoC-tested |
 
 ## Static client feasibility audit
 
-This audit identifies where current clients construct and consume the `block` event. It was performed on 2026-08-14 against the source revisions linked below. It is not a substitute for client-team review or a proof that each implementation is trivial.
+This audit identifies where current clients construct and consume the `block` event. The cross-client source sweep was performed on 2026-08-14. Lodestar and Beacon APIs were refreshed on 2026-08-24. It is not a substitute for client-team review or a proof that each implementation is trivial.
 
 | Client | Current producer seam | Initial feasibility finding | Question to confirm with team |
 | --- | --- | --- | --- |
-| Lodestar | [`importBlock.ts`](https://github.com/ChainSafe/lodestar/blob/92bd4efe9bc88db47fd2d54a77e6b949e86b86b7/packages/beacon-node/src/chain/blocks/importBlock.ts) emits after import while the block input is available | Both bid fields can be read at the existing emission point; Marco's PoC should verify the narrowest fork-aware implementation | Which existing fork guard and event codec shape should the PoC reuse? |
+| Lodestar | [`importBlock.ts`](https://github.com/ChainSafe/lodestar/blob/e7a3253f3bafcc39e12fd6c1a52894664afa0ef1/packages/beacon-node/src/chain/blocks/importBlock.ts) emits after import while the block input is available | Nico's branch confirms both fields can be read at the existing emission point and encoded with the existing event codec conventions | Reconcile the reviewed upstream shape with API-02 and confirm the explicit non-head regression |
 | Lighthouse | [`SseBlock`](https://github.com/sigp/lighthouse/blob/b263df596/common/eth2/src/types.rs) is constructed in [`beacon_chain.rs`](https://github.com/sigp/lighthouse/blob/b263df596/beacon_node/beacon_chain/src/beacon_chain.rs) while the imported block is available | The producer still has the block, so the fields appear locally sourceable | Are additive fields accepted by all Lighthouse event consumers and fixtures? |
 | Prysm | [`BlockProcessedData`](https://github.com/OffchainLabs/prysm/blob/b86db8d/beacon-chain/rpc/eth/events/events.go) carries the signed block into the event serializer | The serializer can access the Gloas body before reducing it to the current event fields | Which fork/body helpers should guard the post-Gloas fields? |
 | Teku | [`BlockEvent`](https://github.com/Consensys/teku/blob/3003f5443ac53e53d856978871b951c28805b08b/data/beaconrestapi/src/main/java/tech/pegasys/teku/beaconrestapi/handlers/v1/events/BlockEvent.java) receives the complete `SignedBeaconBlock` | The event constructor has the necessary source object | Can its `SerializableTypeDefinition` express fields that are absent before Gloas and required afterwards without a new event type? |
@@ -248,12 +253,12 @@ Recent event PRs provide a practical starting point for reviewers: `@michaelspro
 
 ### Outreach sequence
 
-1. Keep this document as the evidence notebook while Marco's Lodestar PoC is pending.
+1. Keep this document as the evidence notebook while Nico's unpublished Lodestar branch is prepared for review.
 2. Ask Nico to confirm the current client representatives and the preferred cross-client venue. Do not treat Discord acknowledgement as specification approval.
 3. When the proposed wire contract is stable, open a draft Beacon APIs PR linked to #599 even if not every implementation exists yet. The draft PR gives all teams one concrete diff to review.
 4. Request one response per client covering producer feasibility, decoder compatibility, self-build behavior, and any preferred alternative.
 5. Record each response and implementation link in the table above and in the upstream `CHANGES.md` row.
-6. Keep the PR in draft until the Lodestar PoC and initial cross-client feasibility review are complete. Client implementations may land after the specification decision, with support tracked in `CHANGES.md`.
+6. Keep the PR in draft until the Lodestar implementation shape and initial cross-client feasibility review are complete. Client implementations may land after the specification decision, with support tracked in `CHANGES.md`.
 
 Cross-client buy-in means agreement that the wire contract is implementable and interoperable. It does not require every client implementation to merge before the specification PR can proceed.
 
@@ -267,12 +272,12 @@ The initial Beacon APIs PR should be narrow:
 4. Run `redocly lint beacon-node-oapi.yaml`.
 5. Open as a draft and request cross-client feedback before treating the shape as settled.
 
-Immediately before opening the PR, recheck `ethereum/beacon-APIs:master` and open pull requests for overlapping event changes. As of the audit base:
+Immediately before opening the PR, recheck `ethereum/beacon-APIs:master` and open pull requests for overlapping event changes. The 2026-08-24 refresh advanced the audit base from `ba859db` to `159622d`. The only eventstream-file change in that range adds `execution_requests_root` to the `execution_payload_bid` example and does not alter `block`. As of this refreshed base:
 
 - [PR #585](https://github.com/ethereum/beacon-APIs/pull/585) also edits `apis/eventstream/index.yaml` to enrich `chain_reorg`; and
 - [PR #490](https://github.com/ethereum/beacon-APIs/pull/490) edits the eventstream file for Heze FOCIL support.
 
-Neither PR currently implements #599, but either can create a mechanical rebase or alter nearby examples before this proposal opens upstream.
+Neither PR currently implements #599. PR #490 was updated on 2026-08-21, so both remain mechanical overlap watches before this proposal opens upstream.
 
 ## Open questions
 
@@ -293,6 +298,8 @@ Neither PR currently implements #599, but either can create a mechanical rebase 
 | 2026-08-13 | Track the proposal in one SPEC-01 issue and one working design draft | [LOD-48](https://linear.app/kriso/issue/LOD-48/spec-01-champion-the-gloas-block-event-extension-in-beacon-apis) |
 | 2026-08-14 | Treat missing fields during mixed-client rollout as a signal to use `getBlockV2`, not as non-selection | Preserve API-02 correctness while implementations roll out |
 | 2026-08-14 | Use a draft upstream PR as the main cross-client review artifact | Recent Beacon APIs event changes were reviewed against concrete diffs |
+| 2026-08-24 | Treat Nico's `nflaig/builder` branch as the current Lodestar PoC | It implements the producer fields, mixed-version fallback, serializer tests, and a two-node Builder run, but remains unpublished and unreviewed |
+| 2026-08-24 | Keep SPEC-01 scoped to `block` despite adjacent PoC proposals | Nico's branch also proposes `payload_attributes` fields and emission rules; those require separate ownership and must not silently expand this PR |
 
 ## Completion criteria
 
@@ -304,7 +311,7 @@ This working draft is ready to become a draft Beacon APIs PR when:
 
 The upstream PR is ready to leave draft when:
 
-- Marco's Lodestar PoC evidence is linked;
+- the reviewed Lodestar implementation evidence is linked;
 - external-Builder, self-build, and pre-Gloas examples are verified;
 - each active client team has responded on producer and consumer feasibility; and
 - any objection requiring `bid_included`, a full-bid event, or `block_v2` has been resolved or recorded.
