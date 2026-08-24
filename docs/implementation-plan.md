@@ -880,7 +880,7 @@ flowchart TD
 
 **Current evidence:** Fork draft [krisoshea-eth/lodestar#48](https://github.com/krisoshea-eth/lodestar/pull/48) integrates current `unstable` `bd761ec9ea1d69657a99530e0c76f08f8e315da9` through merge `c3a42e6a24c47f06cd43b61bdcb1bd46db78e1c2`. It has 25 focused observer tests and 52 passing Builder package tests on Node 24.13.0, plus package type-check, lint, build, and build-import evidence. Upstream maintainer review and an issue-specific real-BN smoke remain before issue closure.
 
-**Operational handoff:** Node 24.13.0 uses Lodestar's npm `eventsource` fallback. The current Builder CLI configures one source BN, while the shared API client can otherwise serve REST calls from fallback URLs and pins SSE to its first URL. The Beacon API event contract defines no SSE `id` or `Last-Event-ID` resumption, so conforming clients cannot be assumed to replay a missed selection notification. `ENV-01` owns the real-process shutdown smoke; `REL-01` owns bounded same-source reconciliation; deferred multi-BN and long-gap behavior remain in their existing tracking issues.
+**Operational handoff:** Node 24.13.0 uses Lodestar's npm `eventsource` fallback. The current Builder CLI configures one source BN, while the shared API client can otherwise serve REST calls from fallback URLs and pins SSE to its first URL. The Beacon API event contract defines no SSE `id` or `Last-Event-ID` resumption, so conforming clients cannot be assumed to replay a missed selection notification. Merged #9872 also keeps a connection alive after dropping one event that cannot be serialized, so recovery cannot be reconnect-only. `ENV-01` owns the real-process shutdown smoke; `REL-01` owns bounded same-source reconciliation both after reconnect and across connected-stream gaps; deferred multi-BN and long-gap behavior remain in their existing tracking issues.
 
 #### `TEST-01` — Add the remaining Gate-A tests
 
@@ -1197,7 +1197,7 @@ flowchart TD
 - [ ] When that record is absent after restart, require the block bid to use the configured active Builder index and verify its signature against the configured Builder public key.
 - [ ] Retrieve the stateful envelope from the same source BN for the selecting block root and verify all bid/envelope commitments before signing.
 - [ ] Preserve source affinity between the SSE stream and every correlated block/reveal request. Do not allow generic API-client fallback to evaluate or reveal against a different BN without explicit source provenance and a reviewed trust model.
-- [ ] Reconcile a bounded missed-event window explicitly after reconnect. The Beacon API event contract defines no SSE `id` or `Last-Event-ID` resumption, so conforming clients do not provide a standard exact replay mechanism.
+- [ ] Reconcile a bounded missed-event window after reconnect and while the stream remains connected. The Beacon API event contract defines no SSE `id` or `Last-Event-ID` resumption, and merged Lodestar #9872 intentionally drops one event that cannot be serialized while preserving the connection, so recovery cannot depend only on reconnect.
 - [ ] Deduplicate replayed block events and repeated publication attempts.
 - [ ] Fail explicitly when the source BN is different, offline, or has lost/expired the reveal material; never reconstruct a replacement payload.
 - [ ] Add restart-before-selection, bounded missed-event reconciliation, duplicate publication, wrong Builder signature, source-affinity/fallback rejection, source-cache-loss, and connected/reconnecting shutdown tests.
