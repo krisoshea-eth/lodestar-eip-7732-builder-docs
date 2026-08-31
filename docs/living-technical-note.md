@@ -925,7 +925,7 @@ Current delivery state at this reconciliation:
 | `BASELINE-01` | In progress | The exact pin and reproducibility commands are recorded. The historical capability and upstream-audit matrix remains open |
 | `ENV-01` | Done | Manual development setup was accepted as sufficient to unblock implementation. It does not claim independent clean-checkout reproduction |
 | `ENV-02` | In progress | The stored runbook has three clean launches plus real-BN API-02 and connected/interrupted-stream SIGTERM evidence on the first machine. Closure requires a second contributor to reproduce it independently |
-| `API-02` | In review | Upstream PR [#9931](https://github.com/ChainSafe/lodestar/pull/9931) is the current review artifact, with 25 focused observer tests. Its real-BN and shutdown evidence is stored under ENV-02 |
+| `API-02` | In review | Upstream PR [#9931](https://github.com/ChainSafe/lodestar/pull/9931) is the current review artifact at `711c6c7a77`, with 26 focused observer tests. Its real-BN and shutdown evidence is stored under ENV-02 |
 | `SPEC-01` | In progress | Marco's four Lodestar PoCs reopened the event-shape decision. Compare them and Nico's implementation feedback before drafting the Beacon APIs PR |
 
 The near-term activation order is:
