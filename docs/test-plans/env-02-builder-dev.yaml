@@ -1,0 +1,31 @@
+# ENV-02 local Gloas environment for the API-02 event-to-block and shutdown smoke.
+#
+# Build the Lodestar image from the API-02 commit recorded in the runbook. The
+# package revision and image digests are pinned separately in that document.
+
+participants:
+  - el_type: geth
+    el_image: ethpandaops/geth@sha256:50fad280c7e2a2d7df835b46753c7633882824fbf545efb63c03451f910090e8
+    cl_type: lodestar
+    cl_image: local/lodestar:env-02-api02-1d238058
+    vc_image: local/lodestar:env-02-api02-1d238058
+    cl_log_level: debug
+    vc_log_level: info
+    supernode: true
+    validator_count: 64
+
+network_params:
+  preset: minimal
+  seconds_per_slot: 6
+  gloas_fork_epoch: 0
+  builder_count: 1
+  builder_balance: 100
+
+additional_services: []
+
+port_publisher:
+  cl:
+    enabled: true
+    public_port_start: 37000
+
+global_log_level: info
