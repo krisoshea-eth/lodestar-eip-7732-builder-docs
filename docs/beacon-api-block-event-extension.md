@@ -8,7 +8,7 @@
 | Project tracker | [Linear LOD-48](https://linear.app/kriso/issue/LOD-48/spec-01-champion-the-gloas-builder-selection-event-decision-in-beacon) / [GitHub issue #49](https://github.com/krisoshea-eth/lodestar/issues/49) |
 | Parent work | [BN-01 / LOD-15](https://linear.app/kriso/issue/LOD-15/bn-01-confirm-or-add-the-bn-route-and-event-surface-for-lodestar) |
 | Upstream discussion | [ethereum/beacon-APIs #599](https://github.com/ethereum/beacon-APIs/issues/599) |
-| Builder evidence | [API-02 PR #48](https://github.com/krisoshea-eth/lodestar/pull/48) |
+| Builder evidence | [upstream API-02 PR #9931](https://github.com/ChainSafe/lodestar/pull/9931) |
 | Lodestar proofs of concept | Marco's upstream [#9854](https://github.com/ChainSafe/lodestar/pull/9854), [#9875](https://github.com/ChainSafe/lodestar/pull/9875), [#9876](https://github.com/ChainSafe/lodestar/pull/9876), and [#9896](https://github.com/ChainSafe/lodestar/pull/9896), plus Nico's draft [`nflaig/builder`](https://github.com/nflaig/lodestar/tree/builder) branch at `99fd8fa9ad` |
 | Target repository | [`ethereum/beacon-APIs`](https://github.com/ethereum/beacon-APIs) |
 | Beacon APIs audit base | [`159622d`](https://github.com/ethereum/beacon-APIs/commit/159622d983a703eb03a8a37bb1edeab7ffc3b6bc) |
@@ -216,7 +216,7 @@ The combined evidence should record:
 
 | Evidence | Status | Link or note |
 | --- | --- | --- |
-| API-02 Builder consumer | Implemented on fork; upstream review pending | [PR #48](https://github.com/krisoshea-eth/lodestar/pull/48) |
+| API-02 Builder consumer | In upstream review | [Lodestar #9931](https://github.com/ChainSafe/lodestar/pull/9931) |
 | Lodestar producer alternatives | Four upstream PoCs open | [#9854](https://github.com/ChainSafe/lodestar/pull/9854), [#9875](https://github.com/ChainSafe/lodestar/pull/9875), [#9876](https://github.com/ChainSafe/lodestar/pull/9876), and [#9896](https://github.com/ChainSafe/lodestar/pull/9896) |
 | End-to-end compatibility PoC | Implemented on a draft branch | [`nflaig/builder`](https://github.com/nflaig/lodestar/tree/builder), event commit [`679e12d8e2`](https://github.com/nflaig/lodestar/commit/679e12d8e2) |
 | External-Builder example | Covered by event serializer test and devnet Builder flow | [`eventSerdes.test.ts`](https://github.com/ChainSafe/lodestar/blob/nflaig/builder/packages/api/test/unit/beacon/eventSerdes.test.ts) and [`DESIGN.md`](https://github.com/ChainSafe/lodestar/blob/nflaig/builder/packages/builder/DESIGN.md) |
@@ -348,7 +348,7 @@ SPEC-01 is complete when the Beacon APIs PR either merges with documented cross-
 - [Beacon APIs PR #621: fork-conditional `payload_attributes` field](https://github.com/ethereum/beacon-APIs/pull/621)
 - [Gloas consensus specification](https://github.com/ethereum/consensus-specs/blob/master/specs/gloas/beacon-chain.md)
 - [Heze consensus specification](https://github.com/ethereum/consensus-specs/blob/master/specs/heze/beacon-chain.md)
-- [API-02 implementation PR #48](https://github.com/krisoshea-eth/lodestar/pull/48)
+- [API-02 implementation PR #9931](https://github.com/ChainSafe/lodestar/pull/9931)
 - [Lighthouse `SseBlock` and event decoder](https://github.com/sigp/lighthouse/blob/b263df596/common/eth2/src/types.rs)
 - [Prysm block-event serializer](https://github.com/OffchainLabs/prysm/blob/b86db8d/beacon-chain/rpc/eth/events/events.go)
 - [Teku block-event schema](https://github.com/Consensys/teku/blob/3003f5443ac53e53d856978871b951c28805b08b/data/beaconrestapi/src/main/java/tech/pegasys/teku/beaconrestapi/handlers/v1/events/BlockEvent.java)

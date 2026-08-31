@@ -158,3 +158,13 @@ Kris and Marko:
 - Kept ENV-02 open until a second contributor reproduces its clean-checkout runbook. First-machine evidence remains point-in-time API-02 and shutdown proof, not continuous-health or external-Builder selection proof.
 - Deferred final architecture and event wording until Nico and NC answer the focused Discord questions. The provisional plan records every unresolved choice so implementation can proceed without presenting assumptions as consensus.
 - Removed the remaining active BN-mediated lifecycle text from the plan and Living Technical Note, corrected the `PAYLOAD-01 -> STORE-01 -> BID-CORE-01 -> BID-01` dependency order, and kept the original BN-mediated task blocks clearly labelled as historical design evidence.
+
+### Full branch and tracker reconciliation - 1 September 2026
+
+Kris and Marko:
+
+- Audited every production and test change across all 42 files in Nico's `nflaig/builder` proof of concept. The existing issue graph covers its ChainEvents, PayloadSource, PayloadStore, BidPolicy, SlotBidder, Ledger, Revealer, API, CLI, metrics, and test work; no duplicate component issue was added.
+- Audited recent public Builder-relevant work by Marco, Nico, and NC across Lodestar, beacon-APIs, js-libp2p, and consensus-specs. Corrected #9947 as proposer-BN connection pre-warming for external Builder API servers, not Builder-to-EL Engine connection management.
+- Recorded merged consensus-specs #5549 as a new direct-Engine input: post-Gloas `notify_forkchoice_updated` includes `custody_columns`. Routed the unresolved node-identity and value-source decision to BN-01, ATTR-01, PAYLOAD-01, ATTR-SPEC-01, and EL-ARCH-01 rather than silently expanding beacon-APIs #638.
+- Recorded merged #9869, #9946, #9948, #9949, and #9950 plus open #9954 and #9955 in the affected BN and payload issues. Confirmed Marco's #638 is already ATTR-SPEC-01 in review and #9914 plus js-libp2p #3610 are already BN-PUB-01 Done.
+- Reconciled all 52 Linear issues and verified that the changed issue bodies propagated to the GitHub mirror. ENV-01 remains Done for manual setup; ENV-02 remains In Progress only until a second contributor independently reproduces its stored runbook. BASELINE-01 remains In Progress for its historical capability audit, and REVIEW-01 remains with Marko for explicit #9781 thread-marker reconciliation.
