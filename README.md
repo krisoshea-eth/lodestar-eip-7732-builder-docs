@@ -10,7 +10,7 @@ This repository mirrors the Lodestar EIP-7732 Builder project documents as raw M
 | Implementation plan | [docs/implementation-plan.md](docs/implementation-plan.md) | Canonical full plan in GitHub |
 | HackMD plan landing page | [docs/hackmd-implementation-plan-index.md](docs/hackmd-implementation-plan-index.md) | Short index for the public [HackMD plan URL](https://hackmd.io/@krisos/SyPZNJp4fg) |
 | Living technical note | [docs/living-technical-note.md](docs/living-technical-note.md) | Canonical GitHub note with a public [HackMD mirror](https://hackmd.io/@krisos/S1a9mdB7fl) |
-| Beacon API block-event extension | [docs/beacon-api-block-event-extension.md](docs/beacon-api-block-event-extension.md) | Working design draft for SPEC-01 and beacon-APIs #599 |
+| Beacon API Builder-selection event decision | [docs/beacon-api-block-event-extension.md](docs/beacon-api-block-event-extension.md) | Working comparison for SPEC-01 and beacon-APIs #599 |
 | ENV-02 Builder dev runbook | [docs/runbooks/env-02-builder-dev.md](docs/runbooks/env-02-builder-dev.md) | Pinned local environment and evidence procedure for API-02 |
 | ENV-02 first-machine evidence | [docs/evidence/env-02-2026-08-31.md](docs/evidence/env-02-2026-08-31.md) | Point-in-time event, deduplication, and shutdown evidence |
 | Weekly updates | [docs/weekly-updates/](docs/weekly-updates/) | Kris and Marko's EPF HackMD updates |
