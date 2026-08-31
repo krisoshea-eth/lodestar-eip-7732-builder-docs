@@ -129,7 +129,7 @@ flowchart LR
 | 2026-08-01 | Envelope publication validation | **Explicit `consensus_and_equivocation`** | Validation and proposer-equivocation detection stay BN-owned; the implementation subsequently merged in [Lodestar #9757](https://github.com/ChainSafe/lodestar/pull/9757) |
 | 2026-07-31 | Multiple bids | **Compatible with the connected BN's local head view** | [consensus-specs #5497](https://github.com/ethereum/consensus-specs/pull/5497) and [Lodestar #9739](https://github.com/ChainSafe/lodestar/pull/9739) merged; multi-branch flood publishing remains deferred |
 | 2026-07-30 | Genesis wait and shared config | **Duplicate `waitForGenesis`; share `assertEqualParams` through config** | [Lodestar #9725](https://github.com/ChainSafe/lodestar/pull/9725) and [#9726](https://github.com/ChainSafe/lodestar/pull/9726) merged; do not add unreachable BN 404 code |
-| 2026-07-30 | Runtime boundary | **Standalone same-host sidecar; BN owns EL and payload building** | One local key and one trusted source BN define core v1 |
+| 2026-07-30 | Runtime boundary | **Historical: standalone same-host sidecar; BN owns EL and payload building** | Superseded provisionally on 31 August by the direct-Engine ownership row above |
 | 2026-07-14 | Project extension model | **Core first; one bounded extension after gates** | FOCIL, policy, observability, Builder API, advanced preparation, adversarial work, UI, and devnet deployment remain conditional |
 | 2026-07-13 | Proposal status | **Merged** | [EPF7 PR #161](https://github.com/eth-protocol-fellows/cohort-seven/pull/161), amended through [PR #186](https://github.com/eth-protocol-fellows/cohort-seven/pull/186) |
 | 2026-07-06 | Payload deadline | **`PAYLOAD_DUE_BPS = 5000`** | Six seconds on a 12-second slot; read configured BPS rather than hardcoding milliseconds |
@@ -180,7 +180,7 @@ These items were reconciled against the August 22-24 partial monitoring reports,
 - `SIGN-01`, `CLI-01`, `API-01`, and `MET-01` are complete in the project board. [Lodestar #9781](https://github.com/ChainSafe/lodestar/pull/9781) merged the foundation, [#9827](https://github.com/ChainSafe/lodestar/pull/9827) merged its lifecycle and logging follow-up, [#9826](https://github.com/ChainSafe/lodestar/pull/9826) centralized the shared API test stubs, [#9848](https://github.com/ChainSafe/lodestar/pull/9848) added metrics, [#9860](https://github.com/ChainSafe/lodestar/pull/9860) added CLI handler tests, and [#9868](https://github.com/ChainSafe/lodestar/pull/9868) hardened transient Builder lookup. `REVIEW-01` now retains only explicit #9781 thread-marker reconciliation; `TEST-01` retains the remaining readiness regression matrix. `ENV-01` is marked Done, but its issue still has an unchecked task list and empty evidence fields; reconcile the cited Discord/manual-run evidence before relying on that closure.
 - #9781 adds Builder identity/status tracking, BN and EL readiness polling, `--executionFeeRecipient`, request timeout wiring, and identity/tracker tests. Unknown and pending configured keys wait inertly with cancellation, exited Builders fail distinctly, identity responses are sanity-checked, and API errors use the standard response path. The current assumption that Gloas-capable clients expose the health endpoint was explicitly accepted for now.
 - Twelve #9781 review-thread markers remained unresolved in the August 14 GitHub inventory. Their implementation follow-ups are no longer open: [#9819](https://github.com/ChainSafe/lodestar/issues/9819) closed through merged #9826 and #9827 merged. `REVIEW-01` still requires explicit thread-by-thread reconciliation rather than silently treating the markers as resolved. Broader readiness recovery, bounded diagnostics, and remaining lifecycle coverage stay in `TEST-01`.
-- The main implementation gap is no longer signing. It is the complete same-host workflow: a reviewed BN preparation/candidate surface, canonical payload production with the Builder fee recipient, exact complete-bid return, publication timing, selection observation, stateful envelope retrieval, and evidence.
+- The main implementation gap is no longer signing or local bid publication. It is the Builder-owned payload source and store, coverable bid construction, exact selection matching, stateless reveal, and complete evidence loop.
 - The 31 August working baseline has the Builder connect directly to one or more local EL Engine APIs for payload construction. This is provisional pending maintainer confirmation and the shared-versus-dedicated EL decision.
 - The Builder owns its key, payload source and store, bid construction and policy, signatures, exact matching, and orchestration. The source BN owns chain and proposer inputs, API validation, publication, and authoritative outcomes.
 - Merged Lodestar #9914 and js-libp2p #3610 provide the current local-bid validation and flood-publication seam. Merged #9904 remains BN-side envelope import and recovery evidence rather than the Builder's primary direct-Engine payload store.
@@ -420,10 +420,10 @@ The plan-level mentor questions are closed. Nico confirmed the architecture and 
 - Reuse the smallest BN helper. Share or import validator's `SyncingStatusTracker` only if the Builder later needs its resync lifecycle or enough related code to justify the dependency. `runOnResynced` was added for duty refetching and should not be copied without a Builder use case.
 - Require a typed syncing or unavailable result before any preparation, retrieval, signing, or propagation can proceed.
 
-### Timing and cache evidence
+### Timing and payload-store evidence
 
 - Choose the first pre-slot publication default from repeatable Kurtosis evidence and keep it operator-configurable as proposer cutoffs and the future Builder API evolve.
-- Confirm how the pinned BN cleans stale payload work after a head change. Do not add a sidecar cache or explicit cancellation path unless that audit proves a gap.
+- Confirm how the Builder cancels or expires stale direct-Engine payload work after parent or head input changes. Keep store insertion before bid publication and bound both work and retention.
 - An already-published bid cannot be withdrawn. A head change creates a new parent-tuple bid.
 
 ### Conditional-package questions
@@ -439,14 +439,14 @@ The honest Builder lifecycle remains:
 1.  Load one local Builder key and the Builder-controlled execution payload fee recipient.
 2.  Wait for genesis, verify chain parameters, resolve the active Builder, and require BN/EL readiness.
 3.  Follow the source BN's current head view through SSE.
-4.  Ask the BN to prepare a candidate for the target slot and head view.
-5.  The BN resolves proposer context/preferences and prepares the payload through its EL with the Builder fee recipient.
-6.  The BN validates balance/coverability, retains exact reveal material, and returns the complete unsigned bid.
-7.  The sidecar sanity-checks the exact bid without rebuilding or revaluing it, signs it, and publishes at the configured pre-slot offset.
+4.  Consume fork-correct payload attributes and proposer preferences from the source BN.
+5.  Prepare the payload through a configured local EL with the Builder fee recipient.
+6.  Retain the exact payload material, construct one complete coverable bid, and sign it.
+7.  Submit the signed bid through the source BN's validation and flood-publication path at the configured pre-slot offset.
 8.  Observe block events and retrieve the fork-correct signed block.
 9.  Detect an exact locally signed bid selected for this Builder.
-10. Retrieve the exact stateful envelope from the same source BN.
-11. Recheck commitments, sign the exact envelope, and publish immediately with consensus_and_equivocation.
+10. Load the exact retained payload package and construct the stateless envelope.
+11. Recheck commitments, sign the envelope, and submit it immediately with consensus_and_equivocation.
 12. Observe BN acceptance, payload import, FULL/EMPTY, PTC, data, and payment outcomes.
 ```
 
@@ -459,28 +459,26 @@ sequenceDiagram
     participant PTC as PTC
 
     B->>BN: Verify chain, active Builder, sync and head view
-    B->>BN: Prepare candidate for slot/head + Builder fee recipient
-    BN->>EL: forkchoiceUpdated / getPayload
-    EL-->>BN: Payload + requests + blobs/data + value
-    BN->>BN: Validate balance and retain exact reveal package
-    BN-->>B: Complete unsigned ExecutionPayloadBid
-    B->>B: Sanity-check and sign exact bid
+    BN-->>B: Payload attributes, preferences and head context
+    B->>EL: forkchoiceUpdated / getPayload
+    EL-->>B: Payload + requests + blobs/data + value
+    B->>B: Retain exact payload package
+    B->>B: Construct coverable bid and sign it
     B->>BN: Publish bid at configured pre-slot offset
     P->>BN: Beacon block selects bid
     BN-->>B: Block gossip/import event
     B->>B: Match exact locally signed bid
-    B->>BN: Retrieve stateful envelope for selecting block root
-    BN-->>B: Exact unsigned envelope
-    B->>BN: Sign and publish with consensus_and_equivocation
+    B->>B: Load payload package and construct stateless envelope
+    B->>BN: Sign and submit with consensus_and_equivocation
     BN-->>B: Payload imported / fork choice becomes FULL
     PTC-->>B: Payload-attestation events
 ```
 
-The alpha.13 Gloas types remain the current core shape. Heze extends the bid with `inclusion_list_bits`; EIP-8237 and EIP-8146 remain future shape risks behind fork-aware adapters.
+The alpha.14 Gloas types remain the current pinned core shape. Heze extends the bid with `inclusion_list_bits`; EIP-8237 and EIP-8146 remain future shape risks behind fork-aware adapters.
 
 ## Candidate architecture sketch
 
-The v1 boundary is accepted. The remaining work is to bind it to the pinned Lodestar interfaces without duplicating BN or EL logic.
+The direct-Engine boundary is the provisional working baseline. The remaining work is to split Nico's proof of concept into small reviewed changes while keeping the unresolved EL-ownership choice explicit.
 
 ```mermaid
 flowchart TB
@@ -488,39 +486,41 @@ flowchart TB
         CFG["config + one local Builder key<br/>+ Builder payload fee recipient"]
         API["typed source-BN client<br/>chain, Builder state, readiness"]
         HEAD["head/block SSE observer"]
-        SCHED["preparation + publication scheduler"]
+        INPUTS["payload attributes + proposer inputs"]
+        ENGINE["PayloadSource + Engine client"]
+        STORE[("bounded PayloadStore")]
+        POLICY["coverable bid policy"]
+        SCHED["bid publication scheduler"]
         SIGN["fork-aware bid/envelope signer"]
         LOCAL[("running-process signed-bid map")]
         SELECT["exact selection matcher"]
-        REV["stateful reveal coordinator"]
+        REV["stateless reveal coordinator"]
         OBS["bounded metrics + structured logs"]
     end
 
     subgraph BN["one trusted same-host Lodestar BN"]
-        PREP["prepareNextSlot / reviewed candidate trigger"]
-        PAY["canonical payload job<br/>head + preferences + value"]
-        BAL["Builder state + balance enforcement"]
-        CACHE[("authoritative payload/envelope cache")]
-        PUB["bid and envelope publication<br/>consensus_and_equivocation"]
+        STATE["chain, proposer and Builder inputs"]
+        PUB["bid and envelope validation<br/>plus publication"]
         EVENTS["head, block, payload and PTC events"]
     end
 
-    EL["local EL owned by BN"]
+    EL["one or more local Builder ELs<br/>ownership model pending"]
     REG["external EIP-8282 lifecycle<br/>deposit/top-up/withdrawal"]
 
     CFG --> API
-    API --> PREP
-    HEAD --> SCHED --> PREP
-    PREP --> PAY --> EL
-    EL --> PAY --> BAL --> CACHE
-    BAL --> API --> SIGN
+    API --> INPUTS
+    HEAD --> INPUTS --> ENGINE
+    ENGINE --> EL
+    EL --> ENGINE --> STORE
+    STORE --> POLICY --> SIGN
+    SIGN --> SCHED
     SIGN --> LOCAL
     SIGN --> PUB
     EVENTS --> HEAD
     EVENTS --> SELECT
     SELECT --> LOCAL
-    SELECT --> REV --> CACHE
-    CACHE --> REV --> SIGN
+    SELECT --> REV --> STORE
+    STORE --> REV --> SIGN
     REV --> PUB
     API --> OBS
     EVENTS --> OBS
@@ -532,26 +532,26 @@ flowchart TB
 The architecture phase now produces four concrete artifacts:
 
 1. **Pinned capability audit:** exact `unstable` SHA, API/spec versions, landed capabilities, and pre-existing failures.
-2. **Reviewed BN contract:** preparation/candidate request, stateful envelope lookup, publication modes, bounds, errors, and namespaces.
-3. **Failure contract:** readiness, no-bid, syncing, insufficient balance, stale head, cache miss, publication rejection, late reveal, and offline-after-selection outcomes.
+2. **Reviewed ownership contract:** source-BN inputs, direct-Engine ownership, payload-store bounds, publication modes, errors, and namespaces.
+3. **Failure contract:** readiness, no-bid, syncing, insufficient balance, stale input, store miss, publication rejection, late reveal, and offline-after-selection outcomes.
 4. **Evidence map:** the Linear issue, PR, focused tests, and end-to-end assertion that prove each retained core capability.
 
 A reasonable implementation principle regardless of boundary:
 
 ```text
-Core Builder orchestration depends on narrow typed source-BN interfaces.
-The BN remains the authoritative payload and state boundary.
+Core Builder orchestration depends on narrow typed source-BN and Engine interfaces.
+The Builder owns payload construction and retention; the BN remains authoritative for chain inputs, validation, publication, and outcomes.
 Fork-specific bid/envelope validation and signing live behind current Lodestar types.
 Temporary pre-spec routes remain isolated so settled APIs can replace them.
 ```
 
-## Bid → payload cache design
+## Bid → payload store design
 
-The source BN's stateful production cache is the authoritative reveal boundary for v1. The sidecar does not create a second payload cache and does not claim durable or multi-BN recovery. A bid must not be returned as signable unless the same BN retains the exact reveal material for the required bounded window.
+Under the provisional direct-Engine architecture, the Builder owns the payload result and exact reveal material. The source BN remains authoritative for chain inputs, validation, publication, and outcomes, but it is not the primary reveal store. A bid must not be signed or submitted until the Builder has retained the exact material needed to construct its stateless envelope.
 
 ### Commitment identity
 
-The local signed-bid record and BN candidate identity include:
+The local signed-bid and payload-store identity include:
 
 ```text
 slot
@@ -566,36 +566,36 @@ The normal selection path requires the selected block's bid to match an exact lo
 
 ### Cache entry
 
-The BN entry must retain the exact execution payload, execution requests, parent context, blobs, commitments, proofs/cells, and other source material needed to derive the envelope for the selecting block root. The sidecar retains only bounded orchestration state and the exact signed bid required for normal-path matching.
+The Builder entry must retain the exact execution payload, execution requests, parent context, blobs, commitments, proofs or cells, value, and fork metadata needed to derive the stateless envelope. It also retains the exact signed bid required for normal-path matching.
 
-The stateful cache returns clear available, missing, expired, and commitment-mismatch results. It must never rebuild a different payload after selection. Stateless contents, cache transfer, and multi-BN lookup remain a separate conditional design.
+The bounded store returns clear available, missing, expired, and commitment-mismatch results. It must never rebuild a different payload after selection. The first loop may use in-memory retention if maintainers accept restart loss; durable recovery and multi-instance transfer remain separate work.
 
 ### Write ordering
 
 ```text
-BN prepares payload through canonical job
-→ BN constructs and validates complete unsigned bid
-→ BN retains exact reveal package
-→ BN returns signable bid
-→ sidecar sanity-checks and signs exact bid
-→ sidecar publishes at configured pre-slot offset
+source BN emits fork-correct chain and proposer inputs
+→ Builder prepares payload through a configured local EL
+→ Builder retains the exact reveal package
+→ Builder constructs a complete coverable bid
+→ Builder signs the exact bid
+→ source BN validates and flood-publishes it
 ```
 
-The BN must not return a signable bid and then attempt to fill the reveal cache asynchronously.
+The Builder must not sign or submit a bid and then attempt to fill the payload store asynchronously.
 
 ### Match and reveal behavior
 
 ```text
-source-BN head changes before publication:
+source-BN parent or head input changes before publication:
   prepare and sign a fresh bid for the new parent tuple
   leave any already-published old-parent bid published
-  rely on verified BN payload-job cleanup/expiry for stale preparation
+  expire stale local payload work through bounded Builder cleanup
 
 selected bid has no exact local match:
   do not enter normal reveal
   bounded same-BN restart recovery is handled separately by REL-01
 
-stateful cache miss or commitment mismatch:
+payload-store miss or commitment mismatch:
   fail closed
   never reconstruct a different payload
 
@@ -606,7 +606,7 @@ repeat exact reveal:
 
 ### Expiry
 
-First trace the existing BN payload-job/cache cleanup on head change and the normal stateful envelope eviction hook. Remove the reveal package after successful publication and otherwise use bounded expiry. Add no explicit sidecar cancellation path or second cache unless the pinned-baseline audit demonstrates a concrete gap.
+Remove the retained package after successful envelope publication and otherwise use bounded expiry. Bound in-flight Engine work and abort it on shutdown or stale input. Durable restart recovery and replicated payload stores remain follow-up work.
 
 ### Metrics
 
@@ -615,8 +615,8 @@ builder_candidates_requested_total
 builder_candidates_ready_total
 builder_bids_published_total
 builder_bids_selected_total
-builder_stateful_reveal_hits_total
-builder_stateful_reveal_misses_total
+builder_payload_store_hits_total
+builder_payload_store_misses_total
 builder_commitment_mismatches_total
 builder_reveals_attempted_total
 builder_reveals_published_total
@@ -641,7 +641,7 @@ bid.value                       = execution_payload_value
 execution_payment               = 0
 ```
 
-The BN is authoritative for payload construction, execution value, active Builder status, current Builder balance, and balance enforcement. The sidecar requests the candidate, checks that the returned values and addresses match its request and the active fork, signs that exact BN-produced bid, and publishes it. It must not reconstruct the bid, recompute its value, silently clamp it, or substitute the proposer address as the payload fee recipient.
+The Builder is authoritative for its direct-Engine payload result, local value policy, retained reveal material, and complete bid construction. The source BN remains authoritative for Builder lifecycle state and balance inputs, bid validation, publication, and chain outcomes. The Builder must not publish a bid it cannot cover, mutate a signed bid, or substitute the proposer address as the payload fee recipient.
 
 Minimum core constraints:
 
@@ -855,7 +855,7 @@ stateless/external path:
   needed to derive and gossip data columns
 ```
 
-[beacon-APIs #580](https://github.com/ethereum/beacon-APIs/pull/580) and [#624](https://github.com/ethereum/beacon-APIs/pull/624) are merged. The resulting surface uses one signed execution payload envelope with `Eth-Blob-Data-Included` to distinguish the stateful same-node path from the stateless full-envelope-plus-blob-material path. The core Builder uses the stateful same-source-BN form; the stateless form remains a conditional extension.
+[beacon-APIs #580](https://github.com/ethereum/beacon-APIs/pull/580) and [#624](https://github.com/ethereum/beacon-APIs/pull/624) are merged. The resulting surface uses one signed execution payload envelope with `Eth-Blob-Data-Included` to distinguish the stateful same-node path from the stateless full-envelope-plus-blob-material path. The provisional direct-Engine Builder uses the stateless form because it owns the payload and blob material; the stateful form remains relevant to proposer/BN flows and historical BN-mediated design evidence.
 
 ### Builder API
 

@@ -45,6 +45,16 @@ The Builder remains a standalone sidecar and does not join libp2p directly. Dire
 | Event implementation alternatives | Lodestar #9854, #9875, #9876, and #9896, open drafts | Comparison proofs only; do not merge all four |
 | Engine and bid semantics | Lodestar #9947, #9954, and #9955, open | Watch for connection setup, exiting-Builder filtering, and parent-slot changes before extracting affected slices |
 
+## Current contributor overlap
+
+The public PR audit on 31 August found no separate open extraction of the direct-Engine payload store or Builder-owned bid pipeline outside Nico's proof of concept.
+
+- Marco owns open beacon-APIs #638. His Lodestar #9854, #9875, #9876, and #9896 remain event-shape comparison proofs. His bid-validation and flood-publication work is already merged through Lodestar #9914 and js-libp2p #3610.
+- Nico owns the proof-of-concept branch plus open Lodestar #9947, #9954, and #9955. Those PRs change connection readiness, exiting-Builder filtering, and parent-slot semantics and must be refreshed before extracting affected code.
+- NC has no public PR implementing the direct-Engine Builder slices. His open Gloas and FOCIL work remains relevant to fork compatibility but does not claim PayloadStore, BidPolicy, SlotBidder, or Revealer ownership.
+
+Private branches and direct-message commitments cannot be inferred from public GitHub. Confirm ownership with Marco before starting a code branch even when a slice appears publicly unclaimed.
+
 ## Revised implementation slices
 
 The issue identifiers are retained so the audit history and GitHub mirror remain readable. Their working scopes change as follows.

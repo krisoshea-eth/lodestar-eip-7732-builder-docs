@@ -157,3 +157,4 @@ Kris and Marko:
 - Kept API-02 and TEST-01 independent and reviewable. API-02 remains the standard `block` plus `getBlockV2` fallback under either Builder architecture or event choice.
 - Kept ENV-02 open until a second contributor reproduces its clean-checkout runbook. First-machine evidence remains point-in-time API-02 and shutdown proof, not continuous-health or external-Builder selection proof.
 - Deferred final architecture and event wording until Nico and NC answer the focused Discord questions. The provisional plan records every unresolved choice so implementation can proceed without presenting assumptions as consensus.
+- Removed the remaining active BN-mediated lifecycle text from the plan and Living Technical Note, corrected the `PAYLOAD-01 -> STORE-01 -> BID-CORE-01 -> BID-01` dependency order, and kept the original BN-mediated task blocks clearly labelled as historical design evidence.
