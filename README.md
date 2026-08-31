@@ -8,6 +8,7 @@ This repository mirrors the Lodestar EIP-7732 Builder project documents as raw M
 | --- | --- | --- |
 | Project proposal | [docs/proposal.md](docs/proposal.md) | Accepted EPF proposal in `eth-protocol-fellows/cohort-seven` |
 | Implementation plan | [docs/implementation-plan.md](docs/implementation-plan.md) | Canonical full plan in GitHub |
+| Provisional direct-Engine plan | [docs/provisional-direct-engine-plan.md](docs/provisional-direct-engine-plan.md) | Working reconciliation of Nico's Builder proof of concept with the accepted plan and live board |
 | HackMD plan landing page | [docs/hackmd-implementation-plan-index.md](docs/hackmd-implementation-plan-index.md) | Short index for the public [HackMD plan URL](https://hackmd.io/@krisos/SyPZNJp4fg) |
 | Living technical note | [docs/living-technical-note.md](docs/living-technical-note.md) | Canonical GitHub note with a public [HackMD mirror](https://hackmd.io/@krisos/S1a9mdB7fl) |
 | Beacon API Builder-selection event decision | [docs/beacon-api-block-event-extension.md](docs/beacon-api-block-event-extension.md) | Working comparison for SPEC-01 and beacon-APIs #599 |
