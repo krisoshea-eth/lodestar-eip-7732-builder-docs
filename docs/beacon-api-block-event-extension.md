@@ -8,11 +8,13 @@
 | Project tracker | [Linear LOD-48](https://linear.app/kriso/issue/LOD-48/spec-01-champion-the-gloas-builder-selection-event-decision-in-beacon) / [GitHub issue #49](https://github.com/krisoshea-eth/lodestar/issues/49) |
 | Parent work | [BN-01 / LOD-15](https://linear.app/kriso/issue/LOD-15/bn-01-confirm-or-add-the-bn-route-and-event-surface-for-lodestar) |
 | Upstream discussion | [ethereum/beacon-APIs #599](https://github.com/ethereum/beacon-APIs/issues/599) |
-| Builder evidence | [API-02 PR #48](https://github.com/krisoshea-eth/lodestar/pull/48) |
-| Lodestar proofs of concept | Marco's upstream [#9854](https://github.com/ChainSafe/lodestar/pull/9854), [#9875](https://github.com/ChainSafe/lodestar/pull/9875), [#9876](https://github.com/ChainSafe/lodestar/pull/9876), and [#9896](https://github.com/ChainSafe/lodestar/pull/9896), plus Nico's unpublished [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder) branch at `99fd8fa9ad` |
+| Builder evidence | [upstream API-02 PR #9931](https://github.com/ChainSafe/lodestar/pull/9931) |
+| Lodestar proofs of concept | Marco's upstream [#9854](https://github.com/ChainSafe/lodestar/pull/9854), [#9875](https://github.com/ChainSafe/lodestar/pull/9875), [#9876](https://github.com/ChainSafe/lodestar/pull/9876), and [#9896](https://github.com/ChainSafe/lodestar/pull/9896), plus Nico's draft [`nflaig/builder`](https://github.com/nflaig/lodestar/tree/builder) branch at `99fd8fa9ad` |
 | Target repository | [`ethereum/beacon-APIs`](https://github.com/ethereum/beacon-APIs) |
 | Beacon APIs audit base | [`159622d`](https://github.com/ethereum/beacon-APIs/commit/159622d983a703eb03a8a37bb1edeab7ffc3b6bc) |
-| Last updated | 2026-08-24 |
+| Last updated | 2026-08-31 |
+
+> **Artifact boundary:** This document owns the Builder-selection notification question in beacon-APIs #599. Marco's open [beacon-APIs #638](https://github.com/ethereum/beacon-APIs/pull/638) is a separate payload-attributes schema change for `safe_block_hash` and `finalized_block_hash`. The current #638 head does not specify post-Gloas emission timing and does not settle the selection-event wire contract.
 
 ## Abstract
 
@@ -20,7 +22,7 @@ This working draft compares the interoperable ways to notify an external Builder
 
 The extension gives an external Builder enough selection identity to reject unrelated blocks without retrieving every imported post-Gloas block. The two fields are a negative filter, not proof that the complete selected bid matches a locally signed bid. It does not remove `block` plus `getBlockV2` as the compatibility and complete-verification fallback.
 
-The current candidates are the additive `block` fields, a dedicated event carrying the block root and complete signed bid, a dedicated event carrying the complete signed bid with the same payload as `execution_payload_bid`, and `block_v2`. No candidate has cross-client consensus. The specification draft must not choose one until the Lodestar implementation tradeoffs and other client constraints have been reviewed. The static client audit in this document establishes likely implementation seams, not client support.
+The current live decision has narrowed to extending `block` with `builder_index` and `block_hash`, or adding a lightweight external-Builder-only event with the data needed to locate retained payload material. Full `SignedExecutionPayloadBid` and `block_v2` variants remain recorded implementation evidence but no longer have a demonstrated consumer advantage. No candidate has cross-client consensus. The specification draft must not choose one until the Lodestar implementation tradeoffs and other client constraints have been reviewed. The static client audit in this document establishes likely implementation seams, not client support.
 
 ## Motivation
 
@@ -100,7 +102,7 @@ The field name `block` continues to mean the beacon block root. The new `block_h
 
 ### Self-builds
 
-Every Gloas beacon block contains a `signed_execution_payload_bid`, including self-builds. The two new fields therefore remain present for a self-build:
+Every Gloas beacon block contains a `signed_execution_payload_bid`, including self-builds. Earlier discussion favored keeping both fields present and using `BUILDER_INDEX_SELF_BUILD`:
 
 ```text
 event: block
@@ -109,7 +111,7 @@ data: {"slot":"10","block":"0x9a2f...54eaf","execution_optimistic":false,"builde
 
 `builder_index` is set to `BUILDER_INDEX_SELF_BUILD`, whose consensus value is `UINT64_MAX`. The Beacon API JSON representation is the quoted decimal string `"18446744073709551615"`. `block_hash` remains the hash committed by the self-build bid.
 
-The two fields disclose no new consensus data. Both are already public in the successfully imported beacon block.
+Marco's latest #9854 proof of concept instead omits the added fields for self-builds. That makes the new fields directly mean an external Builder selection, but missing fields then mean either a self-build or an older producer during mixed-version rollout. This is unresolved and must be decided explicitly before Candidate A becomes normative. A dedicated external-Builder event naturally emits nothing for self-builds.
 
 ## Event and consumer behavior
 
@@ -157,7 +159,7 @@ This is correct and remains the fallback, but it requires one request per import
 
 ### Add a thin `bid_included` event
 
-Marco's [#9875](https://github.com/ChainSafe/lodestar/pull/9875) started as a thin identity event, then changed to carry the imported block root and complete `SignedExecutionPayloadBid`. A dedicated Builder event can exclude self-builds and avoid fork-conditional mutation of `block`, but its name, versioning, duplicated slot, and whether it should retain the beacon block root remain open.
+Marco's [#9875](https://github.com/ChainSafe/lodestar/pull/9875) started as a thin identity event, then changed to carry the imported block root and complete `SignedExecutionPayloadBid`. NC's later proposal returned to a lightweight external-Builder-only shape with `slot`, `block_root`, `block_hash`, and `builder_index`, or possibly a bid root if that is sufficient for the consumer. A dedicated Builder event can exclude self-builds and avoid fork-conditional mutation of `block`, but its exact identity fields, name, optimism field, and imported non-head semantics remain open.
 
 ### Add a full-bid event
 
@@ -194,7 +196,7 @@ These are design proofs of concept, not four changes intended to merge. Their ma
 
 ### End-to-end development branch
 
-Nico's unpublished [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder) branch now provides the producer and consumer proof of concept. Commit [`679e12d8e2`](https://github.com/ChainSafe/lodestar/commit/679e12d8e2) adds optional `builderIndex` and `blockHash` fields to Lodestar's `block` event codec and emits both fields for every imported post-Gloas block from `signedExecutionPayloadBid.message`. The serializer tests cover an external Builder index, omission for the legacy shape, and `BUILDER_INDEX_SELF_BUILD` encoded as the quoted decimal `UINT64_MAX` value.
+Nico's draft [`nflaig/builder`](https://github.com/nflaig/lodestar/tree/builder) branch now provides the producer and consumer proof of concept. Commit [`679e12d8e2`](https://github.com/nflaig/lodestar/commit/679e12d8e2) adds optional `builderIndex` and `blockHash` fields to Lodestar's `block` event codec and emits both fields for every imported post-Gloas block from `signedExecutionPayloadBid.message`. The serializer tests cover an external Builder index, omission for the legacy shape, and `BUILDER_INDEX_SELF_BUILD` encoded as the quoted decimal `UINT64_MAX` value.
 
 The same branch adds a Builder `Revealer` that consumes the enriched fields and falls back to `getBlockV2` when they are absent. That one-shot fallback demonstrates mixed-version compatibility. API-02 remains the stronger complete-block path because it adds fork metadata checks, structural validation, bounded retry, and root deduplication. If Nico's branch becomes an upstream PR, the two implementations should be reconciled rather than keeping parallel fetch paths.
 
@@ -214,9 +216,9 @@ The combined evidence should record:
 
 | Evidence | Status | Link or note |
 | --- | --- | --- |
-| API-02 Builder consumer | Implemented on fork; upstream review pending | [PR #48](https://github.com/krisoshea-eth/lodestar/pull/48) |
+| API-02 Builder consumer | In upstream review | [Lodestar #9931](https://github.com/ChainSafe/lodestar/pull/9931) |
 | Lodestar producer alternatives | Four upstream PoCs open | [#9854](https://github.com/ChainSafe/lodestar/pull/9854), [#9875](https://github.com/ChainSafe/lodestar/pull/9875), [#9876](https://github.com/ChainSafe/lodestar/pull/9876), and [#9896](https://github.com/ChainSafe/lodestar/pull/9896) |
-| End-to-end compatibility PoC | Implemented on unpublished branch | [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder), event commit [`679e12d8e2`](https://github.com/ChainSafe/lodestar/commit/679e12d8e2) |
+| End-to-end compatibility PoC | Implemented on a draft branch | [`nflaig/builder`](https://github.com/nflaig/lodestar/tree/builder), event commit [`679e12d8e2`](https://github.com/nflaig/lodestar/commit/679e12d8e2) |
 | External-Builder example | Covered by event serializer test and devnet Builder flow | [`eventSerdes.test.ts`](https://github.com/ChainSafe/lodestar/blob/nflaig/builder/packages/api/test/unit/beacon/eventSerdes.test.ts) and [`DESIGN.md`](https://github.com/ChainSafe/lodestar/blob/nflaig/builder/packages/builder/DESIGN.md) |
 | Self-build example | Covered by serializer test | `BUILDER_INDEX_SELF_BUILD` serializes as `"18446744073709551615"` |
 | Pre-Gloas compatibility test | Covered at codec level | Legacy event shape omits both optional fields |
@@ -295,6 +297,8 @@ Neither PR currently implements #599. PR #490 was updated on 2026-08-21, so both
 ## Open questions
 
 - Which candidate best balances type safety, exact selection identity, compatibility, and implementation cost?
+- For a lightweight dedicated event, are `slot`, `block_root`, `block_hash`, and `builder_index` the minimal useful payload, or should any identity be replaced by a bid root?
+- If `block` is extended, are the added fields required for self-builds or omitted to make their presence an external-Builder signal?
 - If a dedicated full-bid event is selected, should it also carry the selecting beacon block root and `execution_optimistic`, and must it use a `{version, data}` envelope?
 - If `block` or `block_v2` is selected, should the corresponding `block_gossip` topic change too?
 - Which cross-client channel or meeting should carry the initial review request?
@@ -316,6 +320,7 @@ Neither PR currently implements #599. PR #490 was updated on 2026-08-21, so both
 | 2026-08-14 | Use a draft upstream PR as the main cross-client review artifact | Recent Beacon APIs event changes were reviewed against concrete diffs |
 | 2026-08-24 | Treat Nico's `nflaig/builder` branch as the current Lodestar PoC | It implements the producer fields, mixed-version fallback, serializer tests, and a two-node Builder run, but remains unpublished and unreviewed |
 | 2026-08-24 | Reopen the event-shape decision before drafting the Beacon APIs PR | Marco's four upstream PoCs and Nico's review show real type-safety, versioning, identity, and self-build tradeoffs. API-02 remains correct independently. |
+| 2026-08-31 | Narrow the live comparison to additive `block` fields versus a lightweight dedicated event | NC questioned the need for the full signed bid and favored enough identity to locate retained payload material. Self-build handling for the additive shape remains unresolved between earlier discussion and the latest #9854 PoC. |
 
 ## Completion criteria
 
@@ -343,7 +348,7 @@ SPEC-01 is complete when the Beacon APIs PR either merges with documented cross-
 - [Beacon APIs PR #621: fork-conditional `payload_attributes` field](https://github.com/ethereum/beacon-APIs/pull/621)
 - [Gloas consensus specification](https://github.com/ethereum/consensus-specs/blob/master/specs/gloas/beacon-chain.md)
 - [Heze consensus specification](https://github.com/ethereum/consensus-specs/blob/master/specs/heze/beacon-chain.md)
-- [API-02 implementation PR #48](https://github.com/krisoshea-eth/lodestar/pull/48)
+- [API-02 implementation PR #9931](https://github.com/ChainSafe/lodestar/pull/9931)
 - [Lighthouse `SseBlock` and event decoder](https://github.com/sigp/lighthouse/blob/b263df596/common/eth2/src/types.rs)
 - [Prysm block-event serializer](https://github.com/OffchainLabs/prysm/blob/b86db8d/beacon-chain/rpc/eth/events/events.go)
 - [Teku block-event schema](https://github.com/Consensys/teku/blob/3003f5443ac53e53d856978871b951c28805b08b/data/beaconrestapi/src/main/java/tech/pegasys/teku/beaconrestapi/handlers/v1/events/BlockEvent.java)
