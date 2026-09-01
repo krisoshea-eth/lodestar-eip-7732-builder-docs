@@ -2,6 +2,15 @@
 
 This is the canonical chronological delivery log for the Lodestar EIP-7732 Builder. It tracks weekly implementation, project-board, review, and coordination movement from the accepted proposal onward. It is deliberately lighter than the fellows' full weekly write-ups. The implementation plan owns accepted scope and dependencies; the Living Technical Note owns current technical state, decisions, risks, and upstream watches.
 
+### Week 12 checkpoint - 31 August 2026
+
+Kris:
+
+ - Started `ENV-02` as the primary implementation task and `BASELINE-01` as supporting verification. Recorded separate immutable pins for the upstream Lodestar baseline, the API-02 code under test, ethereum-package, Geth, key derivation tooling, and execution fixtures.
+ - Added a reproducible Kurtosis fixture, Builder-sidecar runbook, and method/path-only recording proxy for API-02's real-BN event-to-block and connected/reconnecting `SIGTERM` evidence. Installed the checksum-verified Kurtosis 1.20.0 standalone CLI after Homebrew was blocked by the machine's Xcode version, started the local engine with analytics disabled, built the API-02 image, and passed the ethereum-package dry-run.
+ - Completed three clean network launches on the first development machine. Recorded a real `block` SSE subscription followed by root-addressed `getBlockV2` retrieval and a matching post-Gloas observation. Verified connected and reconnecting `SIGTERM` shutdown and controlled duplicate delivery with one fetch and one observation for the duplicated root. Kept ENV-02 open for independent reproduction by a second contributor.
+ - Audited Marko's August Builder PRs. Existing project issues already cover the merged Builder foundation, lifecycle, metrics, handler-test, identity-retry, and event-PoC work. Added `BN-PUB-01` only for the previously untracked local-bid validation and flood-publication PR; this tracking change does not accept the unresolved Builder architecture.
+
 ### Week 5
 
 Kris:
