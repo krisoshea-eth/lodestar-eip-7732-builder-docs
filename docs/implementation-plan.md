@@ -7,7 +7,7 @@
 **Working model:** one shared feature branch; merge `unstable` regularly; split only when review benefits from it  
 **Formal product name:** `lodestar builder` / `packages/builder`  
 **Optional EPF mission codename:** Forgestar  
-**Status:** v1.0 merged on 5 August 2026. On 31 August the payload-ownership boundary was reopened by Nico's direct-Engine proof of concept, with a full branch and tracker reconciliation completed on 1 September. The [provisional direct-Engine plan](provisional-direct-engine-plan.md) now controls any conflict with the BN-mediated payload, bid, cache, and reveal sections below until maintainers confirm the final direction. Current Lodestar `unstable` was `1e9a530f98`; #9832, #9904, #9914, and js-libp2p #3610 have merged. API-02, TEST-01, ENV-02, and SPEC-01 retain their independent scopes.
+**Status:** v1.0 merged on 5 August 2026. On 31 August the payload-ownership boundary was reopened by Nico's direct-Engine proof of concept, with a full branch and tracker reconciliation completed on 1 September. The [provisional direct-Engine plan](provisional-direct-engine-plan.md) now controls any conflict with the BN-mediated payload, bid, cache, and reveal sections below until maintainers confirm the final direction. Current Lodestar `unstable` was `1e9a530f98`; #9832, #9904, #9914, and js-libp2p #3610 have merged. Draft #9958 implements the narrow PAYLOAD-SOURCE-01 extraction. API-02, TEST-01, ENV-02, and SPEC-01 retain their independent scopes.
 
 > **Working architecture change:** The accepted plan below remains as design history and for unaffected delivery rules. Do not implement its BN-owned payload construction or stateful reveal assumptions without first applying [the 31 August reconciliation](provisional-direct-engine-plan.md). The current working baseline has the Builder talk directly to local ELs, own payload material and bid construction, and submit bids and envelopes through a source BN that retains chain authority, validation, and publication.
 
@@ -471,6 +471,10 @@ This snapshot was refreshed on 24 August 2026. It records work that can narrow t
 | [Lodestar #9854](https://github.com/ChainSafe/lodestar/pull/9854), [#9875](https://github.com/ChainSafe/lodestar/pull/9875), [#9876](https://github.com/ChainSafe/lodestar/pull/9876), and [#9896](https://github.com/ChainSafe/lodestar/pull/9896) | Open Marco PoCs compare additive `block` fields, two complete-bid event shapes, and `block_v2`. Nico's implementation review reopened the original preferred direction | SPEC-01 must compare type safety, versioning, block-root identity, self-build rules, and `block_gossip` before drafting the Beacon APIs PR |
 | [`nflaig/builder`](https://github.com/nflaig/lodestar/tree/builder) | Draft proof-of-concept branch at `99fd8fa9ad`; implements enriched `block` fields, mixed-version block-fetch fallback, Builder services, codec tests, and recorded two-node evidence | Use as end-to-end evidence, not the settled API contract. API-02 remains the bounded complete-block fallback |
 | [Lodestar #9903](https://github.com/ChainSafe/lodestar/pull/9903) / [#9904](https://github.com/ChainSafe/lodestar/pull/9904) | #9903 remains open; bounded/reloadable envelope cache #9904 merged as `7aa8c9c93a` | Require differential PTC evidence before adopting #9903. Treat #9904 as landed BN-side recovery evidence and separately define Builder-owned retention for the direct-Engine design |
+| [Lodestar #9958](https://github.com/ChainSafe/lodestar/pull/9958) / [#9957](https://github.com/ChainSafe/lodestar/pull/9957) | #9958 is the draft PAYLOAD-SOURCE-01 extraction. #9957 removes older pre-Fulu blob retrieval code but retains Gloas `getPayload` blob bundles | Review #9958 independently from runtime orchestration. Keep #9957 as a baseline watch, not a reason to remove blobs from `BuiltPayload` |
+| [Lodestar #9350](https://github.com/ChainSafe/lodestar/pull/9350) | Open mainnet-scale pending-payment quorum arithmetic fix | BASELINE-01 tracks the upstream disposition; OUT-01 must exercise a `bigint` accumulator beyond JavaScript safe-integer precision |
+| [Lodestar #9332](https://github.com/ChainSafe/lodestar/pull/9332) / [#9637](https://github.com/ChainSafe/lodestar/pull/9637) | Open EL-invalid fork-choice and PTC fail-closed work | Route to EL-ARCH-01, QA-01, E2E-01, and OUT-01; do not duplicate the behavior inside the Builder sidecar |
+| [Lodestar #9937](https://github.com/ChainSafe/lodestar/pull/9937) / [#9281](https://github.com/ChainSafe/lodestar/pull/9281) / [#9791](https://github.com/ChainSafe/lodestar/pull/9791) / [#9326](https://github.com/ChainSafe/lodestar/pull/9326) | #9937 merged; the other BN recovery changes remain open | Add bounded EMPTY, impossible-target, stale-root, and non-finality cases to REL-01 and E2E evidence without creating another Builder service |
 | [Lodestar v1.46.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.46.0) | Latest stable at `3873dd5b032d0ad82581fc3416e9628b4f6f2642`, published 12 August. It predates merged #9781 | Use as the newest immutable release target while `BASELINE-01` records the exact working `unstable` pin |
 | [Lodestar v1.46.0-rc.1](https://github.com/ChainSafe/lodestar/releases/tag/v1.46.0-rc.1), [#9790](https://github.com/ChainSafe/lodestar/pull/9790), [#9792](https://github.com/ChainSafe/lodestar/pull/9792), and [#9793](https://github.com/ChainSafe/lodestar/pull/9793) | Historical release-candidate baseline now superseded by v1.46.0. #9790 protects state persistence/database close during a stuck network-worker shutdown and #9792 fixes a QUIC resource leak. #9793 closed without merge because its self-signal/force-exit approach did not generalize, especially for default container PID 1. The underlying stuck handle remains unidentified | Advance `BASELINE-01` to v1.46.0 plus an exact working `unstable` pin and test state persistence, process-manager timeout, and Builder restart/cache/reveal recovery. Retain #9793 as diagnostic history, not an active implementation requirement or root-cause fix |
 
@@ -1155,7 +1159,8 @@ The active REV-01 scope loads the exact local `PayloadStore` record, builds and 
 
 - [ ] Audit the PTC and state/accounting observation surface on the pinned SHA.
 - [ ] Correlate bid, selecting block, envelope, payload, and Builder identity.
-- [ ] Capture PTC payload-attestation evidence.
+- [ ] Capture PTC payload-attestation evidence and prove EL-invalidated payloads cannot retain valid support, using the final dispositions of Lodestar #9332 and #9637.
+- [ ] Exercise mainnet-scale pending-payment and quorum arithmetic covered by Lodestar #9350, including a value beyond JavaScript safe-integer precision.
 - [ ] Prove that execution-payload value accrues to the configured Builder execution fee recipient while `bid.fee_recipient` identifies the proposer payment address, then prove that one non-zero trustless bid produces the expected pending-payment, Builder-balance, proposer fee-recipient, and proposer-accounting transition.
 - [ ] Record the paid-without-reveal offline case as a documented known failure, not as a core HA test.
 
@@ -1185,6 +1190,7 @@ The active REV-01 scope loads the exact local `PayloadStore` record, builds and 
 - [ ] Cover invalid/locked key, wrong chain, inactive Builder, unsupported fork, missing preferences, and BN/EL syncing.
 - [ ] Cover Builder-status/balance diagnostics and insufficient balance with a clear external-top-up warning; do not claim predictive low-balance alerting.
 - [ ] Cover malformed candidate, commitment mismatch, missing reveal material, publication rejection, and late reveal.
+- [ ] Cover Engine `INVALID` without wedging fork choice, and prove attestations and aggregates do not support an EL-invalidated Gloas payload, using Lodestar #9332 and #9637 as upstream evidence.
 - [ ] Reuse the Deathstar proposer-equivocation feature and `consensus_and_equivocation` behavior from [Lodestar #9757](https://github.com/ChainSafe/lodestar/pull/9757), then run the stored [PR #9757 Kurtosis fixture](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/test-plans/pr-9757-builder-equivocation.yaml) with Lodestar Builder and assert that the BN refuses envelope publication for the equivocated proposal.
 - [ ] Cover basic duplicate event/request/publication idempotency.
 - [ ] Document the Builder/BN-offline-after-selection paid-without-reveal failure without implementing or simulating HA.
@@ -1451,7 +1457,7 @@ flowchart TD
 
 ### `EXT-FOCIL-01` — Adapt the Builder for Heze / FOCIL
 
-**Entry criteria:** Gloas core stable; supported Heze/FOCIL branch identified; bid and Engine API shapes sufficiently settled.
+**Entry criteria:** Gloas core stable; supported Heze/FOCIL branch identified; bid and Engine API shapes sufficiently settled. Merged Lodestar #9935 and open #9936 narrow the future baseline but do not activate this package.
 
 **Candidate work:** inclusion-list input/store, constrained payload construction, `inclusion_list_bits`, fork-aware signing, cache context, tests.
 
@@ -1471,7 +1477,7 @@ flowchart TD
 
 **Entry criteria:** canonical payload seam stable and measured latency shows value.
 
-**Candidate work:** prebuild scheduler, FULL/EMPTY candidates, cancellation, multiple payload IDs, resource metrics.
+**Candidate work:** prebuild scheduler, FULL/EMPTY candidates, cancellation, multiple payload IDs, resource metrics, and the epoch-boundary/reorg cases demonstrated by Lodestar #9944, #9929, #9233, and #9723.
 
 **Stop rule:** stop if stale work or candidate explosion cannot be bounded.
 

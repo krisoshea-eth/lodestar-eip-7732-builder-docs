@@ -26,7 +26,7 @@ The Builder remains a standalone sidecar and does not join libp2p directly. Dire
 
 ## Evidence already landed upstream
 
-| Capability | Status on 31 August | Project consequence |
+| Capability | Current status | Project consequence |
 | --- | --- | --- |
 | Gloas Builder API flow, [Lodestar #9832](https://github.com/ChainSafe/lodestar/pull/9832) | Merged as `57572140f8` | Re-audit BN-01 against the landed proposer/BN-side flow rather than the abandoned #9594 draft |
 | API-submitted bid validation and flood publication, [Lodestar #9914](https://github.com/ChainSafe/lodestar/pull/9914) | Merged as `9ecc10f386` | BN-PUB-01 is complete; BID-01 should reuse the typed publish route |
@@ -34,6 +34,7 @@ The Builder remains a standalone sidecar and does not join libp2p directly. Dire
 | Bounded envelope cache, [Lodestar #9904](https://github.com/ChainSafe/lodestar/pull/9904) | Merged as `7aa8c9c93a` | Remains BN-side recovery and import evidence, not the Builder's primary payload store in the direct-Engine design |
 | API-02 block observer, [Lodestar #9931](https://github.com/ChainSafe/lodestar/pull/9931) | Open | Remains valid as the standard selection fallback and SELECT-01 input |
 | TEST-01 regressions, [Lodestar #9932](https://github.com/ChainSafe/lodestar/pull/9932) | Open | Remains independent foundation coverage |
+| PAYLOAD-SOURCE-01, [Lodestar #9958](https://github.com/ChainSafe/lodestar/pull/9958) | Draft | First reviewed extraction from the direct-Engine proof of concept; keep runtime wiring and EL ownership in later slices |
 
 ## Cross-repository work still open
 
@@ -45,6 +46,10 @@ The Builder remains a standalone sidecar and does not join libp2p directly. Dire
 | Event implementation alternatives | Lodestar #9854, #9875, #9876, and #9896, open drafts | Comparison proofs only; do not merge all four |
 | Engine and bid semantics | Lodestar [#9947](https://github.com/ChainSafe/lodestar/pull/9947), [#9954](https://github.com/ChainSafe/lodestar/pull/9954), and [#9955](https://github.com/ChainSafe/lodestar/pull/9955), open | #9947 pre-warms proposer-BN connections to external Builder API servers, not Builder-to-EL Engine connections. #9954 and #9955 affect exiting-Builder filtering and parent-slot semantics |
 | Direct-Engine forkchoice input | [consensus-specs #5549](https://github.com/ethereum/consensus-specs/pull/5549), merged | Post-Gloas `notify_forkchoice_updated` now carries `custody_columns`; the project must decide the Builder node identity and the authoritative source of that value before PAYLOAD-01 lands |
+| Mainnet-scale payment arithmetic | [Lodestar #9350](https://github.com/ChainSafe/lodestar/pull/9350), open | BASELINE-01 and OUT-01 must retain exact `bigint` quorum and pending-payment evidence before mainnet-readiness claims |
+| EL-invalid and PTC behavior | Lodestar [#9332](https://github.com/ChainSafe/lodestar/pull/9332) and [#9637](https://github.com/ChainSafe/lodestar/pull/9637), open | EL-ARCH-01, QA-01, E2E-01, and OUT-01 own the fail-closed and recovery evidence |
+| BN payload recovery | [Lodestar #9937](https://github.com/ChainSafe/lodestar/pull/9937), merged; [#9281](https://github.com/ChainSafe/lodestar/pull/9281), [#9791](https://github.com/ChainSafe/lodestar/pull/9791), and [#9326](https://github.com/ChainSafe/lodestar/pull/9326), open | REL-01 and E2E-01 track EMPTY range sync, impossible targets, stale roots, and non-finality; no new Builder module is required |
+| Blob cleanup | [Lodestar #9957](https://github.com/ChainSafe/lodestar/pull/9957), draft | Removes older pre-Fulu blob retrieval code, not Gloas `getPayload` blob bundles; PAYLOAD-SOURCE-01 remains valid |
 
 ## Current contributor overlap
 
@@ -53,6 +58,7 @@ The public PR audit on 31 August found no separate open extraction of the direct
 - Marco owns open beacon-APIs #638. His Lodestar #9854, #9875, #9876, and #9896 remain event-shape comparison proofs. His bid-validation and flood-publication work is already merged through Lodestar #9914 and js-libp2p #3610.
 - Nico owns the proof-of-concept branch plus open Lodestar #9947, #9954, and #9955. #9947 concerns proposer-BN connections to external Builder API servers. #9954 and #9955 change exiting-Builder filtering and parent-slot semantics and must be refreshed before extracting affected code.
 - NC has no public PR implementing the direct-Engine Builder slices. His open Gloas and FOCIL work remains relevant to fork compatibility but does not claim PayloadStore, BidPolicy, SlotBidder, or Revealer ownership.
+- Kris owns draft Lodestar #9958 for the narrow PayloadSource contract and injected Engine adapter. It deliberately excludes Builder lifecycle wiring, payload attributes, EL deployment policy, storage, bidding, selection, and reveal.
 
 Private branches and direct-message commitments cannot be inferred from public GitHub. Confirm ownership with Marco before starting a code branch even when a slice appears publicly unclaimed.
 
@@ -138,7 +144,8 @@ Maintainer answers can change the affected slices without reopening API-02, TEST
 - Epic B and PAYLOAD-01/STORE-01/BID-CORE-01/BID-01/SELECT-01/REV-01 now describe the provisional direct-Engine ownership boundary.
 - ATTR-SPEC-01 (`LOD-54`) tracks #638 through review.
 - ATTR-01 (`LOD-55`) tracks the missing post-Gloas payload-attributes emission contract.
-- EL-ARCH-01 (`LOD-56`) blocks PayloadSource implementation until shared-versus-dedicated EL ownership is decided.
+- EL-ARCH-01 (`LOD-56`) blocks PAYLOAD-ORCH-01 runtime wiring and the final production boundary. It does not block review of PAYLOAD-SOURCE-01's injected contract.
+- PAYLOAD-SOURCE-01 (`LOD-57`) is In Progress through draft Lodestar #9958. PAYLOAD-ORCH-01 (`LOD-58`) remains Todo until the source contract, EL ownership, and source-BN inputs are stable.
 - BN-01, PAYLOAD-01, ATTR-01, ATTR-SPEC-01, and EL-ARCH-01 record the new `custody_columns` input question introduced by consensus-specs #5549.
 - ENV-02 remains open until a second contributor reproduces its stored runbook.
 
