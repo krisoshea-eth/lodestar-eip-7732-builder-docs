@@ -185,6 +185,7 @@ These items were reconciled against the August 22-24 partial monitoring reports,
 - The Builder owns its key, payload source and store, bid construction and policy, signatures, exact matching, and orchestration. The source BN owns chain and proposer inputs, API validation, publication, and authoritative outcomes.
 - Merged Lodestar #9914 and js-libp2p #3610 provide the current local-bid validation and flood-publication seam. Merged #9904 remains BN-side envelope import and recovery evidence rather than the Builder's primary direct-Engine payload store.
 - Merged consensus-specs [#5549](https://github.com/ethereum/consensus-specs/pull/5549) adds post-Gloas `custody_columns` to `notify_forkchoice_updated`. Nico's proof of concept predates this input. BN-01, ATTR-01, PAYLOAD-01, and EL-ARCH-01 must settle the Builder node identity and authoritative source of this value before a direct-Engine payload source lands.
+- Draft [Lodestar #9958](https://github.com/ChainSafe/lodestar/pull/9958) extracts the narrow `PayloadSource` contract and injected Engine adapter as PAYLOAD-SOURCE-01. It does not settle EL ownership or add Builder runtime orchestration. Draft [#9957](https://github.com/ChainSafe/lodestar/pull/9957) removes older pre-Fulu blob retrieval code but leaves the Gloas `getPayload` blob bundle used by this contract intact.
 
 ### Landed Lodestar capabilities to reuse
 
@@ -203,6 +204,8 @@ These items were reconciled against the August 22-24 partial monitoring reports,
 - [#9755](https://github.com/ChainSafe/lodestar/pull/9755) merged the local-versus-peer fault-ownership fix. Wrapped local EL/import failures now stay on the execution-error path rather than consuming honest peer scores.
 - [#9762](https://github.com/ChainSafe/lodestar/pull/9762) updated `prepareNextSlot` to derive the proposer from the post-Fulu head state before creating the prepared state, avoiding a second state regeneration and possible double epoch transition. `BN-01` must trace this current flow rather than the older two-regeneration path.
 - [#9505](https://github.com/ChainSafe/lodestar/pull/9505) landed the Heze fork definition and boilerplate. It narrows the future adaptation baseline but does not activate `EXT-FOCIL-01` or make the older FOCIL branch a core dependency.
+- [#9935](https://github.com/ChainSafe/lodestar/pull/9935) landed Heze inclusion-list dependent-root handling, while [#9936](https://github.com/ChainSafe/lodestar/pull/9936) remains open for inclusion-list message-size and empty-transaction validation. Both remain conditional EXT-FOCIL-01 evidence.
+- [#9937](https://github.com/ChainSafe/lodestar/pull/9937) landed the EMPTY Gloas payload range-sync guard. Open [#9281](https://github.com/ChainSafe/lodestar/pull/9281), [#9791](https://github.com/ChainSafe/lodestar/pull/9791), and [#9326](https://github.com/ChainSafe/lodestar/pull/9326) remain related BN recovery watches for impossible envelope targets, stale payload roots, and non-finality cache retention.
 - Existing Gloas types, gossip, proposer preferences, bid validation/pooling/selection, payload-envelope import, PTC handling, block/payload events, and publication routes remain the BN foundation. The implementation must audit the exact pinned shapes rather than duplicate them.
 
 ### Current Gloas specification baseline
@@ -353,6 +356,7 @@ Failures at the consensus/execution boundary can masquerade as Builder bugs even
 
 - Post-Gloas `engine_forkchoiceUpdated` reports the bid's `parent_block_hash` as safe and finalized, because the safe or finalized block's own payload may not yet be confirmed canonical ([#9393](https://github.com/ChainSafe/lodestar/pull/9393)); pre-Gloas fcU assumptions do not carry over.
 - An EL returning `INVALID` once wedged a Gloas devnet node, since the pre-Gloas safety net is bypassed with payload verification deferred to `importExecutionPayload` ([#9332](https://github.com/ChainSafe/lodestar/pull/9332)).
+- Open [#9637](https://github.com/ChainSafe/lodestar/pull/9637) tracks the related requirement that attestations and aggregates must not keep supporting an EL-invalidated Gloas payload. Treat #9332 and #9637 as joint QA, E2E, and OUT-01 evidence rather than Builder-only logic.
 - The native (Zig) state-transition mode throws on Gloas; keep `nativeStateView` disabled during Builder work ([#9516](https://github.com/ChainSafe/lodestar/pull/9516)).
 - Do not prepare, retrieve, sign, or propagate bids when the BN is far behind, execution is optimistic, or its EL is unavailable. The sidecar may observe and report startup readiness, but the BN preparation/candidate route owns the authoritative guard and typed syncing or unavailable result.
 - Reuse the smallest suitable BN helper. Share or import validator's `SyncingStatusTracker` only if a real Builder resync lifecycle or broader reuse case appears and the dependency remains clean; `runOnResynced` was added for validator duty refetching and is not a reason by itself.
@@ -373,6 +377,8 @@ Only unresolved or moving items belong here.
 ### Direct project delivery
 
 - **Baseline pin:** record the exact `unstable` SHA, spec/API versions, fixture/image versions, baseline failures, and capability audit in `BASELINE-01`.
+- **Mainnet-scale payment arithmetic:** open [#9350](https://github.com/ChainSafe/lodestar/pull/9350) moves pending-payment quorum arithmetic to `bigint`. BASELINE-01 tracks the upstream disposition and OUT-01 must include a large-accumulator regression before a mainnet-readiness claim.
+- **EL-invalid and recovery behavior:** open [#9332](https://github.com/ChainSafe/lodestar/pull/9332) and [#9637](https://github.com/ChainSafe/lodestar/pull/9637) feed EL-ARCH-01, QA-01, E2E-01, and OUT-01. Merged #9937 plus open #9281, #9791, and #9326 feed REL-01 and the bounded negative-path evidence.
 - **Source-BN readiness:** [#9781](https://github.com/ChainSafe/lodestar/pull/9781), helper consolidation [#9826](https://github.com/ChainSafe/lodestar/pull/9826), lifecycle follow-up [#9827](https://github.com/ChainSafe/lodestar/pull/9827), and transient identity handling [#9868](https://github.com/ChainSafe/lodestar/pull/9868) are merged. Reconcile the twelve historical #9781 thread markers and close broader regressions through `TEST-01`.
 - **Preparation/candidate contract:** trace `prepareNextSlot` and return the proposed route/lifecycle for Lodestar review in `BN-01`.
 - **FULL-parent production:** reuse [Lodestar #9736](https://github.com/ChainSafe/lodestar/pull/9736) if it lands; do not create a parallel workaround.
