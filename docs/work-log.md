@@ -2,6 +2,17 @@
 
 This is the canonical chronological delivery log for the Lodestar EIP-7732 Builder. It tracks weekly implementation, project-board, review, and coordination movement from the accepted proposal onward. It is deliberately lighter than the fellows' full weekly write-ups. The implementation plan owns accepted scope and dependencies; the Living Technical Note owns current technical state, decisions, risks, and upstream watches.
 
+## 2 September 2026 payload-attributes field implementation
+
+- Added fork-only Lodestar draft [#80](https://github.com/krisoshea-eth/lodestar/pull/80) and [LOD-74](https://linear.app/kriso/issue/LOD-74/attr-impl-01-emit-post-gloas-forkchoice-hashes-in-payload-attributes) for the current beacon-APIs #638 `safe_block_hash` and `finalized_block_hash` contract.
+- The draft updates the post-Gloas event type, populates both hashes from Lodestar fork choice, and verifies Gloas/Heze JSON plus producer behavior. It deliberately excludes trigger, FULL/EMPTY policy, deduplication, custody input, Builder consumption, and Engine topology.
+- [Local validation recorded on draft #80](https://github.com/krisoshea-eth/lodestar/pull/80) passed: 15 focused tests, affected-package type checks, beacon-node dependency build, Biome, and `git diff --check`. GitHub checks were still queued when this entry was written.
+- Kept the implementation in Kris's fork as requested. No ChainSafe PR was created.
+- Reconciled all 76 Linear issues and their GitHub project mirrors, including LOD-74 as In Progress and the unassigned LOD-75/LOD-76 payload-attributes boundaries plus LOD-77/LOD-78 runtime-consumer boundaries.
+- Split the remaining ATTR-01 runtime work into BN emission and Builder consumption so it is independently reviewable without duplicating beacon-APIs #638 or fork draft #80. Ownership remains for Kris and Marko to agree before either issue starts.
+- Added BID-RUNTIME-01 and REV-RUNTIME-01 for the two missing production consumers: source-BN input through one submitted bid, then imported-block selection through bounded stateless reveal. Both remain unassigned for Kris and Marko to divide explicitly.
+- Corrected #9975 so a winning bid remains an unsettled liability until explicit payment settlement; age-based pruning now applies only to losing or settled records.
+
 ### 2 September 2026 architecture and lifecycle reconciliation
 
 - Refreshed the comparison baseline against Lodestar `unstable` at `d00b8296c9`, while preserving the immutable BASELINE-01 implementation pin. Lodestar v1.47.0 at `450996b13a` is now the newest immutable release target; rc.0 remains historical qualification evidence.
@@ -11,16 +22,18 @@ This is the canonical chronological delivery log for the Lodestar EIP-7732 Build
 - Recorded #9975/#9976 as bid foundations, #9978/#9979 as one logical bid path, and #9980/#9981/#9982 as one logical selection/reveal path. These drafts expose review surfaces but do not complete the integrated lifecycle or prove maintainer acceptance.
 - Added fork draft #77 and LOD-73 for a resolved-input `SlotBidder` that composes payload build, retention, coverability, assembly, and publication without choosing event, CLI, or Engine topology.
 - Recorded the review strategy: foundations first; collapse dependency diffs after parent merges; consider grouping the bid and selection/reveal drafts around their first consumers; add final Builder/CLI wiring only after input and Engine configuration contracts are explicit.
-- Added five Marko-owned attribution records without changing ownership of Kris's remaining work: LOD-68 for #9970 runtime store wiring, LOD-69 for #9974's initial bid policy, LOD-70 for the four event comparison PoCs, LOD-71 for landed head-event and bid-input foundations, and LOD-72 for blinded-block and envelope-publication foundations.
+- Added five Marko-owned attribution records: LOD-68 for #9970 runtime store wiring, LOD-69 for #9974's initial bid policy, LOD-70 for the four event comparison PoCs, LOD-71 for landed head-event and bid-input foundations, and LOD-72 for blinded-block and envelope-publication foundations.
 - Added Marko's adjacent Lodestar-z #472 Builder-state binding and EIP-8282 request-layout test hardening to LOD-71 without turning those completed foundations into new implementation tasks.
-- Recorded merged Lodestar #9984 and draft #9986 as BN validation and shared spec-test watches. #9972 now needs conflict reconciliation in the same validation area. None overlaps the current Builder service drafts.
+- Recorded merged Lodestar #9984 and #9986 as BN validation and shared spec-test changes. #9972 is approved and mergeable, with its spec-test job currently failing and its benchmark rerun in progress. None overlaps the current Builder service drafts.
+- Routed NC's open consensus-specs #5572 randomized equivocation-delay vectors to QA-01 for proposer-boost and PTC-timing evidence rather than creating a duplicate Builder-only generator.
+- Routed approved Lodestar #9968 late-canonical-import metrics and logs to QA-01 so later timing failures can distinguish BN import delay from Builder-runtime delay.
 - Added merged SSE containment #9964, consensus #5594 plus Lodestar #9972 bid validation, and Buildoor #184 local/p2p preference evidence to the owning REL-01, BID-CORE-01/QA-01, and E2E-01 tracks.
 - Recorded the merged consensus-specs #5585 source-version bump without misclassifying it as a released beta tag or changing Lodestar's alpha.14 pin.
 - Routed Buildoor #186's geth-only deterministic testing source to E2E-01/INT-01, consensus-specs #5573/#5590 to later compliance and transport evidence, and execution-apis #870/#878 to conditional Heze work.
 - Routed ethereum-package #1483's genesis-Builder key assignment and activation boundary to E2E-01/INT-01 rather than treating quiet Buildoor behavior as a Lodestar defect.
-- Verified the current 71-item GitHub Project mirror after adding SLOT-BIDDER-01. The five Marko-owned items and the new Kris-owned integration item match Linear for assignee, workflow status, Linear status, gate, priority, and cycle where applicable.
+- Verified the current 76-item GitHub Project mirror after adding SLOT-BIDDER-01, ATTR-EMIT-01, ATTR-CONSUME-01, BID-RUNTIME-01, and REV-RUNTIME-01. Marko's attributed and active items and Kris's active implementation items match Linear for assignee and workflow fields where applicable. The four new producer, consumer, and runtime children are intentionally unassigned.
 - Renamed the architecture document to `direct-engine-working-plan.md` and replaced the live Gate-B and critical-path references to historical BN-02/BN-03/BN-04 with PAYLOAD-SOURCE-01, PAYLOAD-ORCH-01, STORE-01, and BID-CORE-01.
-- Corrected the tracker inventory to 71 current Linear issues. The GitHub repository has 73 project issues because closed legacy `NICO-01` and the unlabelled administrative `PRESENTATION-01` remain outside the Linear implementation inventory.
+- Corrected the tracker inventory to 76 current Linear issues. The GitHub repository has 78 Builder project issues because closed legacy `NICO-01` and the unlabelled administrative `PRESENTATION-01` remain outside the Linear implementation inventory.
 
 ### Week 12 checkpoint - 31 August 2026
 
