@@ -53,6 +53,14 @@ The Builder remains a standalone sidecar and does not join libp2p directly. Dire
 | BN payload recovery | [Lodestar #9937](https://github.com/ChainSafe/lodestar/pull/9937), merged; [#9281](https://github.com/ChainSafe/lodestar/pull/9281), [#9791](https://github.com/ChainSafe/lodestar/pull/9791), and [#9326](https://github.com/ChainSafe/lodestar/pull/9326), open | REL-01 and E2E-01 track EMPTY range sync, impossible targets, stale roots, and non-finality; no new Builder module is required |
 | Blob cleanup | [Lodestar #9957](https://github.com/ChainSafe/lodestar/pull/9957), draft | Removes older pre-Fulu blob retrieval code, not Gloas `getPayload` blob bundles; PAYLOAD-SOURCE-01 remains valid |
 
+## Engine ownership and source-input audit
+
+Current Lodestar calls `notifyForkchoiceUpdate` from block import, execution-payload import, next-slot preparation, and block production. The BN derives safe and finalized execution hashes from its fork-choice view and derives custody columns from its own custody configuration. A standalone Builder without a p2p custody identity cannot silently claim the BN's custody set as its own.
+
+Beacon APIs #638 adds `safe_block_hash` and `finalized_block_hash` to the `payload_attributes` schema and example only. It keeps event frequency implementation-dependent. Current Lodestar prepares the event in `prepareNextSlot` and may emit it for proposer preparation or when the payload-attributes flag is enabled. The PR does not settle post-Gloas trigger timing, FULL/EMPTY variants, deduplication, or the source of `custody_columns`.
+
+The remaining production decision is therefore explicit. Sharing an EL requires a single-writer invariant or a constrained Builder-specific Engine surface so the BN and Builder cannot move Engine fork choice independently. Dedicated Builder ELs avoid that conflict but require their own sync, readiness, JWT, custody, and failure-isolation contract. PAYLOAD-SOURCE-01, PAYLOAD-ORCH-01, and STORE-CORE-01 remain unwired until that choice is accepted.
+
 ## Current contributor overlap
 
 The public PR audit on 31 August found no separate open extraction of the direct-Engine payload store or Builder-owned bid pipeline outside Nico's proof of concept.
