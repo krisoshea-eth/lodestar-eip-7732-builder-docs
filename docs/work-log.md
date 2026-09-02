@@ -2,12 +2,15 @@
 
 This is the canonical chronological delivery log for the Lodestar EIP-7732 Builder. It tracks weekly implementation, project-board, review, and coordination movement from the accepted proposal onward. It is deliberately lighter than the fellows' full weekly write-ups. The implementation plan owns accepted scope and dependencies; the Living Technical Note owns current technical state, decisions, risks, and upstream watches.
 
-### 2 September 2026 baseline and lifecycle checkpoint
+### 2 September 2026 architecture and lifecycle reconciliation
 
-- Refreshed the implementation baseline against Lodestar `unstable` at `9ba9a5ce85`, the immutable v1.47.0-rc.0 prerelease at `2aff495`, consensus-specs v1.7.0-alpha.14, and current Builder-related pull requests.
+- Refreshed the comparison baseline against Lodestar `unstable` at `7d85330f92`, while preserving the immutable BASELINE-01 implementation pin and v1.47.0-rc.0 release evidence.
 - Corrected #9813 from an active watch to a closed, unmerged historical alternative; merged #9864 remains the epoch-boundary head-freshness baseline.
-- Recorded fork draft #61 as the architecture-neutral PAYLOAD-ORCH-01 core stacked on #9958. Final Builder and CLI wiring remains blocked on EL ownership and authoritative source-BN inputs.
-- Re-audited STORE-01 against Nico's prototype and the extracted `BuiltPayload` type. Fork draft #63 now contains a bounded in-memory store core with slot and parent beacon root from orchestration. Complete signed-bid identity and insert-before-publish enforcement remain in later bid integration.
+- Recorded Nico's confirmation that direct Engine access is the working direction and that his branch should be mined for smaller reviewable changes rather than merged wholesale. Kept production shared-versus-dedicated EL topology and exact BN input ownership open.
+- Recorded ready #9958 and stacked draft #9973 as the payload-source and orchestration path. Recorded #9970 plus contribution PR #9 as the single active store path and #9974 plus contribution PR #10 as the policy path.
+- Recorded #9975/#9976 as bid foundations, #9978/#9979 as one logical bid path, and #9980/#9981/#9982 as one logical selection/reveal path. These drafts expose review surfaces but do not complete the integrated lifecycle or prove maintainer acceptance.
+- Recorded the review strategy: foundations first; collapse dependency diffs after parent merges; consider grouping the bid and selection/reveal drafts around their first consumers; add final Builder/CLI wiring only after input and Engine configuration contracts are explicit.
+- Added merged SSE containment #9964, consensus #5594 plus Lodestar #9972 bid validation, and Buildoor #184 local/p2p preference evidence to the owning REL-01, BID-CORE-01/QA-01, and E2E-01 tracks.
 
 ### Week 12 checkpoint - 31 August 2026
 
