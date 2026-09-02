@@ -17,7 +17,7 @@ Every production and test responsibility in the 42-file proof-of-concept diff is
 | Proof-of-concept area | Current owner | Disposition |
 | --- | --- | --- |
 | API block fields and event codecs | SPEC-01 and Lodestar event PoCs #9854/#9875/#9876/#9896 | Keep the wire choice separate from API-02 until cross-client review settles it |
-| BN payload-attributes production and block import hooks | BN-01, ATTR-SPEC-01, and ATTR-01 | #638 covers only part of the schema; trigger, deduplication, custody input, and runtime delivery remain open |
+| BN payload-attributes production and block import hooks | BN-01, ATTR-SPEC-01, ATTR-IMPL-01, and ATTR-01 | Fork draft #80 implements the current #638 hash fields in Lodestar; trigger, deduplication, custody input, and runtime delivery remain open |
 | BN bid validation and flood publication | Completed BN-PUB-01 through #9914; #9972/#5594 own the new parent-hash guard | Reuse landed BN behavior; do not reimplement it in `packages/builder` |
 | `chainEvents` | API-02, PREF-01, BN-01, and later runtime integration | Block observation exists; preference and payload-attribute subscription wiring remains part of the integrated consumer |
 | `payloadSource` | PAYLOAD-SOURCE-01 through #9958 | Extracted as an injected Engine boundary without topology or CLI ownership |
@@ -67,6 +67,7 @@ For an initial shared-EL proof of concept, the Builder must follow the BN's emit
 | Bid assembly | [Lodestar #9978](https://github.com/ChainSafe/lodestar/pull/9978) | Draft, stacked on #9958 | Pure fork-aware assembly boundary; may be reviewed with bid publication |
 | Bid publication | [Lodestar #9979](https://github.com/ChainSafe/lodestar/pull/9979) | Draft, stacked on #9975 | One-shot source-BN submission; may be reviewed with bid assembly |
 | Resolved-input slot bidder | [Fork draft #77](https://github.com/krisoshea-eth/lodestar/pull/77) | Draft, stacked on the combined integration branch | Two-file integration evidence only; keep fork-only until foundation interfaces and review grouping settle |
+| Payload-attributes forkchoice hashes | [Fork draft #80](https://github.com/krisoshea-eth/lodestar/pull/80) / [LOD-74](https://linear.app/kriso/issue/LOD-74/attr-impl-01-emit-post-gloas-forkchoice-hashes-in-payload-attributes) | Draft, fork-only on `unstable` | Implements the current #638 field shape and producer values; does not settle trigger, deduplication, custody input, or Builder consumption |
 | Selection matching | [Lodestar #9980](https://github.com/ChainSafe/lodestar/pull/9980) | Draft, stacked on #9975 | Exact local-bid match; may be reviewed with reveal work |
 | Envelope assembly | [Lodestar #9981](https://github.com/ChainSafe/lodestar/pull/9981) | Draft, stacked on #9958 | Stateless Gloas/Heze envelope construction; may be reviewed with selection/reveal |
 | Envelope publication | [Lodestar #9982](https://github.com/ChainSafe/lodestar/pull/9982) | Draft, stacked on #9975 | One-shot source-BN envelope submission; may be reviewed with selection/reveal |
@@ -124,7 +125,7 @@ When a parent merges, rebase or merge current `unstable`, rerun targeted validat
 | Parent-slot source | [Lodestar #9955](https://github.com/ChainSafe/lodestar/pull/9955), [consensus-specs #5554](https://github.com/ethereum/consensus-specs/pull/5554) | BN-01 input semantics; no change to `PayloadSource` itself |
 | Pre-Fulu blob cleanup | [Lodestar #9957](https://github.com/ChainSafe/lodestar/pull/9957) | Does not remove post-Gloas blobs returned by `getPayload`; #9958 remains valid |
 | PTC and late-block behavior | [Lodestar #9903](https://github.com/ChainSafe/lodestar/pull/9903), [#9968](https://github.com/ChainSafe/lodestar/pull/9968), [#9969](https://github.com/ChainSafe/lodestar/pull/9969) | OUT-01, QA-01, and E2E-01 evidence; not new Builder service ownership |
-| Payload-attributes hashes | [beacon-APIs #638](https://github.com/ethereum/beacon-APIs/pull/638) | Adds safe/finalized hashes but does not settle event timing, deduplication, or `custody_columns` |
+| Payload-attributes hashes | [beacon-APIs #638](https://github.com/ethereum/beacon-APIs/pull/638), fork draft [#80](https://github.com/krisoshea-eth/lodestar/pull/80) | #80 implements the proposed safe/finalized fields and existing Lodestar producer path; neither artifact settles event timing, deduplication, or `custody_columns` |
 | Builder-selection event | [beacon-APIs #599](https://github.com/ethereum/beacon-APIs/issues/599) | SPEC-01 compares extended `block`, lightweight `bid_included`, and `block_v2`; API-02 remains the fallback |
 | Engine v4 custody input | [consensus-specs #5549](https://github.com/ethereum/consensus-specs/pull/5549), [execution-apis #608](https://github.com/ethereum/execution-apis/pull/608), [#856](https://github.com/ethereum/execution-apis/pull/856) | BN-01/EL-ARCH-01 must settle custody source and serialization before final runtime wiring |
 | Orphaned-envelope serving | [consensus-specs #5060](https://github.com/ethereum/consensus-specs/pull/5060) | REL-01 watch; no cross-client contract is accepted yet |
@@ -140,7 +141,7 @@ When a parent merges, rebase or merge current `unstable`, rerun targeted validat
 - Complete review of #9958.
 - Define the exact safe/finalized hash and `custody_columns` inputs in BN-01.
 - Settle production shared-versus-dedicated EL support, JWT ownership, readiness, and failure isolation in EL-ARCH-01.
-- Keep payload-attributes trigger and deduplication in ATTR-01/ATTR-SPEC-01.
+- Review fork draft #80 as implementation evidence for the #638 field contract. Keep payload-attributes trigger and deduplication in ATTR-01/ATTR-SPEC-01.
 
 ### 2. Payload construction and retention
 

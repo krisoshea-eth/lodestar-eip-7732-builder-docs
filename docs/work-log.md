@@ -2,6 +2,14 @@
 
 This is the canonical chronological delivery log for the Lodestar EIP-7732 Builder. It tracks weekly implementation, project-board, review, and coordination movement from the accepted proposal onward. It is deliberately lighter than the fellows' full weekly write-ups. The implementation plan owns accepted scope and dependencies; the Living Technical Note owns current technical state, decisions, risks, and upstream watches.
 
+### 2 September 2026 payload-attributes field implementation
+
+- Added fork-only Lodestar draft [#80](https://github.com/krisoshea-eth/lodestar/pull/80) and [LOD-74](https://linear.app/kriso/issue/LOD-74/attr-impl-01-emit-post-gloas-forkchoice-hashes-in-payload-attributes) for the current beacon-APIs #638 `safe_block_hash` and `finalized_block_hash` contract.
+- The draft updates the post-Gloas event type, populates both hashes from Lodestar fork choice, and verifies Gloas/Heze JSON plus producer behavior. It deliberately excludes trigger, FULL/EMPTY policy, deduplication, custody input, Builder consumption, and Engine topology.
+- Validation passed: 15 focused tests, affected-package type checks, beacon-node dependency build, Biome, and `git diff --check`.
+- Kept the implementation in Kris's fork as requested. No ChainSafe PR was created.
+- Reconciled all 72 Linear issues and their GitHub project mirrors, including LOD-74 as In Progress under Gate B.
+
 ### 2 September 2026 architecture and lifecycle reconciliation
 
 - Refreshed the comparison baseline against Lodestar `unstable` at `d00b8296c9`, while preserving the immutable BASELINE-01 implementation pin. Lodestar v1.47.0 at `450996b13a` is now the newest immutable release target; rc.0 remains historical qualification evidence.
