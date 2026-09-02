@@ -26,6 +26,7 @@ This is the canonical chronological delivery log for the Lodestar EIP-7732 Build
 - Added Marko's adjacent Lodestar-z #472 Builder-state binding and EIP-8282 request-layout test hardening to LOD-71 without turning those completed foundations into new implementation tasks.
 - Recorded merged Lodestar #9984 and #9986 as BN validation and shared spec-test changes. #9972 is approved and mergeable, with its spec-test job currently failing and its benchmark rerun in progress. None overlaps the current Builder service drafts.
 - Routed NC's open consensus-specs #5572 randomized equivocation-delay vectors to QA-01 for proposer-boost and PTC-timing evidence rather than creating a duplicate Builder-only generator.
+- Routed approved Lodestar #9968 late-canonical-import metrics and logs to QA-01 so later timing failures can distinguish BN import delay from Builder-runtime delay.
 - Added merged SSE containment #9964, consensus #5594 plus Lodestar #9972 bid validation, and Buildoor #184 local/p2p preference evidence to the owning REL-01, BID-CORE-01/QA-01, and E2E-01 tracks.
 - Recorded the merged consensus-specs #5585 source-version bump without misclassifying it as a released beta tag or changing Lodestar's alpha.14 pin.
 - Routed Buildoor #186's geth-only deterministic testing source to E2E-01/INT-01, consensus-specs #5573/#5590 to later compliance and transport evidence, and execution-apis #870/#878 to conditional Heze work.
