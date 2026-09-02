@@ -21,8 +21,8 @@ Every production and test responsibility in the 42-file proof-of-concept diff is
 | BN bid validation and flood publication | Completed BN-PUB-01 through #9914; #9972/#5594 own the new parent-hash guard | Reuse landed BN behavior; do not reimplement it in `packages/builder` |
 | `chainEvents` | API-02, PREF-01, BN-01, and later runtime integration | Block observation exists; preference and payload-attribute subscription wiring remains part of the integrated consumer |
 | `payloadSource` | PAYLOAD-SOURCE-01 through #9958 | Extracted as an injected Engine boundary without topology or CLI ownership |
-| `payloadStore` | STORE-01 through #9970 and hardening contribution #9 | Keep one upstream store path and preserve exact reveal material |
-| `bidPolicy` | #9974 and numeric hardening contribution #10 | Keep policy separate from ledger and message assembly |
+| `payloadStore` | STORE-01, Marko-owned [LOD-68](https://linear.app/kriso/issue/LOD-68/store-wiring-01-wire-and-prune-the-builder-payload-store), #9970, and hardening contribution #9 | Keep one upstream store path and preserve exact reveal material |
+| `bidPolicy` | Marko-owned [LOD-69](https://linear.app/kriso/issue/LOD-69/bid-policy-base-01-add-the-initial-builder-bid-policy), #9974, and numeric hardening contribution #10 | Keep policy separate from ledger and message assembly |
 | `ledger` | BID-LEDGER-01 through #9975 | Extracted as the one-shot bid, win, liability, and reveal-conflict boundary |
 | `proposerPreferencesTracker` | PREF-01 through #9976 | Extracted, while dependent-root sourcing remains a BN-01 integration decision |
 | `slotBidder` | #9973, #9978, #9979, PAYLOAD-01, BID-CORE-01, and BID-01 | Pure orchestration, assembly, and publication seams exist; the actual slot consumer and runtime loop are still missing |
@@ -60,8 +60,8 @@ For an initial shared-EL proof of concept, the Builder must follow the BN's emit
 | Gate-A lifecycle regressions | [Lodestar #9932](https://github.com/ChainSafe/lodestar/pull/9932) | Ready, mergeable | Independent TEST-01 review |
 | `PayloadSource` and Engine adapter | [Lodestar #9958](https://github.com/ChainSafe/lodestar/pull/9958) | Ready, mergeable | First direct-Engine boundary; no CLI or runtime topology wiring |
 | Payload-job orchestration | [Lodestar #9973](https://github.com/ChainSafe/lodestar/pull/9973) | Draft, stacked on #9958 | Bounded jobs, duplicate sharing, cancellation, timeouts, and cleanup |
-| Payload store | [Lodestar #9970](https://github.com/ChainSafe/lodestar/pull/9970), [hardening contribution](https://github.com/markolazic01/lodestar/pull/9) | Draft plus contribution | Keep one upstream store PR; combine wiring/pruning with bounded-store invariants and tests |
-| Bid policy | [Lodestar #9974](https://github.com/ChainSafe/lodestar/pull/9974), [numeric hardening contribution](https://github.com/markolazic01/lodestar/pull/10) | Draft plus contribution | Keep policy and exact numeric-domain hardening together |
+| Payload store | Marko-owned [LOD-68](https://linear.app/kriso/issue/LOD-68/store-wiring-01-wire-and-prune-the-builder-payload-store), [Lodestar #9970](https://github.com/ChainSafe/lodestar/pull/9970), [hardening contribution](https://github.com/markolazic01/lodestar/pull/9) | Draft plus contribution | Keep one upstream store PR; combine wiring/pruning with bounded-store invariants and tests |
+| Bid policy | Marko-owned [LOD-69](https://linear.app/kriso/issue/LOD-69/bid-policy-base-01-add-the-initial-builder-bid-policy), [Lodestar #9974](https://github.com/ChainSafe/lodestar/pull/9974), [numeric hardening contribution](https://github.com/markolazic01/lodestar/pull/10) | Draft plus contribution | Keep policy and exact numeric-domain hardening together |
 | Pending-bid ledger | [Lodestar #9975](https://github.com/ChainSafe/lodestar/pull/9975) | Ready, mergeable | Independent pure service |
 | Proposer preferences | [Lodestar #9976](https://github.com/ChainSafe/lodestar/pull/9976) | Draft | Consumer contract and dependent-root ownership still need review |
 | Bid assembly | [Lodestar #9978](https://github.com/ChainSafe/lodestar/pull/9978) | Draft, stacked on #9958 | Pure fork-aware assembly boundary; may be reviewed with bid publication |
@@ -71,6 +71,18 @@ For an initial shared-EL proof of concept, the Builder must follow the BN's emit
 | Envelope publication | [Lodestar #9982](https://github.com/ChainSafe/lodestar/pull/9982) | Draft, stacked on #9975 | One-shot source-BN envelope submission; may be reviewed with selection/reveal |
 
 The drafts are not literal copies of Nico's services. They reuse the demonstrated responsibilities but narrow them into typed modules with different failure contracts and broader focused tests. Their current purpose is to expose coherent review surfaces and support a combined integration branch. They must not all be presented as independently accepted production abstractions.
+
+### Contributor attribution and non-duplication
+
+Linear now records Marko's Builder work as separate implementation or historical evidence issues instead of assigning his work to Kris's remaining integration issues:
+
+- [LOD-68](https://linear.app/kriso/issue/LOD-68/store-wiring-01-wire-and-prune-the-builder-payload-store) owns #9970 runtime store wiring and slot pruning; STORE-CORE-01 retains Kris's bounded-store invariants and tests.
+- [LOD-69](https://linear.app/kriso/issue/LOD-69/bid-policy-base-01-add-the-initial-builder-bid-policy) owns #9974's initial policy; BID-POLICY-HARDEN-01 retains Kris's numeric-domain hardening.
+- [LOD-70](https://linear.app/kriso/issue/LOD-70/event-poc-01-prototype-builder-selection-event-alternatives) records the four completed comparison PoCs; SPEC-01 still owns the uncompleted cross-client contract decision.
+- [LOD-71](https://linear.app/kriso/issue/LOD-71/bn-input-foundation-01-land-builder-facing-event-and-bid-input) records Marko's landed head-event, proposer-preference, gas-limit, and related Beacon API foundations.
+- [LOD-72](https://linear.app/kriso/issue/LOD-72/envelope-bn-foundation-01-harden-blinded-block-and-payload-envelope) records the landed blinded-block publication behavior and closed envelope alternatives.
+
+These attribution issues do not create new implementation work. They make delivered ownership visible and keep the still-open work scoped to behavior not already landed elsewhere.
 
 ### How the stack is reviewed
 
