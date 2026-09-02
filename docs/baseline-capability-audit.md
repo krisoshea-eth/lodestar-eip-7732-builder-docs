@@ -3,7 +3,7 @@
 **Completed:** 2 September 2026  
 **Accepted implementation pin:** Lodestar `57572140f8b75ab72466a869bf7bdc0ad0db265e`  
 **Current comparison head:** Lodestar `unstable` at `7d85330f928c015202341da63624f6b00c420c43`
-**Immutable release targets:** v1.46.0 at `3873dd5b032d0ad82581fc3416e9628b4f6f2642` and v1.47.0-rc.0 at `2aff495d9c3ecb1e7f15a431d3b0a4616f4bf103`  
+**Immutable release targets:** v1.46.0 at `3873dd5b032d0ad82581fc3416e9628b4f6f2642` and v1.47.0 at `450996b13ab305b860acd131c87f799fdbfbabf0`
 **Protocol snapshot:** consensus-specs v1.7.0-alpha.14, Builder APIs through merged #165/#166/#167, Beacon APIs through merged #630, and Keymanager APIs through merged #92/#93
 
 This audit records what is present, what is under review, and what remains missing. An open pull request, release candidate, fixture tag, or point-in-time runtime observation is evidence for that item only. It is not evidence that the complete Builder lifecycle works.
@@ -46,6 +46,7 @@ Current feature branches must still record their own base SHA and rerun checks r
 - #9937 landed EMPTY payload range-sync support. Remaining impossible-target, stale-root, non-finality, and recovery cases stay in REL-01 and E2E-01.
 - #9947 and #9954 merged. They cover proposer-BN external-Builder connection prewarming and exiting-Builder filtering, not the standalone Builder's Engine source or payload lifecycle.
 - #9964 merged on 2 September and contains individual SSE event/consumer failures without providing replay. REL-01 therefore retains connected-stream gap reconciliation as well as reconnect recovery.
+- v1.47.0 was published at `450996b13a` and merged back to `unstable` through #9971. It is the newest immutable release target, but it predates the direct-Engine service PR series and is not evidence that the standalone Builder lifecycle is complete.
 - #9955, #9957, and #9966 remain active watches for parent-slot inputs, older blob-path cleanup, and BN-side candidate ranking. None duplicates #9958 or #9973.
 - Consensus #5594 and Lodestar #9972 now own rejection of bids whose block hash equals the parent hash. Track their disposition in BID-CORE-01 and QA-01 instead of duplicating the validation.
 - Buildoor #184 merged Builder-preference handling without an external Builder URL and three local/p2p selection paths. Reuse that environment evidence in E2E-01, while noting that its no-URL regression is directly covered at unit level rather than by the full E2E assertion.

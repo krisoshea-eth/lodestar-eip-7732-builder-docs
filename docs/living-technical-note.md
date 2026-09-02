@@ -6,7 +6,7 @@
 | Implementation plan | [v1.0 merged](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/pull/2) on August 5, 2026; the merged GitHub plan is the implementation source of truth |
 | Architecture reconciliation | [Direct-Engine working plan](provisional-direct-engine-plan.md), confirmed 2 September 2026; controls conflicts with the historical BN-mediated payload and reveal design while production EL topology remains open |
 | Spec target | [consensus-specs v1.7.0-alpha.14](https://github.com/ethereum/consensus-specs/releases/tag/v1.7.0-alpha.14), the version pinned by current Lodestar `unstable` |
-| Lodestar baseline | [v1.46.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.46.0) at `3873dd5b032d0ad82581fc3416e9628b4f6f2642` is the latest stable and newest immutable release target; `BASELINE-01` still owns the exact working `unstable` pin |
+| Lodestar baseline | [v1.47.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.47.0) at `450996b13ab305b860acd131c87f799fdbfbabf0` is the latest stable and newest immutable release target; `BASELINE-01` still owns the exact working `unstable` pin |
 | Builder implementation | Foundation through #9868, Gloas Builder API #9832, bounded envelope cache #9904, bid validation/flood publication #9914, and SSE containment #9964 are merged. API-02 #9931, TEST-01 #9932, PayloadSource #9958, the payload/store/policy foundations, and bid/reveal drafts are mapped in the direct-Engine working plan. Nico's 10-commit, 42-file branch remains proof-of-concept evidence rather than a merge-ready patch |
 | Devnet | Public [Platåberget Dora](https://dora.plataberget.ethpandaops.io/) provides point-in-time runtime evidence. A finalized Lodestar-proposed block at [slot 79322](https://dora.plataberget.ethpandaops.io/slot/0x159ad62fd9512d3843f53ab79387a726d82b66fb0892134504cd1b426cc78b19) used an external Builder payload, reported `Revealed`, value 0.3246 ETH, and 99.26% PTC quorum. This does not prove continuous health, API-02's observer path, shutdown behavior, Assertoor/Buildoor results, deployed bytecode, or recovery. [`tests-glamsterdam-devnet@v8.1.1`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.1) is the latest successor fixture release |
 | Builder lifecycle identifiers | Deposit request type `0x03`; Builder withdrawal credentials prefix `0xB0` |
@@ -67,7 +67,7 @@ This is the working document for the Lodestar EIP-7732 Builder project, an EPF c
 Run roughly weekly and before each milestone. Update the Doc status table afterwards.
 
 - [ ] New consensus-specs prerelease after `v1.7.0-alpha.14`, or a change to the #5497 head-compatible bid rules?
-- [ ] Stable Lodestar release after v1.46.0, or material `unstable` changes to the Builder package, Gloas types, payload production, publication, or events?
+- [ ] Stable Lodestar release after v1.47.0, or material `unstable` changes to the Builder package, Gloas types, payload production, publication, or events?
 - [ ] Status change in open Lodestar [#9736](https://github.com/ChainSafe/lodestar/pull/9736), Builder API [#9832](https://github.com/ChainSafe/lodestar/pull/9832), PTC sampling [#9903](https://github.com/ChainSafe/lodestar/pull/9903), or envelope caching [#9904](https://github.com/ChainSafe/lodestar/pull/9904)?
 - [ ] Follow-up after merged builder-specs [#165](https://github.com/ethereum/builder-specs/pull/165)/[#166](https://github.com/ethereum/builder-specs/pull/166), beacon-APIs [#630](https://github.com/ethereum/beacon-APIs/pull/630), keymanager-APIs [#92](https://github.com/ethereum/keymanager-APIs/pull/92), or the four open Builder-selection event PoCs?
 - [ ] Cross-client rollout of #5497, especially Teku and the Prysm replacement, and any evidence that strict local-head validation limits propagation?
@@ -239,7 +239,7 @@ PAYLOAD_ATTESTATION_DUE_BPS      = 7500
 
 The phrase “Lodestar baseline” has two layers:
 
-1. **Stable release and newest immutable audit target:** [v1.46.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.46.0) at `3873dd5b032d0ad82581fc3416e9628b4f6f2642`, published August 12. It predates merged Builder #9781.
+1. **Stable release and newest immutable audit target:** [v1.47.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.47.0) at `450996b13ab305b860acd131c87f799fdbfbabf0`, published September 2. It includes the earlier Builder foundation but predates the direct-Engine service PR series.
 2. **Implementation baseline:** current `unstable`, pinned to an exact SHA by `BASELINE-01` before more code is treated as Ready.
 
 `BASELINE-01` still owns the deliberate project pin and reproducibility evidence. The historical August 5 observation `c65aaefd91a602df1ffb82d929ec479fba8578ac` is not a substitute for completing that issue.
@@ -998,7 +998,7 @@ Status checked 2 September 2026 against live primary sources. Static repository 
 
 | Item | Status | Why it matters |
 |---|---|---|
-| [v1.46.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.46.0) | Latest stable at `3873dd5b032d0ad82581fc3416e9628b4f6f2642`; August 12 | Newest immutable release target; predates Builder #9781 |
+| [v1.47.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.47.0) | Latest stable at `450996b13ab305b860acd131c87f799fdbfbabf0`; September 2 | Newest immutable release target; includes the Builder foundation but not the direct-Engine service PR series |
 | [#9758](https://github.com/ChainSafe/lodestar/pull/9758) — initial Builder | Merged | Establishes `@lodestar/builder`, CLI, key loading, signing, BN wiring, and tests |
 | [#9725](https://github.com/ChainSafe/lodestar/pull/9725) / [#9726](https://github.com/ChainSafe/lodestar/pull/9726) | Merged | Shared config checks and 404-aware validator genesis waiting |
 | [#9739](https://github.com/ChainSafe/lodestar/pull/9739) / [#9756](https://github.com/ChainSafe/lodestar/pull/9756) | Merged | Local-head-compatible multi-bid handling and narrow epoch-boundary filtering |
