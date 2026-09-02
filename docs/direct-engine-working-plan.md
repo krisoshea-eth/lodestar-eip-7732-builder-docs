@@ -92,6 +92,9 @@ When a parent merges, rebase or merge current `unstable`, rerun targeted validat
 | Builder-selection event | [beacon-APIs #599](https://github.com/ethereum/beacon-APIs/issues/599) | SPEC-01 compares extended `block`, lightweight `bid_included`, and `block_v2`; API-02 remains the fallback |
 | Engine v4 custody input | [consensus-specs #5549](https://github.com/ethereum/consensus-specs/pull/5549), [execution-apis #608](https://github.com/ethereum/execution-apis/pull/608), [#856](https://github.com/ethereum/execution-apis/pull/856) | BN-01/EL-ARCH-01 must settle custody source and serialization before final runtime wiring |
 | Orphaned-envelope serving | [consensus-specs #5060](https://github.com/ethereum/consensus-specs/pull/5060) | REL-01 watch; no cross-client contract is accepted yet |
+| Deterministic testing build source | [Buildoor #186](https://github.com/ethpandaops/buildoor/pull/186) | Optional geth-only E2E payload-content fixture; do not make `testing_buildBlockV1` a production dependency or replace the standard Engine adapter |
+| Gloas compliance and ReqResp formats | [consensus-specs #5573](https://github.com/ethereum/consensus-specs/pull/5573), [#5590](https://github.com/ethereum/consensus-specs/pull/5590) | Reuse accepted state-transition vectors in QA/OUT work; #5590 is exploratory and non-normative until its ownership issue settles |
+| Heze inclusion-list response bounds | [execution-apis #870](https://github.com/ethereum/execution-apis/pull/870), [#878](https://github.com/ethereum/execution-apis/pull/878) | Conditional EXT-FOCIL-01 input only; no change to the current Gloas payload-source contract |
 
 ## Remaining implementation sequence
 
