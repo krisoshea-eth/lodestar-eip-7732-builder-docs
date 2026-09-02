@@ -6,7 +6,7 @@
 
 Nico's [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder) branch demonstrates an end-to-end Builder that owns payload construction through an Engine API connection. This differs materially from the original BN-mediated plan, where the source beacon node owned payload construction and stateful reveal material.
 
-The branch is a proof of concept, not an upstream-ready patch. At [`99fd8fa9ad`](https://github.com/ChainSafe/lodestar/commit/99fd8fa9ad3a867fced3a5907a68edf3a519c1cd) it contains 10 commits and changes 42 files relative to its merge base. Every changed production and test file was audited. Current Lodestar `unstable` was [`7d85330f92`](https://github.com/ChainSafe/lodestar/commit/7d85330f928c015202341da63624f6b00c420c43) when this reconciliation was refreshed.
+The branch is a proof of concept, not an upstream-ready patch. At [`99fd8fa9ad`](https://github.com/ChainSafe/lodestar/commit/99fd8fa9ad3a867fced3a5907a68edf3a519c1cd) it contains 10 commits and changes 42 files relative to its merge base. Every changed production and test file was audited. Current Lodestar `unstable` was [`d00b8296c9`](https://github.com/ChainSafe/lodestar/commit/d00b8296c9dc88d2e3c6c01fe7c3b494d4a81149) when this reconciliation was refreshed.
 
 The project is extracting small, typed, testable boundaries from the proof of concept. An open draft is evidence that a review boundary exists. It is not evidence that Lodestar maintainers have accepted the abstraction or final API.
 
@@ -25,7 +25,7 @@ Every production and test responsibility in the 42-file proof-of-concept diff is
 | `bidPolicy` | Marko-owned [LOD-69](https://linear.app/kriso/issue/LOD-69/bid-policy-base-01-add-the-initial-builder-bid-policy), #9974, and numeric hardening contribution #10 | Keep policy separate from ledger and message assembly |
 | `ledger` | BID-LEDGER-01 through #9975 | Extracted as the one-shot bid, win, liability, and reveal-conflict boundary |
 | `proposerPreferencesTracker` | PREF-01 through #9976 | Extracted, while dependent-root sourcing remains a BN-01 integration decision |
-| `slotBidder` | #9973, #9978, #9979, PAYLOAD-01, BID-CORE-01, and BID-01 | Pure orchestration, assembly, and publication seams exist; the actual slot consumer and runtime loop are still missing |
+| `slotBidder` | [LOD-73](https://linear.app/kriso/issue/LOD-73/slot-bidder-01-coordinate-one-resolved-direct-engine-bid) and fork draft [#77](https://github.com/krisoshea-eth/lodestar/pull/77) | A resolved-input consumer now composes orchestration, retention, coverability, assembly, and publication; event, CLI, and Engine wiring remain missing |
 | `revealer` | #9980, #9981, #9982, SELECT-01, and REV-01 | Pure selection, assembly, and publication seams exist; store lookup, timing, and runtime wiring are still missing |
 | Builder root, defaults, exports, metrics, and CLI wiring | PAYLOAD-01, BID-CORE-01, SELECT-01, REV-01, QA-01, and HANDOFF-01 | Deliberately excluded from the current service drafts until inputs and review boundaries settle |
 | Proof-of-concept tests, API stub, clock helper, package metadata, and lockfile | Component PR tests plus E2E-01/QA-01 | Reuse behavioral cases where they remain valid; do not copy branch-wide scaffolding or lockfile churn wholesale |
@@ -66,6 +66,7 @@ For an initial shared-EL proof of concept, the Builder must follow the BN's emit
 | Proposer preferences | [Lodestar #9976](https://github.com/ChainSafe/lodestar/pull/9976) | Draft | Consumer contract and dependent-root ownership still need review |
 | Bid assembly | [Lodestar #9978](https://github.com/ChainSafe/lodestar/pull/9978) | Draft, stacked on #9958 | Pure fork-aware assembly boundary; may be reviewed with bid publication |
 | Bid publication | [Lodestar #9979](https://github.com/ChainSafe/lodestar/pull/9979) | Draft, stacked on #9975 | One-shot source-BN submission; may be reviewed with bid assembly |
+| Resolved-input slot bidder | [Fork draft #77](https://github.com/krisoshea-eth/lodestar/pull/77) | Draft, stacked on the combined integration branch | Two-file integration evidence only; keep fork-only until foundation interfaces and review grouping settle |
 | Selection matching | [Lodestar #9980](https://github.com/ChainSafe/lodestar/pull/9980) | Draft, stacked on #9975 | Exact local-bid match; may be reviewed with reveal work |
 | Envelope assembly | [Lodestar #9981](https://github.com/ChainSafe/lodestar/pull/9981) | Draft, stacked on #9958 | Stateless Gloas/Heze envelope construction; may be reviewed with selection/reveal |
 | Envelope publication | [Lodestar #9982](https://github.com/ChainSafe/lodestar/pull/9982) | Draft, stacked on #9975 | One-shot source-BN envelope submission; may be reviewed with selection/reveal |
@@ -94,7 +95,8 @@ The delivery order is:
 2. keep #9973 stacked until #9958 settles;
 3. after foundation feedback, decide whether #9978 and #9979 should remain separate or become one bid-path PR;
 4. decide whether #9980, #9981, and #9982 should become one selection-and-reveal PR;
-5. add final `SlotBidder` and Builder/CLI wiring only after BN inputs and Engine configuration are explicit.
+5. review fork draft #77 as evidence that the accepted services can form one resolved-input bid operation;
+6. add payload-attribute consumption and Builder/CLI/Engine wiring only after BN inputs and Engine configuration are explicit.
 
 When a parent merges, rebase or merge current `unstable`, rerun targeted validation, and verify that the child diff collapses to its intended files. Do not ask maintainers to review the whole stack at once.
 
@@ -115,8 +117,8 @@ When a parent merges, rebase or merge current `unstable`, rerun targeted validat
 
 | Track | Evidence | Project effect |
 | --- | --- | --- |
-| Reject `block_hash == parent_block_hash` | [consensus-specs #5594](https://github.com/ethereum/consensus-specs/pull/5594), [Lodestar #9972](https://github.com/ChainSafe/lodestar/pull/9972) | Track in BID-CORE-01 and QA-01; do not duplicate the Lodestar validation PR |
-| Bid-validation cost ordering | [Lodestar #9984](https://github.com/ChainSafe/lodestar/pull/9984) | Reuse the BN-side ordering of cheap rejects and ignores before state and signature work; it does not add a Builder-side service |
+| Reject `block_hash == parent_block_hash` | [consensus-specs #5594](https://github.com/ethereum/consensus-specs/pull/5594), [Lodestar #9972](https://github.com/ChainSafe/lodestar/pull/9972) | #9972 is ready but conflicting after #9984 changed the same validation area; track its reconciliation and do not duplicate it |
+| Bid-validation cost ordering | Merged [Lodestar #9984](https://github.com/ChainSafe/lodestar/pull/9984) | Reuse the BN-side ordering of cheap rejects and ignores before state and signature work; it does not add a Builder-side service |
 | Spec-test expected-error enforcement | [Lodestar #9986](https://github.com/ChainSafe/lodestar/pull/9986) | Track the resulting Gloas sweep-index vectors in QA-01; do not create a duplicate Builder PR for the shared test-harness fix |
 | Candidate ranking and logs | [Lodestar #9966](https://github.com/ChainSafe/lodestar/pull/9966) | BN-side selection diagnostics only; no overlap with Builder payload construction |
 | Parent-slot source | [Lodestar #9955](https://github.com/ChainSafe/lodestar/pull/9955), [consensus-specs #5554](https://github.com/ethereum/consensus-specs/pull/5554) | BN-01 input semantics; no change to `PayloadSource` itself |
@@ -161,7 +163,8 @@ When a parent merges, rebase or merge current `unstable`, rerun targeted validat
 
 ### 5. Runtime integration and evidence
 
-- Add `SlotBidder`/Builder/CLI wiring on a combined branch after the service contracts settle.
+- Use fork draft [#77](https://github.com/krisoshea-eth/lodestar/pull/77) to review the resolved-input `SlotBidder` composition while keeping event, Builder/CLI, and Engine construction separate.
+- Add payload-attribute consumption and Builder/CLI/Engine wiring after the service and input contracts settle.
 - Prove the honest bid, selection, reveal, FULL/PTC, and payment loop locally.
 - Add metrics, restart behavior, non-finality, hostile branches, and durability only in their bounded issues.
 
