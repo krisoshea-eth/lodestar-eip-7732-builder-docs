@@ -78,7 +78,7 @@ The drafts are not literal copies of Nico's services. They reuse the demonstrate
 
 ### Contributor attribution and non-duplication
 
-Linear now records Marko's Builder work as separate implementation or historical evidence issues instead of assigning his work to Kris's remaining integration issues:
+Linear now records Marko's Builder work as separate implementation or historical evidence issues so delivered work and remaining integration scopes are distinct:
 
 - [LOD-68](https://linear.app/kriso/issue/LOD-68/store-wiring-01-wire-and-prune-the-builder-payload-store) owns #9970 runtime store wiring and slot pruning; STORE-CORE-01 retains Kris's bounded-store invariants and tests.
 - [LOD-69](https://linear.app/kriso/issue/LOD-69/bid-policy-base-01-add-the-initial-builder-bid-policy) owns #9974's initial policy; BID-POLICY-HARDEN-01 retains Kris's numeric-domain hardening.
