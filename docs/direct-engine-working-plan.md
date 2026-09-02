@@ -118,7 +118,7 @@ When a parent merges, rebase or merge current `unstable`, rerun targeted validat
 
 | Track | Evidence | Project effect |
 | --- | --- | --- |
-| Reject `block_hash == parent_block_hash` | [consensus-specs #5594](https://github.com/ethereum/consensus-specs/pull/5594), [Lodestar #9972](https://github.com/ChainSafe/lodestar/pull/9972) | #9972 is approved and mergeable; its spec-test job is currently failing. Track its final disposition and do not duplicate it |
+| Reject `block_hash == parent_block_hash` | [consensus-specs #5594](https://github.com/ethereum/consensus-specs/pull/5594), [Lodestar #9972](https://github.com/ChainSafe/lodestar/pull/9972) | #9972 is approved and mergeable; its spec-test and benchmark jobs are currently failing. Track its final disposition and do not duplicate it |
 | Bid-validation cost ordering | Merged [Lodestar #9984](https://github.com/ChainSafe/lodestar/pull/9984) | Reuse the BN-side ordering of cheap rejects and ignores before state and signature work; it does not add a Builder-side service |
 | Spec-test expected-error enforcement | Merged [Lodestar #9986](https://github.com/ChainSafe/lodestar/pull/9986) | Track the resulting Gloas sweep-index vectors in QA-01; do not create a duplicate Builder PR for the shared test-harness fix |
 | Candidate ranking and logs | [Lodestar #9966](https://github.com/ChainSafe/lodestar/pull/9966) | BN-side selection diagnostics only; no overlap with Builder payload construction |
@@ -131,7 +131,7 @@ When a parent merges, rebase or merge current `unstable`, rerun targeted validat
 | Orphaned-envelope serving | [consensus-specs #5060](https://github.com/ethereum/consensus-specs/pull/5060) | REL-01 watch; no cross-client contract is accepted yet |
 | Deterministic testing build source | [Buildoor #186](https://github.com/ethpandaops/buildoor/pull/186) | Optional geth-only E2E payload-content fixture; do not make `testing_buildBlockV1` a production dependency or replace the standard Engine adapter |
 | Genesis-registered Buildoor assignment | [ethereum-package #1483](https://github.com/ethpandaops/ethereum-package/pull/1483) | E2E/INT fixture watch; launched Buildoor keys must actually correspond to `state.builders`, and genesis Builders remain inactive until epoch 1 finalizes |
-| Gloas compliance and ReqResp formats | [consensus-specs #5573](https://github.com/ethereum/consensus-specs/pull/5573), [#5590](https://github.com/ethereum/consensus-specs/pull/5590) | Reuse accepted state-transition vectors in QA/OUT work; #5590 is exploratory and non-normative until its ownership issue settles |
+| Gloas compliance and ReqResp formats | [consensus-specs #5572](https://github.com/ethereum/consensus-specs/pull/5572), [#5573](https://github.com/ethereum/consensus-specs/pull/5573), and [#5590](https://github.com/ethereum/consensus-specs/pull/5590) | Reuse accepted randomized-equivocation and state-transition vectors in QA/OUT work; #5590 is exploratory and non-normative until its ownership issue settles |
 | Heze inclusion-list response bounds | [execution-apis #870](https://github.com/ethereum/execution-apis/pull/870), [#878](https://github.com/ethereum/execution-apis/pull/878) | Conditional EXT-FOCIL-01 input only; no change to the current Gloas payload-source contract |
 
 ## Remaining implementation sequence
