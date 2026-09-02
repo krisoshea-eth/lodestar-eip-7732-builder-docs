@@ -1635,7 +1635,7 @@ The Lodestar review pass and confirmed follow-up decisions from 27 July–4 Augu
 - [x] Merge and publish v1.0 on GitHub.
 - [x] Pin the accepted `unstable` SHA, spec/API versions, and feature branch in BASELINE-01.
 - [x] Complete the baseline capability audit and narrow/close already-landed work.
-- [x] Create and reconcile the 67 current Linear issues, including the original core, Gate-A follow-ups, direct-Engine service slices, environment follow-up, and cross-repository specification tracks.
+- [x] Create and reconcile the 65 current Linear issues, including the original core, Gate-A follow-ups, direct-Engine service slices, environment follow-up, and cross-repository specification tracks. The GitHub repository has 67 issues because closed legacy `NICO-01` and the unlabelled administrative `PRESENTATION-01` are not Linear project items.
 - [x] Add milestones, weeks, sizes, lanes, statuses, dependencies, and evidence fields.
 - [ ] Complete remaining owner and reviewer assignments as issues approach Ready.
 - [x] Preserve `CLI-01`, `MET-01`, and `BN-PUB-01` as Done with linked upstream evidence. `ENV-01` is Done for the manual setup that unblocked development; `ENV-02` owns clean-checkout automation and independent reproduction.
