@@ -7,7 +7,7 @@ This is the canonical chronological delivery log for the Lodestar EIP-7732 Build
 - Refreshed the implementation baseline against Lodestar `unstable` at `9ba9a5ce85`, the immutable v1.47.0-rc.0 prerelease at `2aff495`, consensus-specs v1.7.0-alpha.14, and current Builder-related pull requests.
 - Corrected #9813 from an active watch to a closed, unmerged historical alternative; merged #9864 remains the epoch-boundary head-freshness baseline.
 - Recorded fork draft #61 as the architecture-neutral PAYLOAD-ORCH-01 core stacked on #9958. Final Builder and CLI wiring remains blocked on EL ownership and authoritative source-BN inputs.
-- Re-audited STORE-01 against Nico's prototype and the extracted `BuiltPayload` type. A small in-memory store core is separable, but its stored context must include slot and parent beacon root from orchestration, while complete signed-bid identity and insert-before-publish enforcement belong to later bid integration.
+- Re-audited STORE-01 against Nico's prototype and the extracted `BuiltPayload` type. Fork draft #63 now contains a bounded in-memory store core with slot and parent beacon root from orchestration. Complete signed-bid identity and insert-before-publish enforcement remain in later bid integration.
 
 ### Week 12 checkpoint - 31 August 2026
 

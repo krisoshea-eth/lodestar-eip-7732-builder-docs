@@ -36,6 +36,7 @@ The Builder remains a standalone sidecar and does not join libp2p directly. Dire
 | TEST-01 regressions, [Lodestar #9932](https://github.com/ChainSafe/lodestar/pull/9932) | Open | Remains independent foundation coverage |
 | PAYLOAD-SOURCE-01, [Lodestar #9958](https://github.com/ChainSafe/lodestar/pull/9958) | Draft | First reviewed extraction from the direct-Engine proof of concept; keep runtime wiring and EL ownership in later slices |
 | PAYLOAD-ORCH-01, [fork #61](https://github.com/krisoshea-eth/lodestar/pull/61) | Fork draft | Architecture-neutral orchestration core stacked on #9958; keep final Builder and CLI wiring blocked on EL ownership and authoritative BN inputs |
+| STORE-CORE-01, [fork #63](https://github.com/krisoshea-eth/lodestar/pull/63) | Fork draft | Bounded in-memory retention stacked on #9958; keep signed-bid identity, publish ordering, envelope construction, reveal integration, metrics, and persistence in later slices |
 
 ## Cross-repository work still open
 
@@ -59,7 +60,7 @@ The public PR audit on 31 August found no separate open extraction of the direct
 - Marco owns open beacon-APIs #638. His Lodestar #9854, #9875, #9876, and #9896 remain event-shape comparison proofs. His bid-validation and flood-publication work is already merged through Lodestar #9914 and js-libp2p #3610.
 - Nico owns the proof-of-concept branch plus draft Lodestar #9955. His #9947 and #9954 have merged. #9947 concerns proposer-BN connections to external Builder API servers; #9954 and #9955 change exiting-Builder filtering and parent-slot semantics and must be refreshed before extracting affected code.
 - NC has no public PR implementing the direct-Engine Builder slices. His open Gloas and FOCIL work remains relevant to fork compatibility but does not claim PayloadStore, BidPolicy, SlotBidder, or Revealer ownership.
-- Kris owns draft Lodestar #9958 for the narrow PayloadSource contract and injected Engine adapter. It deliberately excludes Builder lifecycle wiring, payload attributes, EL deployment policy, storage, bidding, selection, and reveal.
+- Kris owns draft Lodestar #9958 for the narrow PayloadSource contract and injected Engine adapter, fork draft #61 for unwired orchestration, and fork draft #63 for bounded store-core retention. The drafts deliberately exclude final runtime ownership, bid integration, selection, and reveal.
 
 Private branches and direct-message commitments cannot be inferred from public GitHub. Confirm ownership with Marco before starting a code branch even when a slice appears publicly unclaimed.
 
@@ -149,6 +150,7 @@ Maintainer answers can change the affected slices without reopening API-02, TEST
 - ATTR-01 (`LOD-55`) tracks the missing post-Gloas payload-attributes emission contract.
 - EL-ARCH-01 (`LOD-56`) blocks PAYLOAD-ORCH-01 runtime wiring and the final production boundary. It does not block review of PAYLOAD-SOURCE-01's injected contract.
 - PAYLOAD-SOURCE-01 (`LOD-57`) is In Progress through draft Lodestar #9958. PAYLOAD-ORCH-01 (`LOD-58`) is In Progress through fork draft #61; its architecture-neutral core may be reviewed now, while final runtime wiring remains blocked on the source contract, EL ownership, and source-BN inputs.
+- STORE-CORE-01 (`LOD-59`) is In Review through fork draft #63. The STORE-01 parent remains open for complete bid identity, insert-before-publish enforcement, envelope construction, reveal integration, metrics, and durability.
 - BN-01, PAYLOAD-01, ATTR-01, ATTR-SPEC-01, and EL-ARCH-01 record the new `custody_columns` input question introduced by consensus-specs #5549.
 - ENV-02 remains open until a second contributor reproduces its stored runbook.
 
