@@ -10,13 +10,14 @@ This is the canonical chronological delivery log for the Lodestar EIP-7732 Build
 - Recorded ready #9958 and stacked draft #9973 as the payload-source and orchestration path. Recorded #9970 plus contribution PR #9 as the single active store path and #9974 plus contribution PR #10 as the policy path.
 - Recorded #9975/#9976 as bid foundations, #9978/#9979 as one logical bid path, and #9980/#9981/#9982 as one logical selection/reveal path. These drafts expose review surfaces but do not complete the integrated lifecycle or prove maintainer acceptance.
 - Recorded the review strategy: foundations first; collapse dependency diffs after parent merges; consider grouping the bid and selection/reveal drafts around their first consumers; add final Builder/CLI wiring only after input and Engine configuration contracts are explicit.
+- Added five Marko-owned attribution records without changing ownership of Kris's remaining work: LOD-68 for #9970 runtime store wiring, LOD-69 for #9974's initial bid policy, LOD-70 for the four event comparison PoCs, LOD-71 for landed head-event and bid-input foundations, and LOD-72 for blinded-block and envelope-publication foundations.
 - Added merged SSE containment #9964, consensus #5594 plus Lodestar #9972 bid validation, and Buildoor #184 local/p2p preference evidence to the owning REL-01, BID-CORE-01/QA-01, and E2E-01 tracks.
 - Recorded the merged consensus-specs #5585 source-version bump without misclassifying it as a released beta tag or changing Lodestar's alpha.14 pin.
 - Routed Buildoor #186's geth-only deterministic testing source to E2E-01/INT-01, consensus-specs #5573/#5590 to later compliance and transport evidence, and execution-apis #870/#878 to conditional Heze work.
 - Routed ethereum-package #1483's genesis-Builder key assignment and activation boundary to E2E-01/INT-01 rather than treating quiet Buildoor behavior as a Lodestar defect.
-- Verified all 65 GitHub Project items against Linear and synchronized status, Linear-status, priority, and gate fields. GitHub label capitalization remains repository-native and semantically equivalent.
+- Verified the 65-item Project snapshot before the final service decomposition and attribution additions. The current inventory is 70 Linear issues with 70 matching GitHub issue mirrors; GitHub Project custom-field re-verification requires refreshed `read:project` authorization.
 - Renamed the architecture document to `direct-engine-working-plan.md` and replaced the live Gate-B and critical-path references to historical BN-02/BN-03/BN-04 with PAYLOAD-SOURCE-01, PAYLOAD-ORCH-01, STORE-01, and BID-CORE-01.
-- Corrected the tracker inventory to 65 current Linear issues. The GitHub repository has 67 issues because closed legacy `NICO-01` and the unlabelled administrative `PRESENTATION-01` remain outside the Linear implementation inventory.
+- Corrected the tracker inventory to 70 current Linear issues. The GitHub repository has 72 issues because closed legacy `NICO-01` and the unlabelled administrative `PRESENTATION-01` remain outside the Linear implementation inventory.
 
 ### Week 12 checkpoint - 31 August 2026
 
