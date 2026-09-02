@@ -79,7 +79,7 @@ Linear now records Marko's Builder work as separate implementation or historical
 - [LOD-68](https://linear.app/kriso/issue/LOD-68/store-wiring-01-wire-and-prune-the-builder-payload-store) owns #9970 runtime store wiring and slot pruning; STORE-CORE-01 retains Kris's bounded-store invariants and tests.
 - [LOD-69](https://linear.app/kriso/issue/LOD-69/bid-policy-base-01-add-the-initial-builder-bid-policy) owns #9974's initial policy; BID-POLICY-HARDEN-01 retains Kris's numeric-domain hardening.
 - [LOD-70](https://linear.app/kriso/issue/LOD-70/event-poc-01-prototype-builder-selection-event-alternatives) records the four completed comparison PoCs; SPEC-01 still owns the uncompleted cross-client contract decision.
-- [LOD-71](https://linear.app/kriso/issue/LOD-71/bn-input-foundation-01-land-builder-facing-event-and-bid-input) records Marko's landed head-event, proposer-preference, gas-limit, and related Beacon API foundations.
+- [LOD-71](https://linear.app/kriso/issue/LOD-71/bn-input-foundation-01-land-builder-facing-event-and-bid-input) records Marko's landed head-event, proposer-preference, gas-limit, and related Beacon API foundations, plus the adjacent [Lodestar-z Builder-state binding](https://github.com/ChainSafe/lodestar-z/pull/472) and [EIP-8282 request-layout test hardening](https://github.com/wemeetagain/EIPs/pull/2).
 - [LOD-72](https://linear.app/kriso/issue/LOD-72/envelope-bn-foundation-01-harden-blinded-block-and-payload-envelope) records the landed blinded-block publication behavior and closed envelope alternatives.
 
 These attribution issues do not create new implementation work. They make delivered ownership visible and keep the still-open work scoped to behavior not already landed elsewhere.
@@ -116,6 +116,8 @@ When a parent merges, rebase or merge current `unstable`, rerun targeted validat
 | Track | Evidence | Project effect |
 | --- | --- | --- |
 | Reject `block_hash == parent_block_hash` | [consensus-specs #5594](https://github.com/ethereum/consensus-specs/pull/5594), [Lodestar #9972](https://github.com/ChainSafe/lodestar/pull/9972) | Track in BID-CORE-01 and QA-01; do not duplicate the Lodestar validation PR |
+| Bid-validation cost ordering | [Lodestar #9984](https://github.com/ChainSafe/lodestar/pull/9984) | Reuse the BN-side ordering of cheap rejects and ignores before state and signature work; it does not add a Builder-side service |
+| Spec-test expected-error enforcement | [Lodestar #9986](https://github.com/ChainSafe/lodestar/pull/9986) | Track the resulting Gloas sweep-index vectors in QA-01; do not create a duplicate Builder PR for the shared test-harness fix |
 | Candidate ranking and logs | [Lodestar #9966](https://github.com/ChainSafe/lodestar/pull/9966) | BN-side selection diagnostics only; no overlap with Builder payload construction |
 | Parent-slot source | [Lodestar #9955](https://github.com/ChainSafe/lodestar/pull/9955), [consensus-specs #5554](https://github.com/ethereum/consensus-specs/pull/5554) | BN-01 input semantics; no change to `PayloadSource` itself |
 | Pre-Fulu blob cleanup | [Lodestar #9957](https://github.com/ChainSafe/lodestar/pull/9957) | Does not remove post-Gloas blobs returned by `getPayload`; #9958 remains valid |
