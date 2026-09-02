@@ -118,7 +118,7 @@ When a parent merges, rebase or merge current `unstable`, rerun targeted validat
 
 | Track | Evidence | Project effect |
 | --- | --- | --- |
-| Reject `block_hash == parent_block_hash` | [consensus-specs #5594](https://github.com/ethereum/consensus-specs/pull/5594), [Lodestar #9972](https://github.com/ChainSafe/lodestar/pull/9972) | #9972 is approved and mergeable; its spec-test and benchmark jobs are currently failing. Track its final disposition and do not duplicate it |
+| Reject `block_hash == parent_block_hash` | [consensus-specs #5594](https://github.com/ethereum/consensus-specs/pull/5594), [Lodestar #9972](https://github.com/ChainSafe/lodestar/pull/9972) | #9972 is approved and mergeable; its spec-test job is currently failing and its benchmark rerun is in progress. Track its final disposition and do not duplicate it |
 | Bid-validation cost ordering | Merged [Lodestar #9984](https://github.com/ChainSafe/lodestar/pull/9984) | Reuse the BN-side ordering of cheap rejects and ignores before state and signature work; it does not add a Builder-side service |
 | Spec-test expected-error enforcement | Merged [Lodestar #9986](https://github.com/ChainSafe/lodestar/pull/9986) | Track the resulting Gloas sweep-index vectors in QA-01; do not create a duplicate Builder PR for the shared test-harness fix |
 | Candidate ranking and logs | [Lodestar #9966](https://github.com/ChainSafe/lodestar/pull/9966) | BN-side selection diagnostics only; no overlap with Builder payload construction |
