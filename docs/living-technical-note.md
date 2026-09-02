@@ -918,14 +918,14 @@ The Beacon API event-stream contract tells consumers to use EventSource and perm
 
 ## Implementation packages and ownership
 
-The merged [implementation plan](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/implementation-plan.md) and [Linear project](https://linear.app/kriso/project/lodestar-eip-7732-builder-814d6faca6fd) now own the authoritative task inventory, dependencies, milestones, status, and evidence. The inventory currently contains 70 Linear issues across core, supporting, conditional, deferred, decomposition, and attribution scope. This note should not recreate a second mutable backlog.
+The merged [implementation plan](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/implementation-plan.md) and [Linear project](https://linear.app/kriso/project/lodestar-eip-7732-builder-814d6faca6fd) now own the authoritative task inventory, dependencies, milestones, status, and evidence. The inventory currently contains 72 Linear issues across core, supporting, conditional, deferred, decomposition, and attribution scope. This note should not recreate a second mutable backlog.
 
 Current delivery state at this reconciliation:
 
 | Item | State | Evidence / next condition |
 |---|---|---|
 | `PLAN-01` | Done | GitHub plan merged; GitHub is canonical for the over-limit full plan and the short HackMD landing page remains the public pointer |
-| Board setup | Done | 70 tracked Linear issues with 70 matching GitHub issue mirrors, milestones, scope labels, cycles, saved views, and a public GitHub Project mirror. The five new Marko-owned items have verified assignees, workflow status, Linear status, gate, and priority fields |
+| Board setup | Done | 72 tracked Linear issues with 72 matching GitHub issue mirrors, milestones, scope labels, cycles, saved views, and a public GitHub Project mirror. The five new Marko-owned items have verified assignees, workflow status, Linear status, gate, and priority fields |
 | `SIGN-01` | Done | Merged and tested in Lodestar #9758 |
 | `CLI-01`, `API-01` | Done | Closure preserved in line with Marko's project-status decision; their #9781 implementation is merged |
 | `REVIEW-01` | In progress | #9781 merged with Nico approval; #9819 is closed through merged #9826 and #9827 is merged. Explicitly reconcile the twelve historical GitHub thread markers before closure |
