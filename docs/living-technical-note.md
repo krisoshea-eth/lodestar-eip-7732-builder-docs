@@ -1080,6 +1080,7 @@ Status checked 2 September 2026 against live primary sources. Static repository 
 | [beacon-APIs #638](https://github.com/ethereum/beacon-APIs/pull/638) | Open | Adds safe and finalized execution hashes to payload attributes; does not settle event timing, deduplication, or `custody_columns` |
 | [Buildoor #184](https://github.com/ethpandaops/buildoor/pull/184) | Merged September 2 | Accepts Builder preferences without an external Builder URL and exercises local/p2p selection paths; reuse in E2E-01 while retaining its explicit coverage limitation |
 | [Buildoor #186](https://github.com/ethpandaops/buildoor/pull/186) | Open | Adds a deterministic geth-only `testing_buildBlockV1` source and verifies exact transaction plans; useful for optional E2E evidence, not a production payload-source dependency |
+| [ethereum-package #1483](https://github.com/ethpandaops/ethereum-package/pull/1483) | Open | Assigns genesis-registered Builder keys to launched Buildoor instances and records their delayed activation; pin before Builder coexistence tests |
 | [execution-apis #870](https://github.com/ethereum/execution-apis/pull/870) / [#878](https://github.com/ethereum/execution-apis/pull/878) | Open | Align Heze inclusion-list byte measurement and non-empty response rules; track under conditional EXT-FOCIL-01 |
 | [Lodestar #9594](https://github.com/ChainSafe/lodestar/pull/9594) | Closed without merge | Historical actor/API draft; align with its replacement after the specifications settle |
 
