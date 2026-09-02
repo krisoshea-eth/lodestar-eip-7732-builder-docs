@@ -6,7 +6,7 @@
 
 Nico's [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder) branch demonstrates an end-to-end Builder that owns payload construction through an Engine API connection. This differs materially from the original BN-mediated plan, where the source beacon node owned payload construction and stateful reveal material.
 
-The branch is a proof of concept, not an upstream-ready patch. At [`99fd8fa9ad`](https://github.com/ChainSafe/lodestar/commit/99fd8fa9ad3a867fced3a5907a68edf3a519c1cd) it contains 10 commits and changes 42 files relative to its merge base. Every changed production and test file was audited. Current Lodestar `unstable` was [`d00b8296c9`](https://github.com/ChainSafe/lodestar/commit/d00b8296c9dc88d2e3c6c01fe7c3b494d4a81149) when this reconciliation was refreshed.
+The branch is a proof of concept, not an upstream-ready patch. At [`99fd8fa9ad`](https://github.com/ChainSafe/lodestar/commit/99fd8fa9ad3a867fced3a5907a68edf3a519c1cd) it contains 10 commits and changes 42 files relative to its merge base. Every changed production and test file was audited. Current Lodestar `unstable` was [`d55b13cf5e`](https://github.com/ChainSafe/lodestar/commit/d55b13cf5e5f282eb378de2b7aad1c2b794bfa7c) when this reconciliation was refreshed.
 
 The project is extracting small, typed, testable boundaries from the proof of concept. An open draft is evidence that a review boundary exists. It is not evidence that Lodestar maintainers have accepted the abstraction or final API.
 
@@ -118,9 +118,9 @@ When a parent merges, rebase or merge current `unstable`, rerun targeted validat
 
 | Track | Evidence | Project effect |
 | --- | --- | --- |
-| Reject `block_hash == parent_block_hash` | [consensus-specs #5594](https://github.com/ethereum/consensus-specs/pull/5594), [Lodestar #9972](https://github.com/ChainSafe/lodestar/pull/9972) | #9972 is ready but conflicting after #9984 changed the same validation area; track its reconciliation and do not duplicate it |
+| Reject `block_hash == parent_block_hash` | [consensus-specs #5594](https://github.com/ethereum/consensus-specs/pull/5594), [Lodestar #9972](https://github.com/ChainSafe/lodestar/pull/9972) | #9972 is approved and mergeable; its spec-test job is currently failing. Track its final disposition and do not duplicate it |
 | Bid-validation cost ordering | Merged [Lodestar #9984](https://github.com/ChainSafe/lodestar/pull/9984) | Reuse the BN-side ordering of cheap rejects and ignores before state and signature work; it does not add a Builder-side service |
-| Spec-test expected-error enforcement | [Lodestar #9986](https://github.com/ChainSafe/lodestar/pull/9986) | Track the resulting Gloas sweep-index vectors in QA-01; do not create a duplicate Builder PR for the shared test-harness fix |
+| Spec-test expected-error enforcement | Merged [Lodestar #9986](https://github.com/ChainSafe/lodestar/pull/9986) | Track the resulting Gloas sweep-index vectors in QA-01; do not create a duplicate Builder PR for the shared test-harness fix |
 | Candidate ranking and logs | [Lodestar #9966](https://github.com/ChainSafe/lodestar/pull/9966) | BN-side selection diagnostics only; no overlap with Builder payload construction |
 | Parent-slot source | [Lodestar #9955](https://github.com/ChainSafe/lodestar/pull/9955), [consensus-specs #5554](https://github.com/ethereum/consensus-specs/pull/5554) | BN-01 input semantics; no change to `PayloadSource` itself |
 | Pre-Fulu blob cleanup | [Lodestar #9957](https://github.com/ChainSafe/lodestar/pull/9957) | Does not remove post-Gloas blobs returned by `getPayload`; #9958 remains valid |
