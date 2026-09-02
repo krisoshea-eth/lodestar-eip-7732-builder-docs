@@ -10,6 +10,26 @@ The branch is a proof of concept, not an upstream-ready patch. At [`99fd8fa9ad`]
 
 The project is extracting small, typed, testable boundaries from the proof of concept. An open draft is evidence that a review boundary exists. It is not evidence that Lodestar maintainers have accepted the abstraction or final API.
 
+## Proof-of-concept extraction matrix
+
+Every production and test responsibility in the 42-file proof-of-concept diff is routed below. This is a responsibility map, not a claim that each prototype type or service should be copied upstream.
+
+| Proof-of-concept area | Current owner | Disposition |
+| --- | --- | --- |
+| API block fields and event codecs | SPEC-01 and Lodestar event PoCs #9854/#9875/#9876/#9896 | Keep the wire choice separate from API-02 until cross-client review settles it |
+| BN payload-attributes production and block import hooks | BN-01, ATTR-SPEC-01, and ATTR-01 | #638 covers only part of the schema; trigger, deduplication, custody input, and runtime delivery remain open |
+| BN bid validation and flood publication | Completed BN-PUB-01 through #9914; #9972/#5594 own the new parent-hash guard | Reuse landed BN behavior; do not reimplement it in `packages/builder` |
+| `chainEvents` | API-02, PREF-01, BN-01, and later runtime integration | Block observation exists; preference and payload-attribute subscription wiring remains part of the integrated consumer |
+| `payloadSource` | PAYLOAD-SOURCE-01 through #9958 | Extracted as an injected Engine boundary without topology or CLI ownership |
+| `payloadStore` | STORE-01 through #9970 and hardening contribution #9 | Keep one upstream store path and preserve exact reveal material |
+| `bidPolicy` | #9974 and numeric hardening contribution #10 | Keep policy separate from ledger and message assembly |
+| `ledger` | BID-LEDGER-01 through #9975 | Extracted as the one-shot bid, win, liability, and reveal-conflict boundary |
+| `proposerPreferencesTracker` | PREF-01 through #9976 | Extracted, while dependent-root sourcing remains a BN-01 integration decision |
+| `slotBidder` | #9973, #9978, #9979, PAYLOAD-01, BID-CORE-01, and BID-01 | Pure orchestration, assembly, and publication seams exist; the actual slot consumer and runtime loop are still missing |
+| `revealer` | #9980, #9981, #9982, SELECT-01, and REV-01 | Pure selection, assembly, and publication seams exist; store lookup, timing, and runtime wiring are still missing |
+| Builder root, defaults, exports, metrics, and CLI wiring | PAYLOAD-01, BID-CORE-01, SELECT-01, REV-01, QA-01, and HANDOFF-01 | Deliberately excluded from the current service drafts until inputs and review boundaries settle |
+| Proof-of-concept tests, API stub, clock helper, package metadata, and lockfile | Component PR tests plus E2E-01/QA-01 | Reuse behavioral cases where they remain valid; do not copy branch-wide scaffolding or lockfile churn wholesale |
+
 ## Confirmed working direction
 
 | Component | Working owner | Responsibility |
