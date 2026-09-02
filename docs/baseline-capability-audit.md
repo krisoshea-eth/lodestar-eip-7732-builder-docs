@@ -2,8 +2,8 @@
 
 **Completed:** 2 September 2026  
 **Accepted implementation pin:** Lodestar `57572140f8b75ab72466a869bf7bdc0ad0db265e`  
-**Current comparison head:** Lodestar `unstable` at `9ba9a5ce851f8a3b3aa0cb0751ace8c2bf044dbe`  
-**Immutable release targets:** v1.46.0 at `3873dd5b032d0ad82581fc3416e9628b4f6f2642` and v1.47.0-rc.0 at `2aff495d9c3ecb1e7f15a431d3b0a4616f4bf103`  
+**Current comparison head:** Lodestar `unstable` at `7d85330f928c015202341da63624f6b00c420c43`
+**Immutable release targets:** v1.46.0 at `3873dd5b032d0ad82581fc3416e9628b4f6f2642` and v1.47.0 at `450996b13ab305b860acd131c87f799fdbfbabf0`
 **Protocol snapshot:** consensus-specs v1.7.0-alpha.14, Builder APIs through merged #165/#166/#167, Beacon APIs through merged #630, and Keymanager APIs through merged #92/#93
 
 This audit records what is present, what is under review, and what remains missing. An open pull request, release candidate, fixture tag, or point-in-time runtime observation is evidence for that item only. It is not evidence that the complete Builder lifecycle works.
@@ -28,11 +28,11 @@ Current feature branches must still record their own base SHA and rerun checks r
 | Selection observation through source-BN REST/SSE | Lodestar #9931 | In upstream review as `API-02`; block plus `getBlockV2` remains the compatibility fallback |
 | Readiness and lifecycle regressions | Lodestar #9932 | In upstream review as TEST-01 |
 | Reproducible local environment and API-02 runtime smoke | ENV-02 runbook and first-machine evidence | First-machine evidence complete; independent second-contributor reproduction remains open |
-| Direct Engine payload-source boundary | Lodestar #9958 | Draft PAYLOAD-SOURCE-01 extraction. No runtime ownership or CLI wiring is accepted yet |
-| Bounded payload-job orchestration | Fork draft #61 | Architecture-neutral PAYLOAD-ORCH-01 core exists; final wiring remains blocked on EL ownership and source-BN inputs |
-| Builder-owned payload retention | Nico's proof of concept and fork draft #63 | A bounded store core is in fork review. STORE-01 still must bind retained material to complete bid identity, publication ordering, and reveal integration |
-| Builder-owned bid construction and coverability | Nico's `BidPolicy`, `Ledger`, and `SlotBidder` prototypes only | Missing upstream. `BID-CORE-01` and `BID-01` remain valid future slices |
-| Exact selected-bid matching and stateless reveal | Nico's prototype only | Missing upstream. `SELECT-01` and `REV-01` remain valid future slices |
+| Direct Engine payload-source boundary | Lodestar #9958 | Ready PAYLOAD-SOURCE-01 extraction. No runtime construction, CLI wiring, or production EL topology is accepted yet |
+| Bounded payload-job orchestration | Lodestar #9973 | Architecture-neutral PAYLOAD-ORCH-01 draft exists; final wiring still depends on source-BN inputs and Engine configuration |
+| Builder-owned payload retention | Lodestar #9970 and contribution PR #9 | One upstream store draft exists. STORE-01 remains open until accepted hardening, retain-before-publish ordering, envelope integration, metrics, and later durability are delivered |
+| Builder-owned bid construction and coverability | Lodestar #9974/#9975/#9976/#9978/#9979 and contribution PR #10 | Pure policy, ledger, preference, assembly, and publication boundaries are now under review or in draft. `BID-CORE-01` and `BID-01` remain open until the integrated bid path works |
+| Exact selected-bid matching and stateless reveal | Lodestar #9980/#9981/#9982 | Draft service boundaries exist. `SELECT-01` and `REV-01` remain open until selected local material is matched, assembled, and submitted through the runtime |
 | Restart, replay, non-finality, and outcome evidence | Partial BN infrastructure and monitoring evidence | Not complete. `REL-01`, `QA-01`, `OUT-01`, `DATA-01`, and `E2E-01` remain valid later work |
 | Cross-client Builder-selection event | Beacon APIs #599 and Lodestar #9854/#9875/#9876/#9896 | Unsettled. `SPEC-01` remains independent from API-02 correctness |
 
@@ -45,11 +45,20 @@ Current feature branches must still record their own base SHA and rerun checks r
 - #9904 landed bounded BN-side envelope caching and reload recovery. It is not a substitute for a Builder-owned direct-Engine payload store.
 - #9937 landed EMPTY payload range-sync support. Remaining impossible-target, stale-root, non-finality, and recovery cases stay in REL-01 and E2E-01.
 - #9947 and #9954 merged. They cover proposer-BN external-Builder connection prewarming and exiting-Builder filtering, not the standalone Builder's Engine source or payload lifecycle.
-- #9955, #9957, #9964, and #9966 are active watches for parent-slot inputs, older blob-path cleanup, event-stream resilience, and BN-side candidate ranking. None duplicates #9958 or fork draft #61.
-- The 11 August to 1 September audit covered all 65 then-open Lodestar pull requests and all 110 pull requests closed or merged during that interval. No completed Builder issue required reopening and no untracked upstream implementation claimed STORE-01 or the later Builder-owned lifecycle.
+- #9964 merged on 2 September and contains individual SSE event/consumer failures without providing replay. REL-01 therefore retains connected-stream gap reconciliation as well as reconnect recovery.
+- v1.47.0 was published at `450996b13a` and merged back to `unstable` through #9971. It is the newest immutable release target, but it predates the direct-Engine service PR series and is not evidence that the standalone Builder lifecycle is complete.
+- #9955, #9957, and #9966 remain active watches for parent-slot inputs, older blob-path cleanup, and BN-side candidate ranking. None duplicates #9958 or #9973.
+- Consensus #5594 and Lodestar #9972 now own rejection of bids whose block hash equals the parent hash. Track their disposition in BID-CORE-01 and QA-01 instead of duplicating the validation.
+- Buildoor #184 merged Builder-preference handling without an external Builder URL and three local/p2p selection paths. Reuse that environment evidence in E2E-01, while noting that its no-URL regression is directly covered at unit level rather than by the full E2E assertion.
+- consensus-specs #5585 merged a source-tree version bump to `v1.7.0-beta.0`, but no beta tag or GitHub release exists yet and Lodestar still pins `v1.7.0-alpha.14`. Keep alpha.14 as the immutable project snapshot until Lodestar deliberately updates its spec-test pin.
+- Buildoor #186 proposes a deterministic geth-only testing build source through `testing_buildBlockV1`. It can strengthen later payload-content and transaction-order E2E evidence, but it is not a production Engine contract and does not replace #9958.
+- ethereum-package #1483 fixes assignment of genesis-registered Builder keys to launched Buildoor instances and documents their delayed activation until epoch 1 is finalized. Treat it as E2E/INT fixture evidence, not Lodestar Builder implementation.
+- Draft consensus-specs #5573 and #5590 propose Gloas state-transition compliance generation and an exploratory envelope ReqResp format. Route accepted outputs to QA-01/OUT-01/REL-01 rather than creating another Builder service.
+- execution-apis #870 and #878 refine Heze inclusion-list size and non-empty response rules. They remain conditional EXT-FOCIL-01 inputs and do not change the current Gloas implementation sequence.
+- The 11 August to 2 September audit covered the full then-open Lodestar PR list, recent closed/merged PRs, Nico's complete proof-of-concept diff, and directly relevant consensus/API/Buildoor work. No completed Builder issue required reopening. The newly opened service drafts now claim review boundaries, but they do not complete their parent lifecycle issues.
 
 ## Result
 
-The project pin, reproducibility record, capability matrix, and historical upstream audit are complete. The matrix confirms that the project is not duplicating a current ChainSafe implementation with #9958 or fork drafts #61 and #63. It also confirms that the complete honest Builder lifecycle is not yet upstream: store integration, bid construction, exact selection matching, reveal, and outcome evidence remain real work.
+The immutable project pin, reproducibility record, capability matrix, and historical upstream audit are complete. Current drafts are not duplicated by another active ChainSafe implementation, but their service boundaries are not yet maintainer-accepted. The complete honest Builder lifecycle is still missing runtime integration and end-to-end proof: source inputs, payload construction, storage, bid construction/publication, exact selection matching, reveal, and protocol outcomes must operate together.
 
 Before any new implementation slice starts, refresh current `unstable`, Nico's proof-of-concept branch, and directly overlapping open pull requests. Do not advance issue status from a release tag, fixture, or prototype alone.
