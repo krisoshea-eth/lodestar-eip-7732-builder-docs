@@ -4,9 +4,9 @@
 
 ## Purpose and evidence boundary
 
-Nico's [`nflaig/builder`](https://github.com/nflaig/lodestar/tree/builder) branch demonstrates an end-to-end Builder that owns payload construction through an Engine API connection. This differs materially from the original BN-mediated plan, where the source beacon node owned payload construction and stateful reveal material.
+Nico's [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder) branch demonstrates an end-to-end Builder that owns payload construction through an Engine API connection. This differs materially from the original BN-mediated plan, where the source beacon node owned payload construction and stateful reveal material.
 
-The branch is a proof of concept, not an upstream-ready patch. At [`99fd8fa9ad`](https://github.com/nflaig/lodestar/commit/99fd8fa9ad3a867fced3a5907a68edf3a519c1cd) it contains 10 commits and changes 42 files relative to its merge base. Every changed production and test file was audited. Current Lodestar `unstable` was [`7d85330f92`](https://github.com/ChainSafe/lodestar/commit/7d85330f928c015202341da63624f6b00c420c43) when this reconciliation was refreshed.
+The branch is a proof of concept, not an upstream-ready patch. At [`99fd8fa9ad`](https://github.com/ChainSafe/lodestar/commit/99fd8fa9ad3a867fced3a5907a68edf3a519c1cd) it contains 10 commits and changes 42 files relative to its merge base. Every changed production and test file was audited. Current Lodestar `unstable` was [`7d85330f92`](https://github.com/ChainSafe/lodestar/commit/7d85330f928c015202341da63624f6b00c420c43) when this reconciliation was refreshed.
 
 The project is extracting small, typed, testable boundaries from the proof of concept. An open draft is evidence that a review boundary exists. It is not evidence that Lodestar maintainers have accepted the abstraction or final API.
 
