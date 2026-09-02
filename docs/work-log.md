@@ -4,19 +4,23 @@ This is the canonical chronological delivery log for the Lodestar EIP-7732 Build
 
 ### 2 September 2026 architecture and lifecycle reconciliation
 
-- Refreshed the comparison baseline against Lodestar `unstable` at `7d85330f92`, while preserving the immutable BASELINE-01 implementation pin. Lodestar v1.47.0 at `450996b13a` is now the newest immutable release target; rc.0 remains historical qualification evidence.
+- Refreshed the comparison baseline against Lodestar `unstable` at `d00b8296c9`, while preserving the immutable BASELINE-01 implementation pin. Lodestar v1.47.0 at `450996b13a` is now the newest immutable release target; rc.0 remains historical qualification evidence.
 - Corrected #9813 from an active watch to a closed, unmerged historical alternative; merged #9864 remains the epoch-boundary head-freshness baseline.
 - Recorded Nico's confirmation that direct Engine access is the working direction and that his branch should be mined for smaller reviewable changes rather than merged wholesale. Kept production shared-versus-dedicated EL topology and exact BN input ownership open.
 - Recorded ready #9958 and stacked draft #9973 as the payload-source and orchestration path. Recorded #9970 plus contribution PR #9 as the single active store path and #9974 plus contribution PR #10 as the policy path.
 - Recorded #9975/#9976 as bid foundations, #9978/#9979 as one logical bid path, and #9980/#9981/#9982 as one logical selection/reveal path. These drafts expose review surfaces but do not complete the integrated lifecycle or prove maintainer acceptance.
+- Added fork draft #77 and LOD-73 for a resolved-input `SlotBidder` that composes payload build, retention, coverability, assembly, and publication without choosing event, CLI, or Engine topology.
 - Recorded the review strategy: foundations first; collapse dependency diffs after parent merges; consider grouping the bid and selection/reveal drafts around their first consumers; add final Builder/CLI wiring only after input and Engine configuration contracts are explicit.
+- Added five Marko-owned attribution records without changing ownership of Kris's remaining work: LOD-68 for #9970 runtime store wiring, LOD-69 for #9974's initial bid policy, LOD-70 for the four event comparison PoCs, LOD-71 for landed head-event and bid-input foundations, and LOD-72 for blinded-block and envelope-publication foundations.
+- Added Marko's adjacent Lodestar-z #472 Builder-state binding and EIP-8282 request-layout test hardening to LOD-71 without turning those completed foundations into new implementation tasks.
+- Recorded merged Lodestar #9984 and draft #9986 as BN validation and shared spec-test watches. #9972 now needs conflict reconciliation in the same validation area. None overlaps the current Builder service drafts.
 - Added merged SSE containment #9964, consensus #5594 plus Lodestar #9972 bid validation, and Buildoor #184 local/p2p preference evidence to the owning REL-01, BID-CORE-01/QA-01, and E2E-01 tracks.
 - Recorded the merged consensus-specs #5585 source-version bump without misclassifying it as a released beta tag or changing Lodestar's alpha.14 pin.
 - Routed Buildoor #186's geth-only deterministic testing source to E2E-01/INT-01, consensus-specs #5573/#5590 to later compliance and transport evidence, and execution-apis #870/#878 to conditional Heze work.
 - Routed ethereum-package #1483's genesis-Builder key assignment and activation boundary to E2E-01/INT-01 rather than treating quiet Buildoor behavior as a Lodestar defect.
-- Verified all 65 GitHub Project items against Linear and synchronized status, Linear-status, priority, and gate fields. GitHub label capitalization remains repository-native and semantically equivalent.
+- Verified the current 71-item GitHub Project mirror after adding SLOT-BIDDER-01. The five Marko-owned items and the new Kris-owned integration item match Linear for assignee, workflow status, Linear status, gate, priority, and cycle where applicable.
 - Renamed the architecture document to `direct-engine-working-plan.md` and replaced the live Gate-B and critical-path references to historical BN-02/BN-03/BN-04 with PAYLOAD-SOURCE-01, PAYLOAD-ORCH-01, STORE-01, and BID-CORE-01.
-- Corrected the tracker inventory to 65 current Linear issues. The GitHub repository has 67 issues because closed legacy `NICO-01` and the unlabelled administrative `PRESENTATION-01` remain outside the Linear implementation inventory.
+- Corrected the tracker inventory to 71 current Linear issues. The GitHub repository has 73 project issues because closed legacy `NICO-01` and the unlabelled administrative `PRESENTATION-01` remain outside the Linear implementation inventory.
 
 ### Week 12 checkpoint - 31 August 2026
 
