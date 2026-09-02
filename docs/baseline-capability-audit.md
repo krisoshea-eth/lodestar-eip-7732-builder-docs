@@ -28,7 +28,7 @@ Current feature branches must still record their own base SHA and rerun checks r
 | Selection observation through source-BN REST/SSE | Lodestar #9931 | In upstream review as `API-02`; block plus `getBlockV2` remains the compatibility fallback |
 | Readiness and lifecycle regressions | Lodestar #9932 | In upstream review as TEST-01 |
 | Reproducible local environment and API-02 runtime smoke | ENV-02 runbook and first-machine evidence | First-machine evidence complete; independent second-contributor reproduction remains open |
-| Direct Engine payload-source boundary | Lodestar #9958 | Draft PAYLOAD-SOURCE-01 extraction. No runtime ownership or CLI wiring is accepted yet |
+| Direct Engine payload-source boundary | Lodestar #9958 | Direct Engine is the confirmed working direction. Draft PAYLOAD-SOURCE-01 keeps production EL topology and CLI wiring out of this review slice |
 | Bounded payload-job orchestration | Fork draft #61 | Architecture-neutral PAYLOAD-ORCH-01 core exists; final wiring remains blocked on EL ownership and source-BN inputs |
 | Builder-owned payload retention | Nico's proof of concept and fork draft #63 | A bounded store core is in fork review. STORE-01 still must bind retained material to complete bid identity, publication ordering, and reveal integration |
 | Builder-owned bid construction and coverability | Nico's `BidPolicy`, `Ledger`, and `SlotBidder` prototypes only | Missing upstream. `BID-CORE-01` and `BID-01` remain valid future slices |
@@ -50,6 +50,6 @@ Current feature branches must still record their own base SHA and rerun checks r
 
 ## Result
 
-The project pin, reproducibility record, capability matrix, and historical upstream audit are complete. The matrix confirms that the project is not duplicating a current ChainSafe implementation with #9958 or fork drafts #61 and #63. It also confirms that the complete honest Builder lifecycle is not yet upstream: store integration, bid construction, exact selection matching, reveal, and outcome evidence remain real work.
+The project pin, reproducibility record, capability matrix, and historical upstream audit are complete. The matrix confirms that no public ChainSafe implementation duplicates #9958 or fork drafts #61 and #63. Marco announced payload sourcing and storage curation on 2 September, so ownership must be coordinated before those drafts expand. It also confirms that the complete honest Builder lifecycle is not yet upstream: store integration, bid construction, exact selection matching, reveal, and outcome evidence remain real work.
 
 Before any new implementation slice starts, refresh current `unstable`, Nico's proof-of-concept branch, and directly overlapping open pull requests. Do not advance issue status from a release tag, fixture, or prototype alone.

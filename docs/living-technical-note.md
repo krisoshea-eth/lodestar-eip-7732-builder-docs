@@ -4,7 +4,7 @@
 |---|---|
 | Proposal | [Merged](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md); strong-success list amended through [PR #186](https://github.com/eth-protocol-fellows/cohort-seven/pull/186) |
 | Implementation plan | [v1.0 merged](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/pull/2) on August 5, 2026; the merged GitHub plan is the implementation source of truth |
-| Architecture reconciliation | [Provisional direct-Engine plan](provisional-direct-engine-plan.md), added 31 August 2026; controls conflicts with the accepted BN-mediated payload and reveal design while maintainer confirmation is pending |
+| Architecture reconciliation | [Direct-Engine plan](provisional-direct-engine-plan.md), added 31 August and confirmed as the working implementation direction by Nico on 2 September 2026; controls conflicts with the accepted BN-mediated payload and reveal design while production EL topology is resolved |
 | Spec target | [consensus-specs v1.7.0-alpha.14](https://github.com/ethereum/consensus-specs/releases/tag/v1.7.0-alpha.14), the version pinned by current Lodestar `unstable` |
 | Lodestar baseline | [v1.46.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.46.0) at `3873dd5b032d0ad82581fc3416e9628b4f6f2642` is the latest stable and newest immutable release target; `BASELINE-01` still owns the exact working `unstable` pin |
 | Builder implementation | Foundation through #9868, Gloas Builder API #9832, bounded envelope cache #9904, and bid validation/flood publication #9914 are merged. API-02 [#9931](https://github.com/ChainSafe/lodestar/pull/9931) and TEST-01 [#9932](https://github.com/ChainSafe/lodestar/pull/9932) are open. Nico's direct-Engine [`nflaig/lodestar#4`](https://github.com/nflaig/lodestar/pull/4) is a 10-commit, 42-file draft at `99fd8fa9ad`, used as provisional architecture evidence rather than a merge-ready patch |
@@ -12,7 +12,7 @@
 | Builder lifecycle identifiers | Deposit request type `0x03`; Builder withdrawal credentials prefix `0xB0` |
 | Payload deadline | `PAYLOAD_DUE_BPS = 5000`, six seconds into a 12-second slot; PTC payload attestation remains at `7500` |
 | Last reconciliation | September 2, 2026: all 42 changed files in `nflaig/builder` at `99fd8fa9ad`, Lodestar `unstable` at `9ba9a5ce85`, current direct-Engine drafts, the BASELINE-01 capability matrix, all 53 Linear issues, and the GitHub mirror |
-| Next milestone | Review the provisional direct-Engine issue split, obtain maintainer corrections, keep API-02 and TEST-01 moving, complete an independent ENV-02 reproduction, and settle SPEC-01 separately from payload-attributes #638 |
+| Next milestone | Coordinate payload source/store ownership with Marco, test the direct-Engine pieces on a temporary combined branch, keep API-02 and TEST-01 moving, complete an independent ENV-02 reproduction, and take the two primary SPEC-01 alternatives to cross-client review |
 
 This is the working document for the Lodestar EIP-7732 Builder project, an EPF cohort 7 project by [Kris O'Shea](https://github.com/krisoshea-eth) and [Marko Lazic](https://github.com/markolazic01), mentored by [Nico Flaig](https://github.com/nflaig) (ChainSafe, EIP-7732 co-author). The [project proposal](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md) remains the stable public scope, while the [merged implementation plan](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/implementation-plan.md) owns accepted delivery decisions and issue boundaries. This note carries moving technical context, implementation findings, upstream state, code-path maps, adversarial cases, and research watches. Linear owns issue status, ownership, dependencies, and evidence.
 
@@ -105,6 +105,9 @@ flowchart LR
 
 | Date | Question | Outcome | Notes |
 |---|---|---|---|
+| 2026-09-02 | Builder construction boundary | **Use direct Engine access as the working implementation direction** | Nico prefers direct access because it avoids a new BN API surface and keeps the payload source replaceable. The complete proof-of-concept branch will not be opened as one PR. Build and test small components and a temporary combined branch without waiting for every review; keep shared versus dedicated production EL operation explicit |
+| 2026-09-02 | First-loop scope | **Keep p2p first and in-memory retention acceptable** | Builder API server support and durable restart recovery follow after the first working p2p loop |
+| 2026-09-02 | Builder-selection event | **Take two primary alternatives to cross-client review** | Nico considers both required post-Gloas `block` fields and lightweight `bid_included` technically viable; NC prefers the dedicated event. `block_v2` remains comparison evidence, while full-bid variants and `bid_root` are not leading options |
 | 2026-08-31 | Builder payload ownership | **Use Nico's direct-Engine branch as a provisional working baseline, not as a merge-ready patch** | The Builder owns `PayloadSource`, `PayloadStore`, bid construction, and stateless reveal material; the BN retains chain inputs, validation, publication, and outcomes. Extract small PRs from [`nflaig/lodestar#4`](https://github.com/nflaig/lodestar/pull/4) and keep shared-versus-dedicated EL ownership explicit until maintainers answer |
 | 2026-08-31 | Bid publication | **Landed independently of the wider architecture decision** | Lodestar [#9914](https://github.com/ChainSafe/lodestar/pull/9914) and js-libp2p [#3610](https://github.com/libp2p/js-libp2p/pull/3610) provide API validation and per-call flood publication; BN-PUB-01 can close with evidence |
 | 2026-08-31 | Payload-attributes specification | **Track separately from Builder-selection events** | Open beacon-APIs [#638](https://github.com/ethereum/beacon-APIs/pull/638) adds `safe_block_hash` and `finalized_block_hash`. Its current head does not define post-Gloas emission semantics, so a separate implementation/spec decision remains. It does not settle SPEC-01 or #599 |
@@ -181,10 +184,10 @@ These items were reconciled against the August 22-24 partial monitoring reports,
 - #9781 adds Builder identity/status tracking, BN and EL readiness polling, `--executionFeeRecipient`, request timeout wiring, and identity/tracker tests. Unknown and pending configured keys wait inertly with cancellation, exited Builders fail distinctly, identity responses are sanity-checked, and API errors use the standard response path. The current assumption that Gloas-capable clients expose the health endpoint was explicitly accepted for now.
 - Twelve #9781 review-thread markers remained unresolved in the August 14 GitHub inventory. Their implementation follow-ups are no longer open: [#9819](https://github.com/ChainSafe/lodestar/issues/9819) closed through merged #9826 and #9827 merged. `REVIEW-01` still requires explicit thread-by-thread reconciliation rather than silently treating the markers as resolved. Broader readiness recovery, bounded diagnostics, and remaining lifecycle coverage stay in `TEST-01`.
 - The main implementation gap is no longer signing or local bid publication. It is the Builder-owned payload source and store, coverable bid construction, exact selection matching, stateless reveal, and complete evidence loop.
-- The 31 August working baseline has the Builder connect directly to one or more local EL Engine APIs for payload construction. This is provisional pending maintainer confirmation and the shared-versus-dedicated EL decision.
+- The Builder connects directly to one or more local EL Engine APIs for payload construction. Nico confirmed this as the working implementation direction on 2 September; shared-versus-dedicated production EL operation remains open.
 - The Builder owns its key, payload source and store, bid construction and policy, signatures, exact matching, and orchestration. The source BN owns chain and proposer inputs, API validation, publication, and authoritative outcomes.
 - Merged Lodestar #9914 and js-libp2p #3610 provide the current local-bid validation and flood-publication seam. Merged #9904 remains BN-side envelope import and recovery evidence rather than the Builder's primary direct-Engine payload store.
-- Merged consensus-specs [#5549](https://github.com/ethereum/consensus-specs/pull/5549) adds post-Gloas `custody_columns` to `notify_forkchoice_updated`. Nico's proof of concept predates this input. BN-01, ATTR-01, PAYLOAD-01, and EL-ARCH-01 must settle the Builder node identity and authoritative source of this value before a direct-Engine payload source lands.
+- Merged consensus-specs [#5549](https://github.com/ethereum/consensus-specs/pull/5549) adds post-Gloas `custody_columns` to `notify_forkchoice_updated`. Nico's proof of concept predates this input. BN-01, ATTR-01, PAYLOAD-01, and EL-ARCH-01 must settle the Builder node identity and authoritative source of this value before final runtime wiring lands.
 - Draft [Lodestar #9958](https://github.com/ChainSafe/lodestar/pull/9958) extracts the narrow `PayloadSource` contract and injected Engine adapter as PAYLOAD-SOURCE-01. It does not settle EL ownership or add Builder runtime orchestration. Draft [#9957](https://github.com/ChainSafe/lodestar/pull/9957) removes older pre-Fulu blob retrieval code but leaves the Gloas `getPayload` blob bundle used by this contract intact.
 
 ### Landed Lodestar capabilities to reuse
@@ -287,15 +290,15 @@ Findings that shape the architecture but are not all final decisions.
 
 ### Architecture implications of the latest Lodestar work
 
-The service boundary is now settled for v1: `lodestar builder` is a lightweight same-host sidecar connected to one operator-controlled BN. The sidecar does not connect to the EL. The BN remains authoritative for head and proposer context, Engine API access, payload production, payload value, balance validation, reveal material, and publication validation.
+The working boundary is now direct Engine: `lodestar builder` remains a lightweight sidecar connected to one operator-controlled source BN for chain and proposer inputs, but connects to an EL or other building software for payload construction. The Builder owns payload results and reveal material. The BN remains authoritative for chain state, proposer context, lifecycle and balance inputs, bid and envelope validation, publication, and network outcomes.
 
 The remaining architecture work is narrower:
 
-- trace `prepareNextSlot`, the current payload-job lifecycle, and the unsigned-bid path;
-- choose the smallest reviewed preparation/candidate contract that carries target slot/head view and the Builder execution fee recipient before payload work starts;
-- reuse standard `/builder` and `/beacon` namespaces plus SSE; do not create a permanent `/lodestar` API for a specification gap;
-- keep the route operator-controlled and bounded in the same-host v1 model;
-- re-audit the final API shapes from builder-specs #165, beacon-APIs #630, and the replacement for closed-unmerged Lodestar #9594 before freezing the adapter.
+- define whether production uses a dedicated Builder EL or permits sharing the source BN's EL under a strict `forkchoiceUpdated` invariant;
+- finalize safe and finalized execution hash, payload-attributes, and `custody_columns` inputs;
+- keep the Engine boundary replaceable so non-vanilla building software can be used later;
+- keep retries, jobs, storage, and shutdown bounded;
+- retain the standard source-BN validation and publication surfaces from #9832 and #9914 rather than adding a private payload-construction API.
 
 ### Gloas circuit breaker and proposer fallback
 
@@ -485,7 +488,7 @@ The alpha.14 Gloas types remain the current pinned core shape. Heze extends the 
 
 ## Candidate architecture sketch
 
-The direct-Engine boundary is the provisional working baseline. The remaining work is to split Nico's proof of concept into small reviewed changes while keeping the unresolved EL-ownership choice explicit.
+The direct-Engine boundary is the working implementation baseline. The remaining work is to split Nico's proof of concept into small reviewed changes while keeping the unresolved shared-versus-dedicated EL choice explicit.
 
 ```mermaid
 flowchart TB
@@ -915,7 +918,7 @@ The Beacon API event-stream contract tells consumers to use EventSource and perm
 
 ## Implementation packages and ownership
 
-The merged [implementation plan](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/implementation-plan.md) and [Linear project](https://linear.app/kriso/project/lodestar-eip-7732-builder-814d6faca6fd) now own the authoritative task inventory, dependencies, milestones, status, and evidence. The plan began with 20 core tasks and now has three explicit Gate-A follow-ups, `TEST-01`, `MET-01`, and `REVIEW-01`, plus `SPEC-01`, for 48 total tracked Linear/GitHub issues across core, supporting, conditional, and deferred scope. This note should not recreate a second mutable backlog.
+The merged [implementation plan](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/implementation-plan.md) and [Linear project](https://linear.app/kriso/project/lodestar-eip-7732-builder-814d6faca6fd) now own the authoritative task inventory, dependencies, milestones, status, and evidence. The plan began with 20 core tasks and has expanded through explicit follow-up, architecture, and extraction issues to 53 total tracked Linear/GitHub issues across core, supporting, conditional, and deferred scope. This note should not recreate a second mutable backlog.
 
 Current delivery state at this reconciliation:
 

@@ -1,6 +1,6 @@
 # Provisional direct-Engine Builder plan
 
-> **Status:** Working architecture baseline reconciled through 1 September 2026. This is not a final maintainer decision. It supersedes the BN-mediated ownership statements in the accepted implementation plan and Living Technical Note only while the direct-Engine direction is evaluated.
+> **Status:** Direct Engine access confirmed as the working implementation baseline on 2 September 2026. The supported production topology is still open. This supersedes the BN-mediated ownership statements in the accepted implementation plan and Living Technical Note while shared versus dedicated EL operation is resolved.
 
 ## Purpose
 
@@ -59,13 +59,13 @@ Current Lodestar calls `notifyForkchoiceUpdate` from block import, execution-pay
 
 Beacon APIs #638 adds `safe_block_hash` and `finalized_block_hash` to the `payload_attributes` schema and example only. It keeps event frequency implementation-dependent. Current Lodestar prepares the event in `prepareNextSlot` and may emit it for proposer preparation or when the payload-attributes flag is enabled. The PR does not settle post-Gloas trigger timing, FULL/EMPTY variants, deduplication, or the source of `custody_columns`.
 
-The remaining production decision is therefore explicit. Sharing an EL requires a single-writer invariant or a constrained Builder-specific Engine surface so the BN and Builder cannot move Engine fork choice independently. Dedicated Builder ELs avoid that conflict but require their own sync, readiness, JWT, custody, and failure-isolation contract. PAYLOAD-SOURCE-01, PAYLOAD-ORCH-01, and STORE-CORE-01 remain unwired until that choice is accepted.
+Nico confirmed direct Engine access as the working direction because it avoids a new low-priority BN API surface and keeps the payload source replaceable by dedicated building software later. The remaining production decision is narrower. Sharing an EL requires Builder `forkchoiceUpdated` calls to follow the source BN's emitted payload attributes without moving the EL to a conflicting view. Dedicated Builder ELs avoid that conflict but require their own sync, readiness, JWT, custody, and failure-isolation contract. PAYLOAD-SOURCE-01, the unwired PAYLOAD-ORCH-01 core, and STORE-CORE-01 may progress independently; final runtime and CLI wiring still waits on the supported topology and authoritative input contract.
 
 ## Current contributor overlap
 
-The public PR audit on 31 August found no separate open extraction of the direct-Engine payload store or Builder-owned bid pipeline outside Nico's proof of concept.
+The public PR audit refreshed on 2 September found no separate open extraction of the direct-Engine payload source, payload store, or Builder-owned bid pipeline outside Nico's proof of concept and Kris's drafts.
 
-- Marco owns open beacon-APIs #638. His Lodestar #9854, #9875, #9876, and #9896 remain event-shape comparison proofs. His bid-validation and flood-publication work is already merged through Lodestar #9914 and js-libp2p #3610.
+- Marco owns open beacon-APIs #638. His Lodestar #9854, #9875, #9876, and #9896 remain event-shape comparison proofs. His bid-validation and flood-publication work is already merged through Lodestar #9914 and js-libp2p #3610. On 2 September he said he was curating payload storing and sourcing work, but no corresponding public branch or PR was visible yet; coordinate the source/store split before either contributor expands those drafts.
 - Nico owns the proof-of-concept branch plus draft Lodestar #9955. His #9947 and #9954 have merged. #9947 concerns proposer-BN connections to external Builder API servers; #9954 and #9955 change exiting-Builder filtering and parent-slot semantics and must be refreshed before extracting affected code.
 - NC has no public PR implementing the direct-Engine Builder slices. His open Gloas and FOCIL work remains relevant to fork compatibility but does not claim PayloadStore, BidPolicy, SlotBidder, or Revealer ownership.
 - Kris owns draft Lodestar #9958 for the narrow PayloadSource contract and injected Engine adapter, fork draft #61 for unwired orchestration, and fork draft #63 for bounded store-core retention. The drafts deliberately exclude final runtime ownership, bid integration, selection, and reveal.
@@ -135,16 +135,15 @@ The still-valid constraints are:
 - work, retries, storage, and shutdown are bounded;
 - public API changes require upstream and cross-client agreement.
 
-## Questions that block final acceptance, not provisional planning
+## Questions that block final wiring, not component work
 
-1. Is direct Engine access the intended production boundary or only the preferred proof-of-concept direction?
-2. Should Builder ELs normally be dedicated, or may the BN and Builder safely share an EL while both call `forkchoiceUpdated`?
-3. Which safe/finalized hash and post-Gloas payload-attributes changes are prerequisites for the first extraction?
-4. Should the first upstream slice include one payload variant or both parent/head variants?
-5. Where should a direct-Engine Builder obtain the post-Gloas `custody_columns` value required by consensus-specs #5549?
-6. Is in-memory payload retention acceptable for the first reviewed loop, with restart durability deferred?
-7. Which parts of `nflaig/builder` should be opened by Nico and which should Kris and Marko reimplement as smaller PRs?
-8. Does the core project remain p2p-Builder-first, with Builder API server work kept separate?
+Nico confirmed direct Engine access, p2p-first delivery, in-memory retention for the first loop, and decomposition of the proof of concept rather than upstreaming it as one PR. The remaining questions are:
+
+1. Should Builder ELs normally be dedicated, or may the BN and Builder share an EL under a documented `forkchoiceUpdated` invariant?
+2. Which safe/finalized hash and post-Gloas payload-attributes changes are prerequisites for final runtime wiring?
+3. Should the first runtime slice include one payload variant or both parent/head variants?
+4. Where should a direct-Engine Builder obtain the post-Gloas `custody_columns` value required by consensus-specs #5549?
+5. How should Kris and Marco divide payload sourcing, orchestration, and storage work without duplicating active drafts?
 
 Maintainer answers can change the affected slices without reopening API-02, TEST-01, ENV-02, or SPEC-01's independent event-contract process.
 
@@ -157,6 +156,7 @@ Maintainer answers can change the affected slices without reopening API-02, TEST
 - ATTR-SPEC-01 (`LOD-54`) tracks #638 through review.
 - ATTR-01 (`LOD-55`) tracks the missing post-Gloas payload-attributes emission contract.
 - EL-ARCH-01 (`LOD-56`) blocks PAYLOAD-ORCH-01 runtime wiring and the final production boundary. It does not block review of PAYLOAD-SOURCE-01's injected contract.
+- Direct Engine access is the working implementation baseline. EL-ARCH-01 now decides only the supported shared versus dedicated EL topology and its safety contract.
 - PAYLOAD-SOURCE-01 (`LOD-57`) is In Progress through draft Lodestar #9958. PAYLOAD-ORCH-01 (`LOD-58`) is In Progress through fork draft #61; its architecture-neutral core may be reviewed now, while final runtime wiring remains blocked on the source contract, EL ownership, and source-BN inputs.
 - STORE-CORE-01 (`LOD-59`) is In Review through fork draft #63. The STORE-01 parent remains open for complete bid identity, insert-before-publish enforcement, envelope construction, reveal integration, metrics, and durability.
 - BN-01, PAYLOAD-01, ATTR-01, ATTR-SPEC-01, and EL-ARCH-01 record the new `custody_columns` input question introduced by consensus-specs #5549.

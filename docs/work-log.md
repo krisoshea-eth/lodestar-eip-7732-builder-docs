@@ -4,6 +4,9 @@ This is the canonical chronological delivery log for the Lodestar EIP-7732 Build
 
 ### 2 September 2026 baseline and lifecycle checkpoint
 
+- Recorded Nico's decision to use direct Engine access as the working Builder baseline, keep p2p first, accept in-memory retention for the initial loop, and defer restart persistence. Shared versus dedicated production EL operation remains an explicit EL-ARCH-01 decision.
+- Recorded that Nico will not upstream the complete proof-of-concept branch and encouraged a temporary combined branch for working integration evidence. Marco's announced payload sourcing and storage curation is now an ownership-coordination gate because it may overlap #9958 and fork draft #63; no separate public implementation was visible at the refresh.
+- Narrowed SPEC-01 to two primary cross-client candidates: required post-Gloas fields on `block`, or a lightweight external-Builder-only `bid_included` event. `block_v2` remains comparison evidence, while full-bid variants and `bid_root` have no demonstrated consumer need.
 - Refreshed the implementation baseline against Lodestar `unstable` at `9ba9a5ce85`, the immutable v1.47.0-rc.0 prerelease at `2aff495`, consensus-specs v1.7.0-alpha.14, and current Builder-related pull requests.
 - Corrected #9813 from an active watch to a closed, unmerged historical alternative; merged #9864 remains the epoch-boundary head-freshness baseline.
 - Recorded fork draft #61 as the architecture-neutral PAYLOAD-ORCH-01 core stacked on #9958. Final Builder and CLI wiring remains blocked on EL ownership and authoritative source-BN inputs.
