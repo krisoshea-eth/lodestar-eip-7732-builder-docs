@@ -22,6 +22,8 @@ This working draft compares the interoperable ways to notify an external Builder
 
 The extension gives an external Builder enough selection identity to reject unrelated blocks without retrieving every imported post-Gloas block. The two fields are a negative filter, not proof that the complete selected bid matches a locally signed bid. It does not remove `block` plus `getBlockV2` as the compatibility and complete-verification fallback.
 
+Merged Lodestar [#9998](https://github.com/ChainSafe/lodestar/pull/9998) keeps an API-submitted bid out of the receiving BN's local bid pool, but it does not remove the notification need. The Builder's source BN can still import the block selected by another proposer BN and emit the imported-block event used by API-02 or the eventual dedicated event.
+
 The two leading choices are extending `block` with `builder_index` and `block_hash`, or adding a lightweight external-Builder-only `bid_included` event with the data needed to locate retained payload material. `block_v2` remains a live compatibility alternative until other client teams respond, although it duplicates the existing topic for two fields. The full `SignedExecutionPayloadBid` and `bid_root` variants no longer have a demonstrated consumer need. No candidate has cross-client consensus. The static client audit in this document establishes likely implementation seams, not client support.
 
 ## Motivation
@@ -351,6 +353,7 @@ Neither PR currently implements #599. PR #490 was updated on 2026-08-21, so both
 | 2026-09-02 | Define the lightweight candidate as `bid_included(slot, block_root, block_hash, builder_index)` | NC confirmed external-Builder-only, successful-import and valid non-head semantics; `execution_optimistic` is not needed for reveal, and `bid_root` is superseded. |
 | 2026-09-02 | Keep required post-Gloas fields for Candidate A and retain `block_v2` as a live comparison | NC agreed optional fields are undesirable and clarified that `block_v2` remains live until other client teams respond. |
 | 2026-09-02 | Prepare exact patches for both leading candidates before choosing an upstream contract | Lodestar has a split preference, so cross-client review should compare concrete wire changes. |
+| 2026-09-03 | Keep SPEC-01 independent of the API-submission pool change | Merged Lodestar #9998 changes which BN can select an API-submitted bid, not how a Builder learns that another imported block selected it. The event decision and API-02 fallback remain valid. |
 
 ## Completion criteria
 

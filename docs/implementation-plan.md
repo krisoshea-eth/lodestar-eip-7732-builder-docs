@@ -4,10 +4,10 @@
 **Owners:** Kris O'Shea and Marko Lazic  
 **Mentor / primary reviewers:** Nico Flaig, NC, and the Lodestar team  
 **Implementation base:** `ChainSafe/lodestar:unstable`, pinned before implementation begins  
-**Working model:** one shared feature branch; merge `unstable` regularly; split only when review benefits from it  
+**Working model:** small reviewable branches plus a temporary combined integration branch; keep `unstable` current without obscuring child review surfaces
 **Formal product name:** `lodestar builder` / `packages/builder`  
 **Optional EPF mission codename:** Forgestar  
-**Status:** v1.0 merged on 5 August 2026. Nico confirmed direct Engine access as the working direction for `packages/builder` on 2 September after the project audited his 10-commit proof-of-concept branch. The [direct-Engine working plan](direct-engine-working-plan.md) controls any conflict with the historical BN-mediated payload, bid, cache, and reveal sections below. Current Lodestar `unstable` was `d55b13cf5e` at this reconciliation. #9832, #9904, #9914, #9964, #9984, #9986, and js-libp2p #3610 have merged. #9958 is ready for review; #9973 and the bid/reveal service drafts expose later review boundaries; #9970/#9974 plus Kris's contribution PRs are the active store and policy paths. Fork draft #77 proves the resolved-input bid services compose without deciding event or CLI wiring. Fork draft #80 implements the current beacon-APIs #638 safe/finalized hash shape while leaving payload-attributes trigger and deduplication open. Unassigned BID-RUNTIME-01 and REV-RUNTIME-01 now own the two remaining production-consumer boundaries. API-02, TEST-01, ENV-02, and SPEC-01 retain their independent scopes.
+**Status:** v1.0 merged on 5 August 2026. Nico confirmed direct Engine access as the working direction for `packages/builder` on 2 September after the project audited his 10-commit proof-of-concept branch. The [direct-Engine working plan](direct-engine-working-plan.md) controls any conflict with the historical BN-mediated payload, bid, cache, and reveal sections below. Current Lodestar `unstable` was `76b167bf36` at this reconciliation. #9832, #9904, #9914, #9964, #9972, #9984, #9986, #9998, and js-libp2p #3610 have merged. #9958 is ready for review; #9973 and the bid/reveal service drafts expose later review boundaries; #9970/#9974 plus Kris's contribution PRs are the active store and policy paths. Fork draft #77 proves the resolved-input bid services compose without deciding event or CLI wiring. Fork draft #80 implements the current beacon-APIs #638 safe/finalized hash shape while leaving payload-attributes trigger and deduplication open. Unassigned BID-RUNTIME-01 and REV-RUNTIME-01 own the remaining production-consumer boundaries. API-02, TEST-01, ENV-02, and SPEC-01 retain their independent scopes.
 
 > **Working architecture change:** The accepted plan below remains as design history and for unaffected delivery rules. Do not implement its BN-owned payload construction or stateful reveal assumptions without first applying [the direct-Engine reconciliation](direct-engine-working-plan.md). The Builder talks directly to an injected payload source, initially a local Engine API; it owns payload material and bid construction, while the source BN retains chain authority, validation, and publication. Production shared-versus-dedicated EL topology remains open and does not block review of pure service boundaries.
 
@@ -16,7 +16,7 @@
 | Plan at a glance | Value |
 |---|---|
 | Planning and board conversion complete | End of Week 7 |
-| Core individual issues | 20 original delivery issues plus 3 Gate-A follow-ups (`TEST-01`, `MET-01`, `REVIEW-01`) and supporting `SPEC-01` |
+| Core issue model | Original delivery issues plus focused Gate-A, direct-Engine, runtime, evidence, and specification children |
 | Named conditional packages | 8 |
 | First repeatable bid → selection → reveal → FULL loop | End of Week 14 |
 | Protocol-complete local evidence | End of Week 16 |
@@ -359,25 +359,25 @@ flowchart LR
 
 ### Known first-iteration failure model
 
-If the Builder process remains unavailable through the reveal window, or the source BN goes offline or loses the reveal material after a bid is accepted and selected, the Builder may still owe the proposer while failing to reveal the payload. That is a real protocol/operational failure, not something the first iteration must solve with redundancy.
+If the Builder process remains unavailable through the reveal window, or its in-memory payload material is lost after a bid is accepted and selected, the Builder may still owe the proposer while failing to reveal the payload. A source-BN outage can also prevent observation or publication. These are real protocol and operational failures, not something the first iteration must solve with redundancy.
 
 The first iteration must:
 
 - make this failure visible in logs and outcome evidence;
-- never claim successful reveal when the source BN or reveal material is unavailable;
+- never claim successful reveal when the source BN, Builder, or exact reveal material is unavailable;
 - document the financial consequence;
-- support only the bounded same-source-BN restart recovery defined in `REL-01`;
-- leave redundant instances, durable source-BN failover, and cross-node recovery to deferred work.
+- support only the bounded Builder-state and event recovery defined in `REL-01`;
+- leave redundant instances, durable failover, and cross-node recovery to deferred work.
 
 ### Core non-goals
 
 The core does not include:
 
 - Builder deposits, exits, top-ups, or balance management tooling;
-- direct sidecar-to-EL access;
+- BN-owned payload construction or an unreviewed second Engine orchestration path;
 - remote signer or validator keymanager integration;
 - multiple Builder keys;
-- high availability, redundant Builder instances, multi-BN failover, or durable recovery beyond the bounded same-source-BN restart path in `REL-01`;
+- high availability, redundant Builder instances, multi-BN failover, or durable recovery beyond the bounded state/event path in `REL-01`;
 - Builder-side proposer-equivocation detection or strategic withholding; the core equivocation check and test are BN-owned;
 - reveal timing games or deliberate safety-margin optimization;
 - sophisticated bidding, shading, MEV search, or profitability optimization;
@@ -474,12 +474,14 @@ The completed capability and historical-upstream audit is recorded in [the BASEL
 | [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder) | Draft proof-of-concept branch at `99fd8fa9ad`; implements enriched `block` fields, mixed-version block-fetch fallback, Builder services, codec tests, and recorded two-node evidence | Use as end-to-end evidence, not the settled API contract. API-02 remains the bounded complete-block fallback |
 | [Lodestar #9903](https://github.com/ChainSafe/lodestar/pull/9903) / [#9904](https://github.com/ChainSafe/lodestar/pull/9904) | #9903 remains open; bounded/reloadable envelope cache #9904 merged as `7aa8c9c93a` | Require differential PTC evidence before adopting #9903. Treat #9904 as landed BN-side recovery evidence and separately define Builder-owned retention for the direct-Engine design |
 | [Lodestar #9958](https://github.com/ChainSafe/lodestar/pull/9958) / [#9973](https://github.com/ChainSafe/lodestar/pull/9973) / [#9957](https://github.com/ChainSafe/lodestar/pull/9957) | #9958 is the ready PAYLOAD-SOURCE-01 extraction. Draft #9973 adds architecture-neutral bounded orchestration without runtime wiring. #9957 removes older pre-Fulu blob retrieval code but retains Gloas `getPayload` blob bundles | Review #9958 independently, keep #9973 stacked until the source boundary stabilizes, and keep #9957 as a baseline watch rather than a reason to remove blobs from `BuiltPayload` |
-| Marko-owned [LOD-68](https://linear.app/kriso/issue/LOD-68/store-wiring-01-wire-and-prune-the-builder-payload-store), [Lodestar #9970](https://github.com/ChainSafe/lodestar/pull/9970), and [contribution #9](https://github.com/markolazic01/lodestar/pull/9) | One active upstream PayloadStore wiring draft plus Kris's focused bounded-store hardening contribution | Combine the accepted behavior into #9970; do not promote the superseded fork-only store draft as a competing upstream PR |
+| Marko-owned [LOD-68](https://linear.app/kriso/issue/LOD-68/store-wiring-01-wire-and-prune-the-builder-payload-store), [Lodestar #9970](https://github.com/ChainSafe/lodestar/pull/9970), and [contribution #9](https://github.com/markolazic01/lodestar/pull/9) | One active upstream PayloadStore wiring draft plus Kris's bounded-store and defensive-copy hardening contribution | Combine the accepted behavior into #9970; preserve fork-specific reveal material without exposing mutable retained state, and do not promote the superseded fork-only store draft as a competing upstream PR |
 | Marko-owned [LOD-69](https://linear.app/kriso/issue/LOD-69/bid-policy-base-01-add-the-initial-builder-bid-policy), [Lodestar #9974](https://github.com/ChainSafe/lodestar/pull/9974), [contribution #10](https://github.com/markolazic01/lodestar/pull/10), [#9975](https://github.com/ChainSafe/lodestar/pull/9975), and [#9976](https://github.com/ChainSafe/lodestar/pull/9976) | Bid policy is in draft with numeric hardening proposed; the ledger retains winning liabilities until explicit settlement; proposer preferences remain draft | Review the pure foundations before final `SlotBidder` wiring; keep exact-width arithmetic and dependent-root ownership explicit |
-| [Lodestar #9978](https://github.com/ChainSafe/lodestar/pull/9978) / [#9979](https://github.com/ChainSafe/lodestar/pull/9979) / [#9980](https://github.com/ChainSafe/lodestar/pull/9980) / [#9981](https://github.com/ChainSafe/lodestar/pull/9981) / [#9982](https://github.com/ChainSafe/lodestar/pull/9982) | Draft bid assembly/publication and selection/envelope service boundaries; some include dependency commits until their parents merge | Keep as integration evidence, not five accepted abstractions. Consider two grouped review units around the bid path and selection/reveal path after foundation feedback |
+| [Lodestar #9978](https://github.com/ChainSafe/lodestar/pull/9978) / [#9979](https://github.com/ChainSafe/lodestar/pull/9979) / [#9980](https://github.com/ChainSafe/lodestar/pull/9980) / [#9981](https://github.com/ChainSafe/lodestar/pull/9981) / [#9982](https://github.com/ChainSafe/lodestar/pull/9982) | Draft bid assembly/publication and selection/envelope service boundaries; #9979 preserves Heze bid typing, #9981 binds the retained parent Beacon root, and #9982 separates reveal reservation from successful publication | Keep as integration evidence, not five accepted abstractions. Consider two grouped review units around the bid path and selection/reveal path after foundation feedback |
 | [fork #77](https://github.com/krisoshea-eth/lodestar/pull/77) / [LOD-73](https://linear.app/kriso/issue/LOD-73/slot-bidder-01-coordinate-one-resolved-direct-engine-bid) | Fork-only stacked draft composes one resolved input through payload build, retention, coverability, bid assembly, and publication | Review as integration evidence. Keep event consumption, Builder/CLI construction, EL configuration, selection, and reveal outside this draft |
 | [fork #80](https://github.com/krisoshea-eth/lodestar/pull/80) / [LOD-74](https://linear.app/kriso/issue/LOD-74/attr-impl-01-emit-post-gloas-forkchoice-hashes-in-payload-attributes) | Fork-only draft adds the proposed post-Gloas safe/finalized execution hashes to Lodestar's event type and current producer | Keep it fork-only while #638 is reviewed. [LOD-75](https://linear.app/kriso/issue/LOD-75/attr-emit-01-emit-deduplicated-post-gloas-payload-attributes) owns trigger, FULL/EMPTY policy, deduplication, and custody behavior; [LOD-76](https://linear.app/kriso/issue/LOD-76/attr-consume-01-consume-fork-correlated-payload-attributes-in-builder) owns Builder consumption |
-| [consensus-specs #5594](https://github.com/ethereum/consensus-specs/pull/5594) / [Lodestar #9972](https://github.com/ChainSafe/lodestar/pull/9972) | Open specification change and approved, mergeable Lodestar validation change reject a bid whose block hash equals its parent hash; #9972's spec-test job is currently failing | Track #9972's final disposition in BID-CORE-01 and QA-01; do not duplicate Nico's validation PR |
+| [consensus-specs #5594](https://github.com/ethereum/consensus-specs/pull/5594) / [Lodestar #9972](https://github.com/ChainSafe/lodestar/pull/9972) | Merged Lodestar validation rejects a bid whose block hash equals its parent hash | Reuse the upstream validation and refreshed fixtures in BID-CORE-01 and QA-01; do not duplicate the guard in `packages/builder` |
+| [Lodestar #9998](https://github.com/ChainSafe/lodestar/pull/9998) / [LOD-79](https://linear.app/kriso/issue/LOD-79/bid-publish-api-01-remove-bid-pool-addition-in-api-path) | Merged API path validates and flood-publishes a bid without inserting it into the receiving BN's local pool | Use a separate proposer BN that receives the bid over p2p for honest-loop selection evidence; do not treat a self-build on the submission BN as publication failure |
+| [Lodestar #9994](https://github.com/ChainSafe/lodestar/pull/9994) | Open guard prevents known genesis and pre-Gloas roots from becoming impossible payload-envelope sync targets | Track its final disposition in REL-01 and QA-01 while keeping unknown post-Gloas roots eligible for recovery |
 | [Lodestar #9984](https://github.com/ChainSafe/lodestar/pull/9984) / [#9986](https://github.com/ChainSafe/lodestar/pull/9986) | Merged BN bid-validation ordering and merged shared spec-test expected-error enforcement; #9986 exposes Gloas Builder and validator sweep-index divergences | Reuse the BN validation order and route refreshed invalid-vector evidence to QA-01; neither change creates another standalone Builder service |
 | [Buildoor #184](https://github.com/ethpandaops/buildoor/pull/184) | Merged: accepts Builder preferences without an external Builder URL and exercises local/p2p Builder selection paths | Reuse for E2E-01; preserve `execution_payment = 0` for p2p bids and keep its no-URL integration coverage limitation explicit |
 | [consensus-specs #5585](https://github.com/ethereum/consensus-specs/pull/5585) | Merged source-tree version bump to `v1.7.0-beta.0`, with no beta tag or GitHub release yet; Lodestar still pins `v1.7.0-alpha.14` | Keep alpha.14 as the immutable baseline until Lodestar deliberately updates its spec-test pin; do not infer beta compatibility from the version bump alone |
@@ -489,7 +491,7 @@ The completed capability and historical-upstream audit is recorded in [the BASEL
 | [execution-apis #870](https://github.com/ethereum/execution-apis/pull/870) / [#878](https://github.com/ethereum/execution-apis/pull/878) | Open Heze inclusion-list response-bound clarifications | Track under conditional EXT-FOCIL-01; no change to the current Gloas implementation path |
 | [Lodestar #9350](https://github.com/ChainSafe/lodestar/pull/9350) | Open mainnet-scale pending-payment quorum arithmetic fix | BASELINE-01 tracks the upstream disposition; OUT-01 must exercise a `bigint` accumulator beyond JavaScript safe-integer precision |
 | [Lodestar #9332](https://github.com/ChainSafe/lodestar/pull/9332) / [#9637](https://github.com/ChainSafe/lodestar/pull/9637) | Open EL-invalid fork-choice and PTC fail-closed work | Route to EL-ARCH-01, QA-01, E2E-01, and OUT-01; do not duplicate the behavior inside the Builder sidecar |
-| [Lodestar #9937](https://github.com/ChainSafe/lodestar/pull/9937) / [#9281](https://github.com/ChainSafe/lodestar/pull/9281) / [#9791](https://github.com/ChainSafe/lodestar/pull/9791) / [#9326](https://github.com/ChainSafe/lodestar/pull/9326) | #9937 merged; the other BN recovery changes remain open | Add bounded EMPTY, impossible-target, stale-root, and non-finality cases to REL-01 and E2E evidence without creating another Builder service |
+| [Lodestar #9937](https://github.com/ChainSafe/lodestar/pull/9937) / [#9994](https://github.com/ChainSafe/lodestar/pull/9994) / [#9791](https://github.com/ChainSafe/lodestar/pull/9791) / [#9326](https://github.com/ChainSafe/lodestar/pull/9326) | #9937 merged; #9994 supersedes conflicting #9281; the other BN recovery changes remain open | Add bounded EMPTY, impossible-target, stale-root, and non-finality cases to REL-01 and E2E evidence without creating another Builder service |
 | [Lodestar v1.47.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.47.0) / [#9971](https://github.com/ChainSafe/lodestar/pull/9971) | Latest stable at `450996b13a`, published 2 September and merged back to `unstable` through #9971 | Newest immutable release target. It includes the earlier Builder foundation but not the current direct-Engine service PR series or its integrated runtime |
 | [Lodestar v1.46.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.46.0) | Historical stable release at `3873dd5b032d0ad82581fc3416e9628b4f6f2642`, published 12 August. It predates merged #9781 | Retain as immutable historical evidence; v1.47.0 is the current release target |
 | [Lodestar v1.47.0-rc.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.47.0-rc.0) | Historical prerelease at `2aff495`, published 27 August, containing #9832, #9781, #9848, and the surrounding Gloas Builder API foundation | Superseded by v1.47.0; retain only as prerelease qualification history |
@@ -610,7 +612,7 @@ Ownership may rotate. Both fellows must understand every gate-crossing change.
 | **Gate A — Builder foundation** | End W9 | Local environment, `packages/builder`, one local key, typed BN connection, active Builder resolution |
 | **Gate B — Real bid path** | End W12 | Builder constructs one complete coverable bid from a direct-Engine payload, retains exact reveal material, and submits it through the BN validation/publication path |
 | **Gate C — First working loop** | End W14 | Lodestar selects the local bid; Builder immediately reveals; block reaches FULL in repeatable Kurtosis runs |
-| **Gate D — Protocol-complete local evidence** | End W16 | PTC/payment evidence, non-zero blobs/data, essential diagnostics, and bounded same-source-BN restart recovery are complete |
+| **Gate D — Protocol-complete local evidence** | End W16 | PTC/payment evidence, non-zero blobs/data, essential diagnostics, and bounded Builder-state/event recovery are complete |
 | **Gate E — Broader integration** | End W17–18 | ethereum-package/buildoor evidence and an optional devnet attempt or documented blocker |
 | **Gate F — Handoff** | W21+ | Security review, docs, PRs, EPF outputs, and follow-up backlog complete |
 
@@ -1101,7 +1103,7 @@ flowchart TD
     REVEALQ -->|Yes| FULLQ{"Authoritative FULL and data outcome observed?"}
     FULLQ -->|No| OUTFAIL["Record late, EMPTY or unresolved outcome"]
     FULLQ -->|Yes| EVIDENCE["Capture FULL, PTC, payment and data evidence"]
-    OBSERVE -->|sidecar restarted| RECOVER["REL-01 same-source-BN recovery"]
+    OBSERVE -->|Builder restarted or event missed| RECOVER["REL-01 bounded Builder state and event recovery"]
     RECOVER --> MATCHQ
 ```
 
@@ -1143,11 +1145,11 @@ The active BID-01 scope signs the complete Builder-owned bid from `BID-CORE-01`,
 - [ ] Start from the BN block event and retrieve the signed block.
 - [ ] Check that the selected bid is for the configured Builder and exactly matches a locally signed bid on the normal in-process path.
 - [ ] Ignore foreign or non-matching bids.
-- [ ] Pass the selecting block root directly to the normal stateful reveal flow.
+- [ ] Pass the selecting block root and exact selected-bid identity to the stateless reveal flow backed by the retained local payload record.
 - [ ] Record selection timing and identity for diagnostics.
 - [ ] Add exact-match, foreign-bid, mismatch, duplicate-event, and event-before-block tests.
 
-**Done when:** Seeing a valid block containing the local bid starts one idempotent stateful reveal workflow for that block root.
+**Done when:** Seeing a valid block containing the local bid starts one idempotent stateless reveal workflow for that block root and exact retained payload identity.
 
 #### Historical `REV-01` task detail (superseded)
 
@@ -1185,18 +1187,18 @@ The active REV-01 scope loads the exact local `PayloadStore` record, builds and 
 
 #### `DATA-01` — Complete the non-zero-blob/data-column path
 
-**Why:** The EL may include blobs even in the first working loop, and the BN must handle them when present. The final core additionally forces a non-zero-blob case so stateful reveal proves real blob/data commitments.
+**Why:** The EL may include blobs even in the first working loop, and the Builder must retain their exact reveal material while the BN handles publication and data availability. The final core additionally forces a non-zero-blob case so stateless reveal proves real blob/data commitments.
 
 **Tasks**
 
 - [ ] Produce at least one candidate containing non-zero blobs.
-- [ ] Verify commitments and required blob/KZG/data-column source material survive payload → bid → stateful reveal.
-- [ ] Publish through the stateful envelope path and allow the BN to attach/gossip cached data.
+- [ ] Verify commitments and required blob/KZG/data-column source material survive payload → bid → Builder-owned stateless reveal.
+- [ ] Publish the stateless envelope and its retained blobs/KZG proofs through the source BN, then allow the BN to gossip the resulting data.
 - [ ] Confirm matching commitments, data availability, and FULL.
 - [ ] Add focused missing/corrupt proof, wrong commitment, and cache-miss tests.
-- [ ] Keep stateless/multi-BN publication conditional.
+- [ ] Keep cross-BN recovery and high availability conditional; the first p2p bid-selection fixture may still use separate submission and proposer BNs.
 
-**Done when:** A selected non-zero-blob bid reveals through the stateful path and reaches authoritative FULL/data-available evidence.
+**Done when:** A selected non-zero-blob bid reveals from exact Builder-retained material and reaches authoritative FULL/data-available evidence.
 
 #### `QA-01` — Close essential operator-diagnostic and fail-closed cases
 
@@ -1215,23 +1217,22 @@ The active REV-01 scope loads the exact local `PayloadStore` record, builds and 
 
 **Done when:** The working loop is diagnosable, the essential fail-closed cases—including BN-owned proposer-equivocation rejection—are tested, and advanced reliability/adversarial work is clearly deferred.
 
-#### `REL-01` — Add bounded same-source-BN restart and event recovery
+#### `REL-01` — Add bounded Builder restart and event recovery
 
-**Why:** A sidecar restart should not force a paid-without-reveal failure when the configured source BN is still online and still holds the exact reveal material. This is bounded recovery, not high availability.
+**Why:** The first direct-Engine loop keeps signed bids, payload material, and ledger state in memory. Restart and missed-event behavior must therefore be explicit and fail closed until a reviewed durable record exists. This is bounded recovery, not high availability.
 
 **Tasks**
 
-- [ ] Reconnect to the same verified source BN and resume block-event consumption after a sidecar restart.
-- [ ] On the normal path, keep using the in-process locally signed-bid record for exact matching.
-- [ ] When that record is absent after restart, require the block bid to use the configured active Builder index and verify its signature against the configured Builder public key.
-- [ ] Retrieve the stateful envelope from the same source BN for the selecting block root and verify all bid/envelope commitments before signing.
-- [ ] Preserve source affinity between the SSE stream and every correlated block/reveal request. Do not allow generic API-client fallback to evaluate or reveal against a different BN without explicit source provenance and a reviewed trust model.
-- [ ] Reconcile a bounded missed-event window after reconnect and while the stream remains connected. The Beacon API event contract defines no SSE `id` or `Last-Event-ID` resumption, and merged Lodestar #9872 intentionally drops one event that cannot be serialized while preserving the connection, so recovery cannot depend only on reconnect.
-- [ ] Deduplicate replayed block events and repeated publication attempts.
-- [ ] Fail explicitly when the source BN is different, offline, or has lost/expired the reveal material; never reconstruct a replacement payload.
-- [ ] Add restart-before-selection, bounded missed-event reconciliation, duplicate publication, wrong Builder signature, source-affinity/fallback rejection, source-cache-loss, and connected/reconnecting shutdown tests.
+- [ ] Reconnect to the same verified source BN and resume block-event consumption after a Builder restart.
+- [ ] Define the minimum durable signed-bid, payload-store, and ledger record required to recover an exact stateless reveal; until it exists, report restart loss as a precise terminal outcome.
+- [ ] Preserve source affinity between SSE, block retrieval, and publication operations unless a reviewed cross-BN trust contract exists.
+- [ ] Reconcile a bounded missed-event window after reconnect and while the stream remains connected. The Beacon API event contract defines no SSE `id` or `Last-Event-ID` resumption, and merged Lodestar #9872/#9964 can preserve the connection while dropping one failed event.
+- [ ] Deduplicate replayed roots and publication attempts. Preserve the exact reveal reservation across an ambiguous attempt and retry only identical envelope material within the runtime cutoff.
+- [ ] Track open [Lodestar #9994](https://github.com/ChainSafe/lodestar/pull/9994) for impossible known genesis/pre-Gloas envelope-sync targets while keeping unknown post-Gloas roots recoverable.
+- [ ] Never reconstruct a replacement payload after selection.
+- [ ] Add restart-before-selection, restart-after-bid, bounded gap reconciliation, duplicate publication, wrong signature, missing durable material, source-affinity rejection, and shutdown tests.
 
-**Done when:** Restarting only the sidecar does not prevent reveal when the same source BN retains the exact committed material; no event or reveal request silently crosses source BNs, and loss of the source BN or its cache remains an explicit terminal failure.
+**Done when:** The supported restart window and durable state are explicit and tested; recoverable exact material can still reveal, while missing state fails closed with a precise outcome.
 
 ### Epic D — Demonstration, integration, security, and handoff
 
@@ -1266,7 +1267,9 @@ flowchart TD
 **Tasks**
 
 - [ ] Provide one-command/script launch and teardown.
-- [ ] Repeat real payload → payload-value bid → selection → immediate stateful reveal → FULL.
+- [ ] Repeat source-BN inputs → direct-Engine payload → retained coverable bid → p2p selection → immediate stateless reveal → FULL.
+- [ ] Use at least two Beacon Nodes after merged [Lodestar #9998](https://github.com/ChainSafe/lodestar/pull/9998): one accepts and flood-publishes the API bid, while a separate proposer BN receives it over p2p and selects it.
+- [ ] Assert that the submission BN does not select its API-only bid from a local pool and that its self-build is not reported as a publication failure.
 - [ ] Do not inject blobs solely to satisfy the first demonstration, but handle and publish any blob/data-column material the EL naturally includes.
 - [ ] Assert active Builder, synced BN/EL, a distinct configured Builder execution fee recipient, deterministic proposer selection (`--builder.selection=builderalways` or `maxprofit` with a pinned Builder boost factor), and inactive breaker.
 - [ ] Capture machine-readable lifecycle logs and a short human-readable runbook.
@@ -1643,7 +1646,7 @@ The Lodestar review pass and confirmed follow-up decisions from 27 July–4 Augu
 - [x] Merge and publish v1.0 on GitHub.
 - [x] Pin the accepted `unstable` SHA, spec/API versions, and feature branch in BASELINE-01.
 - [x] Complete the baseline capability audit and narrow/close already-landed work.
-- [x] Create and reconcile the 76 current Linear issues, including the original core, Gate-A follow-ups, direct-Engine service slices, environment follow-up, cross-repository specification tracks, contributor-attribution records, payload-attributes producer/consumer work, and the two runtime-consumer boundaries. The GitHub repository has 78 Builder project issues because closed legacy `NICO-01` and the unlabelled administrative `PRESENTATION-01` are not Linear project items.
+- [x] Create and reconcile the current Linear issue set, including the original core, Gate-A follow-ups, direct-Engine service slices, environment follow-up, cross-repository specification tracks, contributor-attribution records, payload-attributes producer/consumer work, and the two runtime-consumer boundaries. Keep canceled duplicates and GitHub-only administrative history out of active-work counts.
 - [x] Add milestones, weeks, sizes, lanes, statuses, dependencies, and evidence fields.
 - [ ] Complete remaining owner and reviewer assignments as issues approach Ready.
 - [x] Preserve `CLI-01`, `MET-01`, and `BN-PUB-01` as Done with linked upstream evidence. `ENV-01` is Done for the manual setup that unblocked development; `ENV-02` owns clean-checkout automation and independent reproduction.
