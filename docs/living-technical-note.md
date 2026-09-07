@@ -4,8 +4,8 @@
 |---|---|
 | Proposal | [Merged](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md); strong-success list amended through [PR #186](https://github.com/eth-protocol-fellows/cohort-seven/pull/186) |
 | Implementation plan | [v1.0 merged](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/pull/2) on August 5, 2026; the merged GitHub plan is the implementation source of truth |
-| Architecture reconciliation | [Direct-Engine working plan](direct-engine-working-plan.md), confirmed and implementation-reconciled through 3 September 2026; controls conflicts with the historical BN-mediated payload and reveal design while production EL topology remains open |
-| Spec target | [consensus-specs v1.7.0-alpha.14](https://github.com/ethereum/consensus-specs/releases/tag/v1.7.0-alpha.14), the version still pinned by Lodestar `unstable`; [#5585](https://github.com/ethereum/consensus-specs/pull/5585) changed the source-tree version to `v1.7.0-beta.0`, but no beta tag or GitHub release exists yet |
+| Architecture reconciliation | [Direct-Engine working plan](direct-engine-working-plan.md), confirmed direction with the PR/board audit refreshed on 7 September 2026; controls conflicts with the historical BN-mediated payload and reveal design while production EL topology remains open |
+| Spec target | [consensus-specs v1.7.0-beta.0](https://github.com/ethereum/consensus-specs/releases/tag/v1.7.0-beta.0), released 3 September and adopted by Lodestar through merged [#9955](https://github.com/ChainSafe/lodestar/pull/9955) on 4 September. BASELINE-01 retains its historical alpha.14 pin; existing PR validation remains scoped to each tested head |
 | Lodestar baseline | [v1.47.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.47.0) at `450996b13ab305b860acd131c87f799fdbfbabf0` is the latest stable and newest immutable release target; completed `BASELINE-01` records the exact working `unstable` pin |
 | Builder implementation | Foundation through #9868, Gloas Builder API #9832, bounded envelope cache #9904, bid validation/flood publication #9914, parent-hash validation #9972, API-only local-pool removal #9998, and SSE containment #9964 are merged. API-02 #9931, TEST-01 #9932, PayloadSource #9958, the payload/store/policy foundations, and bid/reveal drafts are mapped in the direct-Engine working plan. Nico's 10-commit, 42-file branch remains proof-of-concept evidence rather than a merge-ready patch |
 | Devnet | Public [Platåberget Dora](https://dora.plataberget.ethpandaops.io/) provides point-in-time runtime evidence. A finalized Lodestar-proposed block at [slot 79322](https://dora.plataberget.ethpandaops.io/slot/0x159ad62fd9512d3843f53ab79387a726d82b66fb0892134504cd1b426cc78b19) used an external Builder payload, reported `Revealed`, value 0.3246 ETH, and 99.26% PTC quorum. This does not prove continuous health, API-02's observer path, shutdown behavior, Assertoor/Buildoor results, deployed bytecode, or recovery. [`tests-glamsterdam-devnet@v8.1.1`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.1) is the latest successor fixture release |
@@ -15,6 +15,10 @@
 | Next milestone | Review the independent foundations first, stabilize the two logical bid/reveal review groups, complete the combined runtime loop and independent ENV-02 reproduction, and settle SPEC-01 separately from payload-attributes #638 |
 
 This is the working document for the Lodestar EIP-7732 Builder project, an EPF cohort 7 project by [Kris O'Shea](https://github.com/krisoshea-eth) and [Marko Lazic](https://github.com/markolazic01), mentored by [Nico Flaig](https://github.com/nflaig) (ChainSafe, EIP-7732 co-author). The [project proposal](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md) remains the stable public scope, while the [merged implementation plan](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/implementation-plan.md) owns accepted delivery decisions and issue boundaries. This note carries moving technical context, implementation findings, upstream state, code-path maps, adversarial cases, and research watches. Linear owns issue status, ownership, dependencies, and evidence.
+
+## 7 September review update
+
+The [PR and tracker audit](reviews/2026-09-07-pr-audit.md) covers the 25 initially open Kris/Marko PRs and the final 24-open snapshot after policy contribution #10 merged. It records #77's tested coverability fix, the test-only #9 scope, posted event/environment review comments, and new BN recovery/diagnostic watches. The spec target above is refreshed to beta.0; the devnet observations and older branch snapshot retain their original dates and are not fresh deployment evidence. BASELINE-01 stays complete at its immutable pin; ENV-02 still needs independent reproduction.
 
 ## Contents
 
@@ -66,7 +70,7 @@ This is the working document for the Lodestar EIP-7732 Builder project, an EPF c
 
 Run roughly weekly and before each milestone. Update the Doc status table afterwards.
 
-- [ ] Has the `v1.7.0-beta.0` source version from #5585 received an immutable tag and been adopted by Lodestar, or has #5497's head-compatible bid rule changed?
+- [ ] Are there spec releases after `v1.7.0-beta.0`, changes after Lodestar's adoption in #9955, or changes to #5497's head-compatible bid rule?
 - [ ] Stable Lodestar release after v1.47.0, or material `unstable` changes to the Builder package, Gloas types, payload production, publication, or events?
 - [ ] Status change in open Lodestar [#9736](https://github.com/ChainSafe/lodestar/pull/9736), Builder API [#9832](https://github.com/ChainSafe/lodestar/pull/9832), PTC sampling [#9903](https://github.com/ChainSafe/lodestar/pull/9903), or envelope caching [#9904](https://github.com/ChainSafe/lodestar/pull/9904)?
 - [ ] Follow-up after merged builder-specs [#165](https://github.com/ethereum/builder-specs/pull/165)/[#166](https://github.com/ethereum/builder-specs/pull/166), beacon-APIs [#630](https://github.com/ethereum/beacon-APIs/pull/630), keymanager-APIs [#92](https://github.com/ethereum/keymanager-APIs/pull/92), or the four open Builder-selection event PoCs?
@@ -88,7 +92,7 @@ Run roughly weekly and before each milestone. Update the Doc status table afterw
 | Reliability boundary | In-memory Builder payload store and one source BN first; durable restart recovery, multi-EL failover, and multi-BN publication remain later bounded work |
 | Test order | Focused tests, then local Kurtosis, then ethereum-package/buildoor; public devnet is conditional evidence rather than a core prerequisite |
 | Conditional extensions | One selected package after the core gates, with FOCIL, policy, observability, Builder API, advanced preparation, adversarial work, UI, and devnet deployment all explicitly gated |
-| Base branch | Current `unstable`, pinned by `BASELINE-01`; merge `unstable` regularly and split work only when review benefits |
+| Base branch | BASELINE-01 retains its historical pin; inspect current upstream read-only and update PR dependencies only when necessary |
 
 FOCIL remains a useful extension candidate, not a parallel core deliverable. Deathstar now contributes one bounded core QA fixture for proposer equivocation and payload unbundling, while broader malicious controls remain conditional. Neither should delay the honest Builder loop.
 
@@ -215,7 +219,7 @@ These items were reconciled against the August 22-24 partial monitoring reports,
 
 ### Current Gloas specification baseline
 
-The current project target is [v1.7.0-alpha.14](https://github.com/ethereum/consensus-specs/releases/tag/v1.7.0-alpha.14). Material settled rules include:
+Current Lodestar uses [v1.7.0-beta.0](https://github.com/ethereum/consensus-specs/releases/tag/v1.7.0-beta.0) through merged [#9955](https://github.com/ChainSafe/lodestar/pull/9955). That update includes parent-slot derivation from `latestBlockHeader.slot` and renamed PTC window types. BASELINE-01's alpha.14 run remains historical evidence, not beta.0 qualification. Material settled rules include:
 
 | Topic | Current result | Builder consequence |
 |---|---|---|
@@ -226,7 +230,7 @@ The current project target is [v1.7.0-alpha.14](https://github.com/ethereum/cons
 | Parent-slot payload availability | Query availability at the parent block slot | Cover skipped-slot cases without using the child slot incorrectly |
 | Already-known block redelivery | Early return preserves PTC and timeliness state | Duplicate block observation must remain idempotent |
 | Progressive SSZ and exact integers | Current fork types and exact `uint64` roots are authoritative | Never hand-build roots or narrow values above `2^53` to JavaScript `number` |
-| Envelope shapes | One signed envelope supports stateful and stateless contents through `Eth-Blob-Data-Included` | Core uses stateful same-BN reveal; stateless/multi-BN remains conditional |
+| Envelope shapes | One signed envelope supports stateful and stateless contents through `Eth-Blob-Data-Included` | The current direct-Engine plan uses retained material to assemble stateless reveal; production multi-BN support remains separate |
 
 The mainnet timing parameters remain:
 
@@ -332,7 +336,7 @@ Broader runtime-configurable malicious controls, a configuration UI, payload wit
 Four layers are easy to conflate:
 
 ```text
-consensus-specs alpha.14
+consensus-specs beta.0 (historical BASELINE-01: alpha.14)
 → current Lodestar unstable
 → public Platåberget runtime observations
 → Glamsterdam execution fixtures v8.1.1
@@ -486,7 +490,7 @@ sequenceDiagram
     PTC-->>B: Payload-attestation events
 ```
 
-The alpha.14 Gloas types remain the current pinned core shape. Heze extends the bid with `inclusion_list_bits`; EIP-8237 and EIP-8146 remain future shape risks behind fork-aware adapters.
+Use the fork types at the exact implementation head. Current `unstable` uses the beta.0 spec pin, while older PR and baseline checks used their recorded dependencies. Heze extends the bid with `inclusion_list_bits`; fork-aware adapters must retain that signed field.
 
 ## Candidate architecture sketch
 
@@ -921,14 +925,14 @@ The Beacon API event-stream contract tells consumers to use EventSource and perm
 
 ## Implementation packages and ownership
 
-The merged [implementation plan](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/implementation-plan.md) and [Linear project](https://linear.app/kriso/project/lodestar-eip-7732-builder-814d6faca6fd) now own the authoritative task inventory, dependencies, milestones, status, and evidence. The inventory currently contains 76 Linear issues across core, supporting, conditional, deferred, decomposition, and attribution scope. This note should not recreate a second mutable backlog.
+The merged [implementation plan](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/implementation-plan.md) and [Linear project](https://linear.app/kriso/project/lodestar-eip-7732-builder-814d6faca6fd) now own the authoritative task inventory, dependencies, milestones, status, and evidence. The inventory checked on 7 September contains 83 Linear issues across core, supporting, conditional, deferred, decomposition, and attribution scope. This note should not recreate a second mutable backlog.
 
 Current delivery state at this reconciliation:
 
 | Item | State | Evidence / next condition |
 |---|---|---|
 | `PLAN-01` | Done | GitHub plan merged; GitHub is canonical for the over-limit full plan and the short HackMD landing page remains the public pointer |
-| Board setup | Done | 72 tracked Linear issues with 72 matching GitHub issue mirrors, milestones, scope labels, cycles, saved views, and a public GitHub Project mirror. The five new Marko-owned items have verified assignees, workflow status, Linear status, gate, and priority fields |
+| Board setup | Done | 83 tracked Linear issues with 83 matching GitHub issues and project items. Missing project items and Marko assignee mappings were repaired; canceled/duplicate records are not delivered functionality |
 | `SIGN-01` | Done | Merged and tested in Lodestar #9758 |
 | `CLI-01`, `API-01` | Done | Closure preserved in line with Marko's project-status decision; their #9781 implementation is merged |
 | `REVIEW-01` | In progress | #9781 merged with Nico approval; #9819 is closed through merged #9826 and #9827 is merged. Explicitly reconcile the twelve historical GitHub thread markers before closure |
@@ -937,13 +941,13 @@ Current delivery state at this reconciliation:
 | `BASELINE-01` | Done | The immutable pin, reproducibility commands, capability matrix, and historical upstream audit are recorded in the [BASELINE-01 capability audit](baseline-capability-audit.md) |
 | `ENV-01` | Done | Manual development setup was accepted as sufficient to unblock implementation. It does not claim independent clean-checkout reproduction |
 | `ENV-02` | In review | The stored runbook has three clean launches plus real-BN API-02 and connected/interrupted-stream SIGTERM evidence on the first machine. Closure requires a second contributor to reproduce it independently |
-| `API-02` | In review | Upstream PR [#9931](https://github.com/ChainSafe/lodestar/pull/9931) is the current review artifact at `afd302e94f`. Its real-BN and shutdown evidence is stored under ENV-02 |
+| `API-02` | In review | Upstream PR [#9931](https://github.com/ChainSafe/lodestar/pull/9931) was reviewed at `ebaaceadbc38` on 7 September. Its real-BN and shutdown evidence is stored under ENV-02 |
 | `PAYLOAD-SOURCE-01` | In review | [#9958](https://github.com/ChainSafe/lodestar/pull/9958) is ready and mergeable; it intentionally excludes runtime topology and CLI wiring |
 | `PAYLOAD-ORCH-01` | In progress | [#9973](https://github.com/ChainSafe/lodestar/pull/9973) is a stacked draft with bounded job, cancellation, timeout, and cleanup behavior |
-| `STORE-CORE-01` / `STORE-WIRING-01` | In review / In progress | Marko-owned [LOD-68](https://linear.app/kriso/issue/LOD-68/store-wiring-01-wire-and-prune-the-builder-payload-store) tracks [#9970](https://github.com/ChainSafe/lodestar/pull/9970) wiring and pruning; [contribution #9](https://github.com/markolazic01/lodestar/pull/9) carries Kris's bounded-store hardening |
-| Bid foundations | In progress | Marko-owned [LOD-69](https://linear.app/kriso/issue/LOD-69/bid-policy-base-01-add-the-initial-builder-bid-policy) tracks [#9974](https://github.com/ChainSafe/lodestar/pull/9974); [#9975](https://github.com/ChainSafe/lodestar/pull/9975) and [#9976](https://github.com/ChainSafe/lodestar/pull/9976) cover pending obligations and preferences |
+| `STORE-CORE-01` / `STORE-WIRING-01` | In review / In review | Marko-owned [LOD-68](https://linear.app/kriso/issue/LOD-68/store-wiring-01-wire-and-prune-the-builder-payload-store) tracks [#9970](https://github.com/ChainSafe/lodestar/pull/9970) wiring and pruning; [contribution #9](https://github.com/markolazic01/lodestar/pull/9) now carries Kris's agreed test-only pruning/lookup contribution at `f9fe439a4ad6`; broader hardening remains outside accepted scope |
+| Bid foundations | Policy/ledger in review; preferences in progress | Marko-owned [LOD-69](https://linear.app/kriso/issue/LOD-69/bid-policy-base-01-add-the-initial-builder-bid-policy) tracks [#9974](https://github.com/ChainSafe/lodestar/pull/9974); [#9975](https://github.com/ChainSafe/lodestar/pull/9975) and [#9976](https://github.com/ChainSafe/lodestar/pull/9976) cover pending obligations and preferences |
 | Bid and reveal services | In progress | Drafts [#9978](https://github.com/ChainSafe/lodestar/pull/9978) through [#9982](https://github.com/ChainSafe/lodestar/pull/9982) expose pure assembly, publication, selection, and envelope boundaries; integrated runtime outcomes remain open |
-| `SPEC-01` | In progress | The live cross-client candidates are extended `block`, lightweight `bid_included`, and `block_v2`. API-02 remains correct regardless of the eventual choice |
+| `SPEC-01` | In progress | The two leading cross-client candidates are extended `block` and lightweight `bid_included`; `block_v2` remains comparison evidence. API-02 remains correct regardless of the eventual choice |
 
 The near-term activation order is:
 
@@ -1021,12 +1025,12 @@ Status checked 2 September 2026 against live primary sources. Static repository 
 | [#9968](https://github.com/ChainSafe/lodestar/pull/9968) | Merged September 3 | Records late canonical-block imports with logs and a metric. Reuse it in QA-01 to distinguish local BN import delay from Builder selection or reveal delay |
 | [#9931](https://github.com/ChainSafe/lodestar/pull/9931) / [#9932](https://github.com/ChainSafe/lodestar/pull/9932) | Ready and mergeable | API-02 block observation and TEST-01 Gate-A regressions can be reviewed independently of the direct-Engine stack |
 | [#9958](https://github.com/ChainSafe/lodestar/pull/9958) / [#9973](https://github.com/ChainSafe/lodestar/pull/9973) | #9958 ready; #9973 draft and stacked | Payload-source boundary first, then bounded orchestration. Runtime construction and final Engine topology are deliberately absent |
-| [#9970](https://github.com/ChainSafe/lodestar/pull/9970) / [contribution #9](https://github.com/markolazic01/lodestar/pull/9) | Draft plus ready contribution | One upstream PayloadStore path; merge accepted hardening into it rather than creating a competing upstream store PR |
-| [#9974](https://github.com/ChainSafe/lodestar/pull/9974) / [contribution #10](https://github.com/markolazic01/lodestar/pull/10) / [#9975](https://github.com/ChainSafe/lodestar/pull/9975) / [#9976](https://github.com/ChainSafe/lodestar/pull/9976) | Policy draft with numeric hardening; ledger ready; preferences draft | Pure bid foundations. They narrow BID-CORE-01 but do not complete a working bid loop |
+| [#9970](https://github.com/ChainSafe/lodestar/pull/9970) / [contribution #9](https://github.com/markolazic01/lodestar/pull/9) | Both ready; #9 now test-only | Keep #9970's initial simple store. #9 adds agreed pruning/lookup tests; broader capacity, copying and first-write behavior remains unaccepted |
+| [#9974](https://github.com/ChainSafe/lodestar/pull/9974) / [contribution #10](https://github.com/markolazic01/lodestar/pull/10) / [#9975](https://github.com/ChainSafe/lodestar/pull/9975) / [#9976](https://github.com/ChainSafe/lodestar/pull/9976) | Policy ready with #10 merged into its branch; broader validation open in LOD-64; ledger ready; preferences draft | Pure bid foundations. They narrow BID-CORE-01 but do not complete a working bid loop |
 | [#9978](https://github.com/ChainSafe/lodestar/pull/9978) / [#9979](https://github.com/ChainSafe/lodestar/pull/9979) | Drafts | One logical bid assembly/publication path; decide whether to group for final review after foundation feedback |
 | [fork #77](https://github.com/krisoshea-eth/lodestar/pull/77) | Fork-only stacked draft | Composes one resolved Gloas or Heze input through payload build, retention, coverability, bid assembly, and publication; event, CLI, EL configuration, selection, and reveal are excluded |
 | [#9980](https://github.com/ChainSafe/lodestar/pull/9980) / [#9981](https://github.com/ChainSafe/lodestar/pull/9981) / [#9982](https://github.com/ChainSafe/lodestar/pull/9982) | Drafts | One logical selection/reveal path; integrated retained-material lookup and runtime wiring remain open |
-| [#9972](https://github.com/ChainSafe/lodestar/pull/9972) | Merged September 3 | Implements consensus-specs #5594 bid validation; reuse it rather than duplicating the check |
+| [#9972](https://github.com/ChainSafe/lodestar/pull/9972) | Merged September 3 | BN validation remains authoritative; #9978/#77's local pre-sign check provides complementary fail-fast coverage |
 | [#9984](https://github.com/ChainSafe/lodestar/pull/9984) | Merged September 2 | Orders cheap bid rejects and ignores before state and signature checks on the BN path; no current Builder-side PR needs to duplicate it |
 | [#9986](https://github.com/ChainSafe/lodestar/pull/9986) | Merged September 2 | Makes expected-error spec vectors fail when Lodestar accepts invalid input and exposes Gloas Builder and validator sweep-index divergences; route resulting evidence to QA-01 |
 | [#9878](https://github.com/ChainSafe/lodestar/pull/9878) | Open draft | Peer-score cooldown remains a resilience watch outside API-02 scope |
@@ -1052,8 +1056,8 @@ Status checked 2 September 2026 against live primary sources. Static repository 
 
 | Item | Status | Why it matters |
 |---|---|---|
-| [v1.7.0-alpha.14](https://github.com/ethereum/consensus-specs/releases/tag/v1.7.0-alpha.14) | Released August 19 | Current project specification baseline |
-| [#5585](https://github.com/ethereum/consensus-specs/pull/5585) | Merged August 31 | Changes the source-tree version to `v1.7.0-beta.0`; no beta tag or GitHub release exists yet, so alpha.14 remains the immutable Lodestar/project pin |
+| [v1.7.0-alpha.14](https://github.com/ethereum/consensus-specs/releases/tag/v1.7.0-alpha.14) | Released August 19 | Historical BASELINE-01 specification pin |
+| [v1.7.0-beta.0](https://github.com/ethereum/consensus-specs/releases/tag/v1.7.0-beta.0) / [Lodestar #9955](https://github.com/ChainSafe/lodestar/pull/9955) | Released September 3; Lodestar adoption merged September 4 | Current `unstable` spec pin. Requalify actual runtime inputs and tests at the chosen head; do not rewrite the historical baseline or refresh PR branches merely to advance their base |
 | [#5545](https://github.com/ethereum/consensus-specs/pull/5545) | Merged August 24 after alpha.14 | Initializes anchor PTC vote arrays; include it in the next spec pin and related fork-choice evidence |
 | [#5559](https://github.com/ethereum/consensus-specs/pull/5559) | Merged August 21 | Ignores proposer preferences for pre-Gloas slots; Lodestar #9869 implements the matching behavior |
 | [#5580](https://github.com/ethereum/consensus-specs/pull/5580) / [Lodestar #9954](https://github.com/ChainSafe/lodestar/pull/9954) | Merged | Reject bids from Builders exited by the parent payload; include the parent-state transition in bid-path tests |

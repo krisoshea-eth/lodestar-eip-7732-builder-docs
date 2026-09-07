@@ -12,9 +12,15 @@
 | Lodestar proofs of concept | Marco's upstream [#9854](https://github.com/ChainSafe/lodestar/pull/9854), [#9875](https://github.com/ChainSafe/lodestar/pull/9875), [#9876](https://github.com/ChainSafe/lodestar/pull/9876), and [#9896](https://github.com/ChainSafe/lodestar/pull/9896), plus Nico's draft [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder) branch at `99fd8fa9ad` |
 | Target repository | [`ethereum/beacon-APIs`](https://github.com/ethereum/beacon-APIs) |
 | Beacon APIs audit base | [`ef98d51`](https://github.com/ethereum/beacon-APIs/commit/ef98d512c03c8ca6b9d7cbdc45b9293ec2b24722) |
-| Last updated | 2026-09-02 |
+| Last updated | 2026-09-07 (PoC review caveats; no new cross-client decision) |
 
 > **Artifact boundary:** This document owns the Builder-selection notification question in beacon-APIs #599. Marco's open [beacon-APIs #638](https://github.com/ethereum/beacon-APIs/pull/638) is a separate payload-attributes schema change for `safe_block_hash` and `finalized_block_hash`. The current #638 head does not specify post-Gloas emission timing and does not settle the selection-event wire contract.
+
+## PoC review caveats, 7 September
+
+- At #9854 head `eafa3ad026`, the import path omits the new fields for self-builds but the Gloas codec requires them. A local regression reproduces serialization failure. Candidate A's required self-build fields must be implemented in both producer and codec before this PoC can demonstrate that contract.
+- At #9875 head `743c79a759`, the fixed Gloas full-bid codec omits Heze inclusion-list bits. If that comparison variant is pursued, use a fork-aware codec and a Heze round-trip regression. This is not a reason to add the full bid or `bid_root` to the lightweight candidate.
+- These findings do not select the final event contract. Conditional reviews are posted on [#9854](https://github.com/ChainSafe/lodestar/pull/9854#pullrequestreview-5135363697) and [#9875](https://github.com/ChainSafe/lodestar/pull/9875#pullrequestreview-5135363212). #638 remains a separate, open payload-attributes hash proposal. No Beacon APIs or Discord message was posted.
 
 ## Abstract
 
