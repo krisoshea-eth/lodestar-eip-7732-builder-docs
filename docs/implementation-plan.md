@@ -330,11 +330,11 @@ The core is complete only when all of the following are demonstrated:
 - one local keystore-backed Builder key can sign valid fork-aware bids and envelopes;
 - the Builder connects to the expected source BN, resolves an active Builder identity, and exposes its current BN-reported status/balance for diagnostics;
 - any missing BN route or event required by the workflow is added in the intended standard `/builder` or `/beacon` namespace and proposed upstream, with a temporary typed adapter only where the specification is incomplete;
-- the source BN reuses its canonical post-Gloas payload-production path rather than copying Engine API or proposer-state logic into the Builder;
-- the unsigned bid commits to the real payload, uses the payload-value baseline (`bid.value = execution_payload_value`), and uses `execution_payment = 0`;
-- the Builder config supplies the execution payload `feeRecipient`/coinbase through the BN preparation/candidate flow before payload work begins; the BN must not silently reuse the proposer's self-build fee recipient;
+- the Builder prepares payloads through its injected direct-Engine source, using authoritative BN chain inputs without recreating proposer-state or consensus validation;
+- the unsigned bid commits to the real payload and uses the accepted bid policy and coverability checks; the former unconditional payload-value baseline is historical;
+- the Builder config supplies the execution payload `feeRecipient`/coinbase to the payload source before work begins; it must not silently reuse the proposer's self-build fee recipient;
 - the execution payload `feeRecipient`/coinbase pays a Builder-controlled address, while `bid.fee_recipient` pays the proposer; the two addresses must not be the same, although the Builder fixture may reuse its own withdrawal/execution address for payload revenue;
-- insufficient Builder balance is rejected by the authoritative BN workflow and produces a clear Builder operator warning or error; the sidecar may include the status/balance it already reads, but it does not attempt to predict future coverability; top-up management remains external;
+- the Builder checks local coverability against authoritative balance inputs and unsettled liabilities before publishing; the BN still validates bids independently and top-up management remains external;
 - the Builder retains the exact payload, execution requests, blobs, proofs, and fork context needed for stateless reveal until success or expiry;
 - the Builder follows the connected BN's chain inputs, constructs and signs one coverable head-compatible bid, and submits it at a configurable bounded time before the target proposal slot rather than waiting until the slot boundary;
 - exact local selection is detected from BN events and block retrieval without direct libp2p participation;
@@ -840,7 +840,7 @@ flowchart TD
 - [x] Complete command registration through existing CLI conventions.
 - [x] Add configuration for the source BN, network/chain, local keystore, Builder execution fee recipient, timeouts, and logging. The bounded bid-publication offset remains in `BID-01`; metrics configuration and server wiring remain in `MET-01`.
 - [x] Implement the startup, readiness, health, signal-handling, and shutdown scope Marko closed. The later-Builder startup lifecycle merged in #9781; post-merge reconciliation remains in `REVIEW-01`.
-- [x] Prevent signing/publication until the implemented key, BN, chain, and Builder-state checks pass; retain the BN-authoritative preparation guard in the later bid path.
+- [x] Prevent signing/publication until the implemented key, BN, chain, and Builder-state checks pass. The later runtime bid path must also check current source readiness and payload-source availability.
 - [x] Use structured logs without secret material. Bounded metric labels remain in `MET-01`.
 - [x] Keep the generated Builder CLI page hidden from the public sidebar, as established by [Lodestar #9770](https://github.com/ChainSafe/lodestar/pull/9770), until the command is functionally ready and `REVIEW-01` closes.
 - [x] Keep Forgestar as an optional project codename only.
@@ -879,7 +879,7 @@ flowchart TD
 - [x] Record the resolved Builder index, lifecycle status, and BN-reported balance returned by the same status lookup.
 - [x] Expose current Builder status/balance through structured diagnostics without treating that snapshot as an independent per-bid solvency decision. The bounded metric remains in `MET-01`.
 - [x] Observe and report the source BN's sync, optimistic-execution, and EL-availability state at sidecar startup/readiness, and keep the sidecar inert while the source is not ready.
-- [x] Keep the authoritative `not while syncing` and optimistic-execution guard in the BN preparation/candidate path. Return a typed syncing or unavailable result instead of recreating chain-readiness policy in the sidecar.
+- [x] Retain the BN-authoritative readiness inputs and startup checks delivered by API-01. Applying current readiness and payload-source availability to new direct-Engine bid work remains a runtime-integration requirement, not a completed BN preparation route.
 - [x] Reuse the smallest suitable existing BN helper without importing validator only for `runOnResynced`.
 - [x] Implement the typed timeout, cancellation, response-bound, and redacted-error scope Marko closed. Broader regression coverage remains in `TEST-01`.
 - [x] Land the reviewed later-deposited or later-activated Builder lifecycle implementation in #9781, with broader cancellation regression work retained in `TEST-01`.
@@ -1587,7 +1587,7 @@ follow-up      → create non-core/conditional item
 scope change   → amend proposal before changing core
 ```
 
-The Lodestar review pass and confirmed follow-up decisions from 27 July–4 August 2026 are incorporated as follows:
+The following table records the Lodestar review pass and follow-up decisions from 27 July–4 August 2026. Its BN-owned Engine, preparation, bid-construction, and cache entries are historical and were superseded by the 2 September direct-Engine direction. Use the [direct-Engine working plan](direct-engine-working-plan.md) for current ownership and runtime requirements; the historical dispositions below do not authorize new BN-mediated routes.
 
 | Review topic | Disposition | Plan change |
 |---|---|---|

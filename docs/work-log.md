@@ -4,6 +4,7 @@ This is the canonical chronological delivery log for the Lodestar EIP-7732 Build
 
 ## 7 September 2026 approved review follow-through
 
+- Corrected remaining current-looking BN-mediated ownership and readiness guidance after the follow-up docs review. Kept the August decision table explicitly historical and retained dated validation evidence. The duplicate-script review on docs #27 was withdrawn as a maintenance preference, not a correctness requirement.
 - Fixed fork #77's post-policy coverability check at `75037946b79e`, with six new failing-before/passing-after regressions. All 42 SlotBidder tests and 185 selected component tests pass; the 42 SlotBidder tests also pass with Marko's actual store substituted locally.
 - Marko merged arithmetic-only contribution #10 into his branch; ready upstream #9974 now includes it. Broader policy validation remains in LOD-64.
 - Narrowed store contribution #9 to one test file at `f9fe439a4ad6`, with Marko's agreement. Four store tests and Builder type/build checks pass. No production store/wiring changes remain in its net diff; #63 stays open as reference.
