@@ -1,10 +1,10 @@
 # Direct-Engine Builder working plan
 
-> **Status:** Confirmed working direction, reviewed through 7 September 2026. Nico confirmed direct Engine access as the preferred baseline for `packages/builder`, with the proof-of-concept branch used as implementation evidence rather than merged wholesale. Production EL topology and the exact source-BN input contract remain open design work.
+> **Status:** Confirmed working direction, reviewed through 9 September 2026. Nico confirmed direct Engine access as the preferred baseline for `packages/builder`, with the proof-of-concept branch used as implementation evidence rather than merged wholesale. Production EL topology and the exact source-BN input contract remain open design work.
 
 ## Purpose and evidence boundary
 
-The [7 September PR audit](reviews/2026-09-07-pr-audit.md) records current contribution scope, remaining findings, and validation limits. Older branch and runtime evidence below retains its original date.
+The [9 September PR review](reviews/2026-09-09-pr-review.md) supersedes moving status claims in the [7 September audit](reviews/2026-09-07-pr-audit.md) and the dated table below: TEST-01 is merged, store contribution #9 is incorporated into #9970, policy #9974 includes Marko's share validation, and preference tracker #9976 is ready for review. Older branch and runtime evidence below retains its original date.
 
 Nico's [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder) branch demonstrates an end-to-end Builder that owns payload construction through an Engine API connection. This differs materially from the original BN-mediated plan, where the source beacon node owned payload construction and stateful reveal material.
 

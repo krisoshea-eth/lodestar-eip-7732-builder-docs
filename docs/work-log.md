@@ -2,6 +2,13 @@
 
 This is the canonical chronological delivery log for the Lodestar EIP-7732 Builder. It tracks weekly implementation, project-board, review, and coordination movement from the accepted proposal onward. It is deliberately lighter than the fellows' full weekly write-ups. The implementation plan owns accepted scope and dependencies; the Living Technical Note owns current technical state, decisions, risks, and upstream watches.
 
+## 9 September 2026 PR follow-through
+
+- Nico merged TEST-01 #9932. The agreed store-test and arithmetic contributions #9/#10 are incorporated into Marko's upstream PR branches.
+- Marked #9976 ready after exact-head validation and a lookup-contract comparison with the BN pool. Kept downstream stacks and fork integration drafts separate.
+- Aligned fork #77 with Marko's accepted shareBps validation and added regressions. Preserved both API-02 and merged TEST-01 mocks without merging unstable.
+- The [review record](reviews/2026-09-09-pr-review.md) separates local evidence, the unresolved API-02 simulation failure, current upstream watches and remaining runtime work. No fresh real-BN/EL evidence or mentor review comment was published.
+
 ## 7 September 2026 approved review follow-through
 
 - Corrected remaining current-looking BN-mediated ownership and readiness guidance after the follow-up docs review. Kept the August decision table explicitly historical and retained dated validation evidence. The duplicate-script review on docs #27 was withdrawn as a maintenance preference, not a correctness requirement.

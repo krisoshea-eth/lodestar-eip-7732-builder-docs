@@ -37,7 +37,7 @@
 10. [Upstream and change-control rules](#upstream-and-change-control-rules)
 11. [Week 6 and Week 7 completion checklist](#week-6-and-week-7-completion-checklist)
 
-> **7 September review:** See the [current PR and tracker audit](reviews/2026-09-07-pr-audit.md). #10's arithmetic fix is included in ready #9974; #9 is now an agreed test-only contribution, while #63's broader guarantees remain unaccepted. #77's post-policy coverability guard is fixed and tested at `75037946b79e`. These corrections qualify the service-composition claims below; none changes the agreed direct-Engine direction.
+> **9 September review:** The [current PR review](reviews/2026-09-09-pr-review.md) supersedes the moving statuses in the dated tables below. TEST-01 is Done; #9's test-only contribution is incorporated into open #9970; #9974 includes arithmetic and shareBps validation; and #9976 is ready for review. #63's broader guarantees remain unaccepted. #77 includes the share-validation dependency fix at `7a75f9dfcbbb`. Downstream stacks, broader policy validation and the integrated runtime remain unfinished. The [7 September audit](reviews/2026-09-07-pr-audit.md) retains its historical evidence.
 
 ### Visual guide
 
