@@ -17,6 +17,8 @@ This repository mirrors the Lodestar EIP-7732 Builder project documents as raw M
 | Weekly updates | [docs/weekly-updates/](docs/weekly-updates/) | Kris and Marko's EPF HackMD updates |
 | Work log | [docs/work-log.md](docs/work-log.md) | Weekly project-board, implementation, and review progress |
 
+The [7 September PR audit](docs/reviews/2026-09-07-pr-audit.md) qualifies the current implementation evidence and contribution scopes. Historical weekly updates remain unchanged.
+
 ## Weekly Updates
 
 | Week | Kris | Marko |

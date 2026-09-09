@@ -2,6 +2,32 @@
 
 This is the canonical chronological delivery log for the Lodestar EIP-7732 Builder. It tracks weekly implementation, project-board, review, and coordination movement from the accepted proposal onward. It is deliberately lighter than the fellows' full weekly write-ups. The implementation plan owns accepted scope and dependencies; the Living Technical Note owns current technical state, decisions, risks, and upstream watches.
 
+## 9 September 2026 PR follow-through
+
+- Nico merged TEST-01 #9932. The agreed store-test and arithmetic contributions #9/#10 are incorporated into Marko's upstream PR branches.
+- Marked #9976 ready after exact-head validation and a lookup-contract comparison with the BN pool. Kept downstream stacks and fork integration drafts separate.
+- Aligned fork #77 with Marko's accepted shareBps validation and added regressions. Preserved both API-02 and merged TEST-01 mocks without merging unstable.
+- The [review record](reviews/2026-09-09-pr-review.md) separates local evidence, the unresolved API-02 simulation failure, current upstream watches and remaining runtime work. No fresh real-BN/EL evidence or mentor review comment was published.
+
+## 7 September 2026 approved review follow-through
+
+- Corrected remaining current-looking BN-mediated ownership and readiness guidance after the follow-up docs review. Kept the August decision table explicitly historical and retained dated validation evidence. The duplicate-script review on docs #27 was withdrawn as a maintenance preference, not a correctness requirement.
+- Aligned fork #77's preference tracker with #9976 at `b9c956986ad6`. The new composed payment-address regression fails before the update and passes afterward. At this head, 52 focused tests pass, and all 43 SlotBidder tests also pass against Marko's actual store. No event or CLI wiring was added.
+- Fixed fork #77's post-policy coverability check at `75037946b79e`, with six new failing-before/passing-after regressions. All 42 SlotBidder tests and 185 selected component tests pass; the 42 SlotBidder tests also pass with Marko's actual store substituted locally.
+- Marko merged arithmetic-only contribution #10 into his branch; ready upstream #9974 now includes it. Broader policy validation remains in LOD-64.
+- Narrowed store contribution #9 to one test file at `f9fe439a4ad6`, with Marko's agreement. Four store tests and Builder type/build checks pass. No production store/wiring changes remain in its net diff; #63 stays open as reference.
+- Posted the rechecked conditional event-codec reviews, environment rerun/image feedback and duplicate-script comment. Updated the relevant issue evidence and LOD-69 to In Review.
+- Prepared this documentation reconciliation for review. No existing source branch was refreshed from unstable or force pushed; no draft state, Beacon APIs discussion or Discord thread was changed. No fresh real-BN/EL, independent ENV-02 or CI success is claimed.
+
+## 7 September 2026 initial PR and tracker review
+
+- Reviewed 17 open Kris PRs and eight open Marko PRs across ChainSafe and both Lodestar forks, separating stacked parent code from each child's review surface.
+- Reproduced the SlotBidder custom-policy coverability gap and #9854 self-build serialization failure. Recorded the conditional #9875 Heze codec limitation and #10010 rerun issues for review; no review comments were posted.
+- Corrected LOD-64's stale completed-validation checklist, store contribution acceptance claims, and LOD-73/74 validation evidence. Moved Marko's STORE-WIRING-01 to In Review to match ready #9970. Updated relevant recovery, diagnostic, environment and specification watches without inventing new core services.
+- Restored missing GitHub project items and Marko assignments while preserving the unassigned producer, consumer, bid-runtime and reveal-runtime work. Canceled/duplicate records remain administratively closed, not delivered functionality.
+- Kept #10 arithmetic-only and #9/#63 open as unaccepted proposals. #80's isolated ordinary package validation is complete; older source-mapped-only limitations are historical. No fresh real-BN/EL, independent ENV-02 or CI success is claimed.
+- Prepared documentation corrections locally for review. No new PR, upstream refresh merge, force push, or draft-state change.
+
 ## 2 September 2026 payload-attributes field implementation
 
 - Added fork-only Lodestar draft [#80](https://github.com/krisoshea-eth/lodestar/pull/80) and [LOD-74](https://linear.app/kriso/issue/LOD-74/attr-impl-01-emit-post-gloas-forkchoice-hashes-in-payload-attributes) for the current beacon-APIs #638 `safe_block_hash` and `finalized_block_hash` contract.

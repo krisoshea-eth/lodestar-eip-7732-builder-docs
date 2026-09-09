@@ -2,11 +2,15 @@
 
 **Completed:** 2 September 2026  
 **Accepted implementation pin:** Lodestar `57572140f8b75ab72466a869bf7bdc0ad0db265e`  
-**Current comparison head:** Lodestar `unstable` at `7d85330f928c015202341da63624f6b00c420c43`
+**Historical comparison head:** Lodestar `unstable` at `7d85330f928c015202341da63624f6b00c420c43`
 **Immutable release targets:** v1.46.0 at `3873dd5b032d0ad82581fc3416e9628b4f6f2642` and v1.47.0 at `450996b13ab305b860acd131c87f799fdbfbabf0`
 **Protocol snapshot:** consensus-specs v1.7.0-alpha.14, Builder APIs through merged #165/#166/#167, Beacon APIs through merged #630, and Keymanager APIs through merged #92/#93
 
 This audit records what is present, what is under review, and what remains missing. An open pull request, release candidate, fixture tag, or point-in-time runtime observation is evidence for that item only. It is not evidence that the complete Builder lifecycle works.
+
+## 7 September disposition
+
+The baseline pin and validation below are immutable historical evidence. The [current PR audit](reviews/2026-09-07-pr-audit.md) supersedes moving-status claims in this snapshot: consensus-specs beta.0 was released on 3 September and adopted by merged Lodestar #9955 on 4 September; #9761, store #9970 and policy #9974 are now ready for review. Store contribution #9 is now test-only; policy #10 was merged into Marko's branch and is included in #9974. Broader store and policy hardening remains separate. None of this reopens the completed baseline audit. Current PRs and runtime experiments still need their own exact-head validation.
 
 ## Validation baseline
 
@@ -36,7 +40,7 @@ Current feature branches must still record their own base SHA and rerun checks r
 | Restart, replay, non-finality, and outcome evidence | Partial BN infrastructure and monitoring evidence | Not complete. `REL-01`, `QA-01`, `OUT-01`, `DATA-01`, and `E2E-01` remain valid later work |
 | Cross-client Builder-selection event | Beacon APIs #599 and Lodestar #9854/#9875/#9876/#9896 | Unsettled. `SPEC-01` remains independent from API-02 correctness |
 
-## Historical and moving upstream work
+## Historical upstream snapshot
 
 - #9594 closed without merge. The accepted Builder API path is the merged specification and Lodestar #9832, not the abandoned draft.
 - #9813 closed without merge on 25 August. Merged #9864 is the epoch-boundary head-freshness baseline.
@@ -61,4 +65,4 @@ Current feature branches must still record their own base SHA and rerun checks r
 
 The immutable project pin, reproducibility record, capability matrix, and historical upstream audit are complete. Current drafts are not duplicated by another active ChainSafe implementation, but their service boundaries are not yet maintainer-accepted. The complete honest Builder lifecycle is still missing runtime integration and end-to-end proof: source inputs, payload construction, storage, bid construction/publication, exact selection matching, reveal, and protocol outcomes must operate together.
 
-Before any new implementation slice starts, refresh current `unstable`, Nico's proof-of-concept branch, and directly overlapping open pull requests. Do not advance issue status from a release tag, fixture, or prototype alone.
+Before any new implementation slice starts, inspect current `unstable`, Nico's proof-of-concept branch, and directly overlapping open pull requests read-only. This does not require merging `unstable` into existing PR branches. Do not advance issue status from a release tag, fixture, or prototype alone.
