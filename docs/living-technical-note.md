@@ -8,10 +8,10 @@
 | Spec target | [consensus-specs v1.7.0-beta.0](https://github.com/ethereum/consensus-specs/releases/tag/v1.7.0-beta.0), released 3 September and adopted by Lodestar through merged [#9955](https://github.com/ChainSafe/lodestar/pull/9955) on 4 September. BASELINE-01 retains its historical alpha.14 pin; existing PR validation remains scoped to each tested head |
 | Lodestar baseline | [v1.47.0](https://github.com/ChainSafe/lodestar/releases/tag/v1.47.0) at `450996b13ab305b860acd131c87f799fdbfbabf0` is the latest stable and newest immutable release target; completed `BASELINE-01` records the exact working `unstable` pin |
 | Builder implementation | Foundation through #9868, Gloas Builder API #9832, bounded envelope cache #9904, bid validation/flood publication #9914, parent-hash validation #9972, API-only local-pool removal #9998, and SSE containment #9964 are merged. API-02 #9931, TEST-01 #9932, PayloadSource #9958, the payload/store/policy foundations, and bid/reveal drafts are mapped in the direct-Engine working plan. Nico's 10-commit, 42-file branch remains proof-of-concept evidence rather than a merge-ready patch |
-| Devnet | Public [Platåberget Dora](https://dora.plataberget.ethpandaops.io/) provides point-in-time runtime evidence. A finalized Lodestar-proposed block at [slot 79322](https://dora.plataberget.ethpandaops.io/slot/0x159ad62fd9512d3843f53ab79387a726d82b66fb0892134504cd1b426cc78b19) used an external Builder payload, reported `Revealed`, value 0.3246 ETH, and 99.26% PTC quorum. This does not prove continuous health, API-02's observer path, shutdown behavior, Assertoor/Buildoor results, deployed bytecode, or recovery. [`tests-glamsterdam-devnet@v8.1.1`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.1) is the latest successor fixture release |
+| Devnet | Public [Platåberget Dora](https://dora.plataberget.ethpandaops.io/) provides point-in-time runtime evidence. A finalized Lodestar-proposed block at [slot 79322](https://dora.plataberget.ethpandaops.io/slot/0x159ad62fd9512d3843f53ab79387a726d82b66fb0892134504cd1b426cc78b19) used an external Builder payload, reported `Revealed`, value 0.3246 ETH, and 99.26% PTC quorum. This does not prove continuous health, API-02's observer path, shutdown behavior, Assertoor/Buildoor results, deployed bytecode, or recovery. [`tests-glamsterdam-devnet@v8.1.3`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.3) is the current fixture reference, not evidence that a deployment uses it |
 | Builder lifecycle identifiers | Deposit request type `0x03`; Builder withdrawal credentials prefix `0xB0` |
 | Payload deadline | `PAYLOAD_DUE_BPS = 5000`, six seconds into a 12-second slot; PTC payload attestation remains at `7500` |
-| Last reconciliation | September 7, 2026: [PR and tracker audit](reviews/2026-09-07-pr-audit.md), accepted store-test scope, policy-validation follow-up, and direct-Engine ownership corrections. No fresh devnet or independent reproduction result is implied |
+| Last reconciliation | September 9, 2026: [current PR review](reviews/2026-09-09-pr-review.md), merged TEST-01, incorporated store tests, selective policy update, and preference-tracker readiness. No fresh devnet or independent reproduction result is implied |
 | Historical September 3 snapshot | `nflaig/builder` at `99fd8fa9ad`, Lodestar `unstable` at `76b167bf36`, Builder PRs through #9998, fork drafts #77 and #80, and directly relevant consensus/API/Buildoor changes. Linear and GitHub mirrors record Marko's #9998 work in LOD-79; the accidental LOD-81/#87 duplicate is canceled and closed as a duplicate. Runtime and evidence issues include the two-BN publication topology, exact job identity, defensive retention, parent-root binding, and retry-safe reveal state |
 | Next milestone | Review the independent foundations first, stabilize the two logical bid/reveal review groups, complete the combined runtime loop and independent ENV-02 reproduction, and settle SPEC-01 separately from payload-attributes #638 |
 
@@ -19,7 +19,7 @@ This is the working document for the Lodestar EIP-7732 Builder project, an EPF c
 
 ## 9 September review update
 
-The [current PR review](reviews/2026-09-09-pr-review.md) supersedes moving status claims in the older snapshots: TEST-01 #9932 is merged; store contribution #9 is incorporated; #9974 fixes fractional/non-finite shareBps; and #9976 is ready for review. Remaining service stacks stay draft. Fixtures [v8.1.3](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.3), released 31 August, supersede v8.1.1 as a fixture release reference; neither fixture publication nor the historical Dora observation establishes current deployment health. API-02's prior multifork simulation failure remains unexplained. Real BN/EL integration and independent ENV-02 reproduction remain incomplete.
+The [current PR review](reviews/2026-09-09-pr-review.md) supersedes moving status claims in the older snapshots: TEST-01 #9932 is merged; store contribution #9 is incorporated; #9974 fixes fractional/non-finite shareBps; and #9976 is ready for review. Remaining service stacks stay draft. Fixtures [v8.1.3](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.3), released 31 August, supersede v8.1.1 as a fixture release reference; neither fixture publication nor the historical Dora observation establishes current deployment health. API-02's prior multifork failure was traced to the test rejecting a successful publish of an already-imported block; the simulation correction and rerun remain outstanding. Real BN/EL integration and independent ENV-02 reproduction remain incomplete.
 
 ## 7 September review update
 
@@ -286,7 +286,7 @@ Lodestar #9723 remains an ecosystem watch for proposer/EL coherence but is not a
 - **assertoor** still provides the `gloas-dev` lifecycle/deposit/exit/prefork playbooks. Any playbook or cached calldata that assumes `0x03` withdrawal credentials is stale after #5416; verify the current branch and devnet contract before running it.
 - **The staked Builder API** has converged in builder-specs #165/#166, beacon-APIs #630, keymanager-APIs #92, and merged Lodestar #9832. It is not a core dependency, but BN-01 should audit the final landed route and forwarding behavior.
 - **Platåberget Dora** now proves one finalized Lodestar-proposed external Builder reveal at slot 79322. It is point-in-time protocol-flow evidence only, not continuous-health, API-02, shutdown, recovery, Assertoor/Buildoor, or bytecode evidence.
-- **Glamsterdam fixtures** are now published at [`tests-glamsterdam-devnet@v8.1.1`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.1). Fixture publication and Dora observations remain different evidence classes.
+- **Glamsterdam fixtures:** [`tests-glamsterdam-devnet@v8.1.3`](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.3), published 31 August, supersedes v8.1.1 as the current fixture reference. Historical runs retain their original pins. Fixture publication and Dora observations remain different evidence classes.
 
 ### Fork and spec status
 
@@ -301,7 +301,7 @@ Findings that shape the architecture but are not all final decisions.
 
 ### Architecture implications of the latest Lodestar work
 
-The current working direction is direct Engine access through an injected `PayloadSource`. The Builder owns payload construction, retention, bid policy and signing, exact selection matching, and stateless reveal. The source BN remains authoritative for chain and proposer context, Builder state, validation, and network publication. This replaces the earlier BN-mediated preparation/candidate design.
+The current working direction is direct Engine access through an injected `PayloadSource`. The Builder owns payload construction, retention, bid policy and signing, exact selection matching, and stateless reveal, including its local payload store and bid ledger. The source BN supplies authoritative chain and proposer context, including the on-chain Builder registry, lifecycle status and balance, and performs validation and network publication. This replaces the earlier BN-mediated preparation/candidate design.
 
 The remaining architecture work is narrower:
 
@@ -345,13 +345,13 @@ Four layers are easy to conflate:
 consensus-specs beta.0 (historical BASELINE-01: alpha.14)
 → current Lodestar unstable
 → public Platåberget runtime observations
-→ Glamsterdam execution fixtures v8.1.1
+→ Glamsterdam execution fixtures v8.1.3
 ```
 
 A local demo can begin before the public devnet is On, but its runbook must record the exact CL branch, EL image, network config, deposit contract, and builder credentials used.
 
 - Keep historical devnet-7, current Platåberget, and local fixture evidence separate. Fixture tags and images are configuration or publication evidence, not runtime-health evidence.
-- Use the exact network and fixture versions recorded by a run. The current fixture line is v8.1.1, while Dora's slot 79322 is independent point-in-time evidence and must not be promoted to a continuous-health claim.
+- Use the exact network and fixture versions recorded by a run. The current fixture reference is v8.1.3, while Dora's slot 79322 is independent point-in-time evidence and must not be promoted to a continuous-health claim.
 - Local Kurtosis remains the first evidence target, so a public devnet transition does not block the core project.
 
 ### Validation and observability edges
@@ -942,7 +942,7 @@ Current delivery state at this reconciliation:
 | `SIGN-01` | Done | Merged and tested in Lodestar #9758 |
 | `CLI-01`, `API-01` | Done | Closure preserved in line with Marko's project-status decision; their #9781 implementation is merged |
 | `REVIEW-01` | In progress | #9781 merged with Nico approval; #9819 is closed through merged #9826 and #9827 is merged. Explicitly reconcile the twelve historical GitHub thread markers before closure |
-| `TEST-01` | In review | Upstream PR [#9932](https://github.com/ChainSafe/lodestar/pull/9932) contains the separated readiness regression coverage |
+| `TEST-01` | Done | Upstream PR [#9932](https://github.com/ChainSafe/lodestar/pull/9932) merged on 9 September with the separated readiness regression coverage |
 | `MET-01` | Done | #9848 merged the metrics server and current bounded Builder metrics; later bid and signing metrics stay with their producing features rather than reopening Gate A |
 | `BASELINE-01` | Done | The immutable pin, reproducibility commands, capability matrix, and historical upstream audit are recorded in the [BASELINE-01 capability audit](baseline-capability-audit.md) |
 | `ENV-01` | Done | Manual development setup was accepted as sufficient to unblock implementation. It does not claim independent clean-checkout reproduction |
