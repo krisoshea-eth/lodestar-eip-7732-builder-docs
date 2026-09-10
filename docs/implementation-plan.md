@@ -37,7 +37,7 @@
 10. [Upstream and change-control rules](#upstream-and-change-control-rules)
 11. [Week 6 and Week 7 completion checklist](#week-6-and-week-7-completion-checklist)
 
-> **10 September review:** The [current reconciliation](reviews/2026-09-10-reconciliation.md) supersedes moving statuses in the dated tables below. TEST-01 and ENV-03 are Done for their implementation scopes. #9's test-only contribution is incorporated into open #9970; #9974 includes arithmetic and shareBps validation. #9976 now includes preference event subscription and Builder lifecycle wiring without custom copying. #77 at `cda129bcf5b1` follows that contract and reuses `GWEI_TO_WEI`. #63's broader guarantees remain unaccepted. Downstream stacks, broader policy validation and the complete runtime remain unfinished. Earlier audits retain their dated evidence.
+> **10 September review:** The [current reconciliation](reviews/2026-09-10-reconciliation.md) supersedes moving statuses in the dated tables below. TEST-01, ENV-03 and FIX-01 are Done for their implementation scopes. #9's test-only contribution is incorporated into open #9970; #9974 includes arithmetic and shareBps validation. #9976 now includes preference event subscription and Builder lifecycle wiring without custom copying. #77 at `c6c3c89f0360` follows that contract, reuses `GWEI_TO_WEI` and tests its pipeline against #9970's explicit-key store. #63's broader guarantees remain unaccepted. Downstream stacks, broader policy validation and the complete runtime remain unfinished. Earlier audits retain their dated evidence.
 
 ### Visual guide
 
