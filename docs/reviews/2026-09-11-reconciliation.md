@@ -86,7 +86,9 @@ No new mentor review comment was sufficiently substantiated to propose from this
 | Fork #80 | Six payload-attributes producer tests passed                                                                                                               |
 | SPEC-01  | Both unchanged patches still apply to the pinned master; example encodings, shapes, legacy preservation and bundle round-trips passed                      |
 
-Ledger suites overlap across PRs; these are test executions, not a unique-test total. Earlier actual-Marko-store compatibility, package builds and candidate lint results retain their original dates. This run does not claim new hosted CI success or full package validation for every unchanged draft.
+A second fork #77 run passed all 47 SlotBidder/pipeline tests with the test alias pointing to a store source verified byte-for-byte against the merged upstream implementation at the inspected baseline. This is component compatibility evidence, not live Builder wiring.
+
+Ledger suites overlap across PRs; these are test executions, not a unique-test total. Earlier package builds and candidate lint results retain their original dates. This run does not claim new hosted CI success or full package validation for every unchanged draft.
 
 The simulation used Geth v1.16.7 and Lighthouse unstable-d235f2c. Its containers and simulation network were cleaned up; existing Kurtosis resources were left alone. It is an Electra multifork block-sync run, **not the complete Gloas Builder bid/selection/reveal lifecycle**. No fresh devnet health is established.
 
