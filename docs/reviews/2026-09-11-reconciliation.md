@@ -2,6 +2,18 @@
 
 This audit refreshed Kris's PRs in ChainSafe/lodestar and both contributor forks, Marko's recent Builder work, relevant new upstream changes, and the project trackers. It is a change-focused review, not a claim that every unchanged experimental line is correct.
 
+## Latest comment refresh and correction
+
+The later refresh read all eight open upstream PRs, including conversation comments, reviews and every inline thread. Seven actionable inline threads remain: four on #9958, two on #10054 and one on #9982. The #10054 changes are already implemented; #9958's safeguards are retained for the reasons below, with common types tracked in LOD-92. Replies are prepared for approval, not posted. The merged foundation reviews were reread for existing helpers, copying, logging, naming, test scope and runtime ownership conventions.
+
+The #9982 cancellation review arrived after the earlier readiness pass. Two regressions reproduced that callers shared the first caller's cancellation instead of retaining independent cancellation. Commit `a2fff56b20b29b778c776894f0e1024ebc151eb7` gives the operation its own controller, cancels individual waits independently and aborts the HTTP request only when all waiters cancel. A canceled operation's late result and cleanup cannot affect a newer retry. The existing ledger reservation remains intact.
+
+The correction passed 34 envelope/ledger tests, ordinary Builder type-check, changed-file Biome, build/import and diff checks. Fork #77 contains the same correction at `8a3c51781fbad7ae2f7953066e1502e12ef9c228`; 81 focused component/pipeline tests and the package checks passed. Its 47 SlotBidder/pipeline tests also passed against the accepted upstream store through the existing test-only alias. Counts overlap and do not establish a complete running Gloas lifecycle.
+
+All 92 issue titles, status fields and assignees were compared across Linear and the GitHub Project. LOD-67/73 now record this correction. LOD-89 is picked up by Kris and has a tested, local-only naming commit `8d80e57d49`, with six focused tests and package checks passing. It changes no store behavior and has no new PR. LOD-87 is a meaningful next refactor; runtime ownership and the LOD-76/77/78 input contract remain separate decisions.
+
+The five ready upstream PRs remain #9958, #9979, #9980, #9982 and #10054. No draft state changed in this refresh. #9958 has full hosted results; the other four lack full hosted results at their latest heads, and #10054 still shows Changes Requested until Nazar re-reviews it. No new review comment, Discord/Beacon API post, routine unstable merge, force push or ENV-02 outreach was made. Earlier review sections below retain their original validation scope.
+
 ## Merged work and remaining PRs
 
 API-02 [#9931](https://github.com/ChainSafe/lodestar/pull/9931), TEST-01 [#9932](https://github.com/ChainSafe/lodestar/pull/9932), ledger [#9975](https://github.com/ChainSafe/lodestar/pull/9975) and preference subscription [#9976](https://github.com/ChainSafe/lodestar/pull/9976) are merged.
@@ -17,15 +29,15 @@ Marko's store [#9970](https://github.com/ChainSafe/lodestar/pull/9970), policy [
 | [#9981](https://github.com/ChainSafe/lodestar/pull/9981)      | `1e99557c0ba48553c5c9f23d07840b40626a2cc5` | Draft; source dependency still open                           |
 | [#9979](https://github.com/ChainSafe/lodestar/pull/9979)      | `cabd5a04e81527c4c7045e2671903b1dbcae11e4` | Ready after critical re-review; ledger dependency merged      |
 | [#9980](https://github.com/ChainSafe/lodestar/pull/9980)      | `d802fcb2c157e2765670e6ad8ae9eee669abb88c` | Ready after critical re-review; ledger dependency merged      |
-| [#9982](https://github.com/ChainSafe/lodestar/pull/9982)      | `1073bd413d165eda25c77a8b80dad8964b1b0ad7` | Ready after critical re-review; ledger dependency merged      |
-| [Fork #77](https://github.com/krisoshea-eth/lodestar/pull/77) | `b65c7ff325176b6de00c791ffbba5c250f406be2` | Resolved-input integration draft, not running Builder wiring  |
+| [#9982](https://github.com/ChainSafe/lodestar/pull/9982)      | `a2fff56b20b29b778c776894f0e1024ebc151eb7` | Ready; caller cancellation correction tested and pushed       |
+| [Fork #77](https://github.com/krisoshea-eth/lodestar/pull/77) | `8a3c51781fbad7ae2f7953066e1502e12ef9c228` | Resolved-input integration draft with cancellation correction |
 | [Fork #80](https://github.com/krisoshea-eth/lodestar/pull/80) | `30cff332351de94ebf9f8e81b6e96640b1c125d2` | Input proposal draft; coordinate #638 and newer producer work |
 
 Fork #61 is the clean comparison already represented by #9973. Fork #63 remains a broader, unaccepted store proposal. It must not be treated as required hardening of the accepted initial #9970 scope.
 
 The initial pass left draft states unchanged. The subsequent critical re-review below supersedes that disposition for #9979/#9980/#9982. Their three-dot diffs retain historical parent files after the squash merge; those files match the merged ledger. Do not routinely merge unstable or force-push to refresh these branches.
 
-## Subsequent critical review and readiness
+## Earlier critical review and readiness
 
 Review suggestions were checked against the current implementation, tests and existing patterns. Full comment threads were reread across the open upstream/fork PRs and the recently merged foundation and contribution PRs. No further source correction was justified by this pass.
 
@@ -33,7 +45,7 @@ Review suggestions were checked against the current implementation, tests and ex
 - Keep #10054's simplified simulation patch. Root-addressed lookup plus `assertOk()` verifies presence through the real BN route. Removing the returned-root comparison is valid; removing the large mock test-utility suite is a repository-scope choice, not a rule against testing helpers. Nine temporary local probes passed against the current helper; the probe file was not added to the PR.
 - Mark #9979/#9980/#9982 ready for review. Their own changes compile independently of the unmerged source/assembly PRs. Possible grouping preferences are not an additional readiness gate. Runtime integration remains incomplete.
 
-At the unchanged heads in the table above, #9979 passed 36 focused publisher/signer/ledger tests, #9980 passed 40 selector/ledger tests, and #9982 passed 28 envelope/ledger tests. All three passed ordinary Builder type-check, package Biome, build/import and diff checks. The installed tools were invoked directly after the local Corepack launcher failed. Ledger suites overlap; these are not 104 unique tests.
+Before the later cancellation correction, #9979 passed 36 focused publisher/signer/ledger tests, #9980 passed 40 selector/ledger tests, and #9982 passed 28 envelope/ledger tests at `1073bd413d`. All three passed ordinary Builder type-check, package Biome, build/import and diff checks. The installed tools were invoked directly after the local Corepack launcher failed. Ledger suites overlap; these are not 104 unique tests.
 
 The three PR descriptions now identify the component review files and exact validation heads. LOD-63/65/67 and their GitHub Project status fields are In Review, with assignees unchanged. #9973/#9978/#9981 remain draft on open #9958. Fork #61 already has its upstream counterpart; #63 remains an unaccepted broader store proposal; #77 and #80 remain integration/input drafts.
 
