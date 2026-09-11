@@ -65,7 +65,7 @@ For an initial shared-EL proof of concept, the Builder must follow the BN's emit
 | Policy | Marko's #9974 and contribution #10 | Merged | LOD-64 covers only the remaining per-call validation decision |
 | Ledger and preferences | #9975, #9976 | Merged | LOD-87/88/89 track shared stream, preference bootstrap and naming follow-ups |
 | Bid assembly and envelope assembly | #9978, #9981 | Draft, #9958 still open | Preserve the source dependency and confirm review grouping |
-| Bid publication, selection and envelope publication | #9979, #9980, #9982 | Draft, merged ledger dependency; conflicts corrected | Next review candidates; historical three-dot diffs still include ledger files |
+| Bid publication, selection and envelope publication | #9979, #9980, #9982 | Ready for review after critical re-review and exact-head checks | Review the named component files; historical three-dot diffs still include the already-merged ledger. Grouping remains optional maintainer feedback, not a prerequisite |
 | Resolved-input SlotBidder | Fork #77 | Draft, fork-only | Reuse merged services; LOD-76/77/78 own actual input and runtime wiring |
 | Payload-attributes hashes | Fork #80 and Beacon APIs #638 | Both proposals remain open | Coordinate the input contract; preserve #10037 and #10056 producer behavior |
 | Simulation correction | #10054 | Ready, amended after Nazar's review | Existing helper only; full local simulation rerun passed |

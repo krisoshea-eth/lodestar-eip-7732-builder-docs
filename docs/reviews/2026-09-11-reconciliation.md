@@ -15,15 +15,29 @@ Marko's store [#9970](https://github.com/ChainSafe/lodestar/pull/9970), policy [
 | [#9973](https://github.com/ChainSafe/lodestar/pull/9973)      | `2eaabda8e487497792a028877fe9b5d0ef609e47` | Draft; source dependency still open                           |
 | [#9978](https://github.com/ChainSafe/lodestar/pull/9978)      | `a7f5146fe2fa996f6d8d3bbc0b20017ba67bb0a1` | Draft; source dependency still open                           |
 | [#9981](https://github.com/ChainSafe/lodestar/pull/9981)      | `1e99557c0ba48553c5c9f23d07840b40626a2cc5` | Draft; source dependency still open                           |
-| [#9979](https://github.com/ChainSafe/lodestar/pull/9979)      | `cabd5a04e81527c4c7045e2671903b1dbcae11e4` | Draft, mergeable; ledger dependency merged                    |
-| [#9980](https://github.com/ChainSafe/lodestar/pull/9980)      | `d802fcb2c157e2765670e6ad8ae9eee669abb88c` | Draft, mergeable; ledger dependency merged                    |
-| [#9982](https://github.com/ChainSafe/lodestar/pull/9982)      | `1073bd413d165eda25c77a8b80dad8964b1b0ad7` | Draft, mergeable; ledger dependency merged                    |
+| [#9979](https://github.com/ChainSafe/lodestar/pull/9979)      | `cabd5a04e81527c4c7045e2671903b1dbcae11e4` | Ready after critical re-review; ledger dependency merged      |
+| [#9980](https://github.com/ChainSafe/lodestar/pull/9980)      | `d802fcb2c157e2765670e6ad8ae9eee669abb88c` | Ready after critical re-review; ledger dependency merged      |
+| [#9982](https://github.com/ChainSafe/lodestar/pull/9982)      | `1073bd413d165eda25c77a8b80dad8964b1b0ad7` | Ready after critical re-review; ledger dependency merged      |
 | [Fork #77](https://github.com/krisoshea-eth/lodestar/pull/77) | `b65c7ff325176b6de00c791ffbba5c250f406be2` | Resolved-input integration draft, not running Builder wiring  |
 | [Fork #80](https://github.com/krisoshea-eth/lodestar/pull/80) | `30cff332351de94ebf9f8e81b6e96640b1c125d2` | Input proposal draft; coordinate #638 and newer producer work |
 
 Fork #61 is the clean comparison already represented by #9973. Fork #63 remains a broader, unaccepted store proposal. It must not be treated as required hardening of the accepted initial #9970 scope.
 
-No draft state changed. The ledger-dependent PRs are now the next review candidates, not blocked by an unmerged ledger. Their three-dot diffs retain historical parent files after the squash merge. Descriptions identify the actual child files; agree the bid/reveal review grouping before requesting review of the whole series. Do not routinely merge unstable or force-push to refresh these branches.
+The initial pass left draft states unchanged. The subsequent critical re-review below supersedes that disposition for #9979/#9980/#9982. Their three-dot diffs retain historical parent files after the squash merge; those files match the merged ledger. Do not routinely merge unstable or force-push to refresh these branches.
+
+## Subsequent critical review and readiness
+
+Review suggestions were checked against the current implementation, tests and existing patterns. Full comment threads were reread across the open upstream/fork PRs and the recently merged foundation and contribution PRs. No further source correction was justified by this pass.
+
+- Keep #9958's fork-correlated request type. The suggested flat type admits a Heze request with Gloas attributes. Keep its source-ID check while no runtime router guarantees that engine-local payload handles reach their originating Engine. Common Engine/PayloadId definitions remain the separate LOD-92 follow-up.
+- Keep #10054's simplified simulation patch. Root-addressed lookup plus `assertOk()` verifies presence through the real BN route. Removing the returned-root comparison is valid; removing the large mock test-utility suite is a repository-scope choice, not a rule against testing helpers. Nine temporary local probes passed against the current helper; the probe file was not added to the PR.
+- Mark #9979/#9980/#9982 ready for review. Their own changes compile independently of the unmerged source/assembly PRs. Possible grouping preferences are not an additional readiness gate. Runtime integration remains incomplete.
+
+At the unchanged heads in the table above, #9979 passed 36 focused publisher/signer/ledger tests, #9980 passed 40 selector/ledger tests, and #9982 passed 28 envelope/ledger tests. All three passed ordinary Builder type-check, package Biome, build/import and diff checks. The installed tools were invoked directly after the local Corepack launcher failed. Ledger suites overlap; these are not 104 unique tests.
+
+The three PR descriptions now identify the component review files and exact validation heads. LOD-63/65/67 and their GitHub Project status fields are In Review, with assignees unchanged. #9973/#9978/#9981 remain draft on open #9958. Fork #61 already has its upstream counterpart; #63 remains an unaccepted broader store proposal; #77 and #80 remain integration/input drafts.
+
+No new code commits, branch refreshes, force pushes, mentor replies, Discord messages, Beacon API posts or ENV-02 outreach were made during this critical re-review. Prepared replies remain unposted pending approval. The earlier full simulation result below retains its original time; this later pass did not rerun Docker or establish full Builder lifecycle success.
 
 ## Code and review decisions
 
