@@ -1,10 +1,10 @@
 # Direct-Engine Builder working plan
 
-> **Status:** Confirmed working direction, reviewed through 10 September 2026. Nico confirmed direct Engine access as the preferred baseline for `packages/builder`, with the proof-of-concept branch used as implementation evidence rather than merged wholesale. Production EL topology and the exact source-BN input contract remain open design work.
+> **Status:** Confirmed working direction, reviewed through 11 September 2026. Nico confirmed direct Engine access as the preferred baseline for `packages/builder`, with the proof-of-concept branch used as implementation evidence rather than merged wholesale. Production EL topology and the exact source-BN input contract remain open design work.
 
 ## Purpose and evidence boundary
 
-The [10 September reconciliation](reviews/2026-09-10-reconciliation.md) controls current status. TEST-01 and ENV-03 are merged; store contribution #9 and policy contribution #10 are incorporated into their open upstream PRs. Preference tracker #9976 now includes event subscription, Builder startup, shared-signal shutdown and slot pruning. Its retained values follow the BN pool's read-only caller contract, not defensive copying. Older branch and runtime evidence below retains its original date.
+The [11 September reconciliation](reviews/2026-09-11-reconciliation.md) controls current status. API-02, TEST-01, the ledger, preference subscription, Marko's store and policy, and ENV-03 are merged. Contributions #9 and #10 are incorporated upstream. The preference tracker retains received objects directly; it does not promise defensive copying or a read-only caller contract. Historical validation below retains its original date.
 
 Nico's [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder) branch demonstrates an end-to-end Builder that owns payload construction through an Engine API connection. This differs materially from the original BN-mediated plan, where the source beacon node owned payload construction and stateful reveal material.
 
@@ -26,7 +26,7 @@ Every production and test responsibility in the 42-file proof-of-concept diff is
 | `payloadStore` | STORE-01, Marko-owned [LOD-68](https://linear.app/kriso/issue/LOD-68/store-wiring-01-wire-and-prune-the-builder-payload-store), #9970, and test contribution #9 | Keep #9970's simple store. #9 is now test-only; its earlier copying, capacity and first-write proposal remains outside the accepted scope |
 | `bidPolicy` | Marko-owned [LOD-69](https://linear.app/kriso/issue/LOD-69/bid-policy-base-01-add-the-initial-builder-bid-policy), #9974, and arithmetic precision contribution #10 | Keep policy separate from ledger and message assembly |
 | `ledger` | BID-LEDGER-01 through #9975 | Extracted as the one-shot bid, win, liability, and exact reveal-reservation boundary; successful publication is tracked separately |
-| `proposerPreferencesTracker` | PREF-01 through #9976 | Subscribes at Builder startup, uses the shared abort signal, prunes by slot and retains read-only values without custom copying. Dependent-root sourcing remains a BN-01 integration decision |
+| `proposerPreferencesTracker` | PREF-01 through #9976 | Subscribes at Builder startup, uses the shared abort signal, prunes by slot and retains received values directly without custom copying. Dependent-root sourcing remains a BN-01 integration decision |
 | `slotBidder` | [LOD-73](https://linear.app/kriso/issue/LOD-73/slot-bidder-01-coordinate-one-resolved-direct-engine-bid), fork draft [#77](https://github.com/krisoshea-eth/lodestar/pull/77), and [BID-RUNTIME-01](https://linear.app/kriso/issue/LOD-77) | A resolved-input consumer composes orchestration, retention, coverability, assembly, and publication; BID-RUNTIME-01 owns event, CLI, and Engine construction |
 | `revealer` | #9980, #9981, #9982, SELECT-01, REV-01, and [REV-RUNTIME-01](https://linear.app/kriso/issue/LOD-78) | Pure selection, parent-root-bound assembly, and retry-safe exact publication seams exist; REV-RUNTIME-01 owns store lookup, cutoff, retry count/backoff, settlement, eviction, and runtime wiring |
 | Builder root, defaults, exports, metrics, and CLI wiring | BID-RUNTIME-01, REV-RUNTIME-01, QA-01, and HANDOFF-01 | Deliberately excluded from the service drafts and now assigned to the two bounded runtime-consumer issues |
@@ -56,33 +56,24 @@ For an initial shared-EL proof of concept, the Builder must follow the BN's emit
 
 ## Current upstream and stacked delivery map
 
-| Capability | Review artifact | State checked on 7 September | Review meaning |
+| Capability | Review artifact | State checked on 11 September | Next action |
 | --- | --- | --- | --- |
-| Source-BN block observation | [Lodestar #9931](https://github.com/ChainSafe/lodestar/pull/9931) | Ready, mergeable | Independent API-02 review |
-| Gate-A lifecycle regressions | [Lodestar #9932](https://github.com/ChainSafe/lodestar/pull/9932) | Ready, mergeable | Independent TEST-01 review |
-| `PayloadSource` and Engine adapter | [Lodestar #9958](https://github.com/ChainSafe/lodestar/pull/9958) | Ready, mergeable | First direct-Engine boundary; no CLI or runtime topology wiring |
-| Payload-job orchestration | [Lodestar #9973](https://github.com/ChainSafe/lodestar/pull/9973) | Draft, stacked on #9958 | Bounded jobs, canonical duplicate identity, job-ID conflict rejection, cancellation, timeouts, and cleanup |
-| Payload store | Marko-owned [LOD-68](https://linear.app/kriso/issue/LOD-68/store-wiring-01-wire-and-prune-the-builder-payload-store), [Lodestar #9970](https://github.com/ChainSafe/lodestar/pull/9970), [test contribution](https://github.com/markolazic01/lodestar/pull/9) | Both ready | #9 at `f9fe439a4ad6` adds pruning/lookup tests only, with Marko's agreement. Broader capacity, copying and first-write changes remain unaccepted |
-| Bid policy | Marko-owned [LOD-69](https://linear.app/kriso/issue/LOD-69/bid-policy-base-01-add-the-initial-builder-bid-policy), [Lodestar #9974](https://github.com/ChainSafe/lodestar/pull/9974), [precision contribution](https://github.com/markolazic01/lodestar/pull/10) | Ready; #10 merged into Marko's branch | #9974 includes the arithmetic fix at `7e7bfc59237c` but is not merged upstream. Broader numeric-domain validation remains open in LOD-64 |
-| Pending-bid ledger | [Lodestar #9975](https://github.com/ChainSafe/lodestar/pull/9975) | Ready, mergeable | Winning liabilities remain until explicit settlement; exact envelope reservation and successful publication are separate states |
-| Proposer preferences | [Lodestar #9976](https://github.com/ChainSafe/lodestar/pull/9976) | Draft | Retained preferences are mutation-isolated; consumer contract and dependent-root ownership still need review |
-| Bid assembly | [Lodestar #9978](https://github.com/ChainSafe/lodestar/pull/9978) | Draft, stacked on #9958 | Pure fork-aware assembly boundary; may be reviewed with bid publication |
-| Bid publication | [Lodestar #9979](https://github.com/ChainSafe/lodestar/pull/9979) | Draft, stacked on #9975 | Fork-correct Gloas/Heze signing and one-shot source-BN submission; may be reviewed with bid assembly |
-| Resolved-input slot bidder | [Fork draft #77](https://github.com/krisoshea-eth/lodestar/pull/77) | Draft, stacked on the combined integration branch | Coverability fixed at `75037946b79e`; 42 SlotBidder tests and 185 selected tests pass. Two consumer files plus dependency corrections remain fork-only; no live runtime claim |
-| Complete bid runtime | [BID-RUNTIME-01](https://linear.app/kriso/issue/LOD-77) | Backlog, unassigned | Construct accepted services and drive one retained, coverable, submitted bid from accepted source-BN input |
-| Payload-attributes forkchoice hashes | [Fork draft #80](https://github.com/krisoshea-eth/lodestar/pull/80) / [LOD-74](https://linear.app/kriso/issue/LOD-74/attr-impl-01-emit-post-gloas-forkchoice-hashes-in-payload-attributes) | Draft, fork-only on `unstable` | Implements the current #638 field shape and producer values; [ATTR-EMIT-01](https://linear.app/kriso/issue/LOD-75/attr-emit-01-emit-deduplicated-post-gloas-payload-attributes) owns trigger, FULL/EMPTY, deduplication, and custody behavior; [ATTR-CONSUME-01](https://linear.app/kriso/issue/LOD-76/attr-consume-01-consume-fork-correlated-payload-attributes-in-builder) owns Builder consumption |
-| Selection matching | [Lodestar #9980](https://github.com/ChainSafe/lodestar/pull/9980) | Draft, stacked on #9975 | Exact local-bid match; may be reviewed with reveal work |
-| Envelope assembly | [Lodestar #9981](https://github.com/ChainSafe/lodestar/pull/9981) | Draft, stacked on #9958 | Stateless Gloas/Heze assembly bound to the retained parent Beacon root; may be reviewed with selection/reveal |
-| Envelope publication | [Lodestar #9982](https://github.com/ChainSafe/lodestar/pull/9982) | Draft, stacked on #9975 | Exact envelope reservation, concurrent deduplication, successful-publication tracking, and exact retry seam; runtime policy remains later |
-| Complete reveal runtime | [REV-RUNTIME-01](https://linear.app/kriso/issue/LOD-78) | Backlog, unassigned | Connect observation, exact selection, retained material, bounded publication, settlement, and eviction |
-
-The drafts are not literal copies of Nico's services. They reuse the demonstrated responsibilities but narrow them into typed modules with different failure contracts and broader focused tests. Their current purpose is to expose coherent review surfaces and support a combined integration branch. They must not all be presented as independently accepted production abstractions.
-
-### Contributor attribution and non-duplication
+| Block observation and Gate A tests | #9931, #9932 | Merged | Reuse; follow-ups do not reopen these PRs |
+| Payload source | #9958 | Ready, review comments open | Keep fork correlation; assess source routing; shared types tracked in LOD-92 |
+| Orchestration | #9973 / fork #61 | Draft, #9958 still open | Keep the isolated comparison; no duplicate upstream PR |
+| Payload store | Marko's #9970 and contribution #9 | Merged | Use the simple explicit-key store; LOD-86 tracks the accepted two-slot retention review |
+| Policy | Marko's #9974 and contribution #10 | Merged | LOD-64 covers only the remaining per-call validation decision |
+| Ledger and preferences | #9975, #9976 | Merged | LOD-87/88/89 track shared stream, preference bootstrap and naming follow-ups |
+| Bid assembly and envelope assembly | #9978, #9981 | Draft, #9958 still open | Preserve the source dependency and confirm review grouping |
+| Bid publication, selection and envelope publication | #9979, #9980, #9982 | Draft, merged ledger dependency; conflicts corrected | Next review candidates; historical three-dot diffs still include ledger files |
+| Resolved-input SlotBidder | Fork #77 | Draft, fork-only | Reuse merged services; LOD-76/77/78 own actual input and runtime wiring |
+| Payload-attributes hashes | Fork #80 and Beacon APIs #638 | Both proposals remain open | Coordinate the input contract; preserve #10037 and #10056 producer behavior |
+| Simulation correction | #10054 | Ready, amended after Nazar's review | Existing helper only; full local simulation rerun passed |
+| Complete bid/reveal runtime | LOD-76, LOD-77, LOD-78 | Backlog, unassigned | Agree input/ownership split and implement the actual lifecycle |
 
 Linear now records Marko's Builder work as separate implementation or historical evidence issues so delivered work and remaining integration scopes are distinct:
 
-- [LOD-68](https://linear.app/kriso/issue/LOD-68/store-wiring-01-wire-and-prune-the-builder-payload-store) owns #9970 runtime store wiring and slot pruning; STORE-CORE-01 retains Kris's bounded-store invariants and tests.
+- [LOD-68](https://linear.app/kriso/issue/LOD-68/store-wiring-01-wire-and-prune-the-builder-payload-store) records merged #9970 runtime store wiring and slot pruning; STORE-CORE-01 retains the unaccepted broader proposal, not required initial scope.
 - [LOD-69](https://linear.app/kriso/issue/LOD-69/bid-policy-base-01-add-the-initial-builder-bid-policy) owns #9974's initial policy; BID-POLICY-HARDEN-01 retains Kris's numeric-domain hardening.
 - [LOD-70](https://linear.app/kriso/issue/LOD-70/event-poc-01-prototype-builder-selection-event-alternatives) records the four completed comparison PoCs; SPEC-01 still owns the uncompleted cross-client contract decision.
 - [LOD-71](https://linear.app/kriso/issue/LOD-71/bn-input-foundation-01-land-builder-facing-event-and-bid-input) records Marko's landed head-event, proposer-preference, gas-limit, and related Beacon API foundations, plus the adjacent [Lodestar-z Builder-state binding](https://github.com/ChainSafe/lodestar-z/pull/472) and [EIP-8282 request-layout test hardening](https://github.com/wemeetagain/EIPs/pull/2).
@@ -97,7 +88,7 @@ Every ChainSafe PR targets `unstable`, because contributor dependency branches d
 
 The delivery order is:
 
-1. review independent foundations first: #9958, #9970 with its agreed simple-store scope, #9974 with the arithmetic-only #10 contribution, #9975, and #9976;
+1. finish #9958 review; #9970, #9974, #9975 and #9976 are already merged;
 2. keep #9973 stacked until #9958 settles;
 3. after foundation feedback, decide whether #9978 and #9979 should remain separate or become one bid-path PR;
 4. decide whether #9980, #9981, and #9982 should become one selection-and-reveal PR;
