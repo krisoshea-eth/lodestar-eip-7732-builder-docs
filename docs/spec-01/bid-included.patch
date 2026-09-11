@@ -1,0 +1,39 @@
+diff --git a/CHANGES.md b/CHANGES.md
+index b1ab465..7bae67f 100644
+--- a/CHANGES.md
++++ b/CHANGES.md
+@@ -9,4 +9,5 @@ There are likely to be descriptions etc outside of the list below, but new query
+ | Endpoint                                                                                                            | [Lighthouse](https://github.com/sigp/lighthouse) | [Lodestar](https://github.com/ChainSafe/lodestar) | [Nimbus](https://github.com/status-im/nimbus-eth2) | [Prysm](https://github.com/prysmaticlabs/prysm) | [Teku](https://github.com/ConsenSys/teku) |
+ |---------------------------------------------------------------------------------------------------------------------|--------------------------------------------------|---------------------------------------------------|----------------------------------------------------|-------------------------------------------------|-------------------------------------------|
++| [#599](https://github.com/ethereum/beacon-APIs/issues/599) `bid_included EVENT` added | | | | | |
+ | [#580](https://github.com/ethereum/beacon-APIs/pull/580) / [#624](https://github.com/ethereum/beacon-APIs/pull/624) / [#630](https://github.com/ethereum/beacon-APIs/pull/630) `POST /eth/v4/validator/blocks/{slot}` added         |                                                  |                                                  |                                                    |                                                 |                                           |
+ | [#630](https://github.com/ethereum/beacon-APIs/pull/630) `POST /eth/v1/validator/builder_preferences` added        |                                                  |                                                  |                                                    |                                                 |                                           |
+diff --git a/apis/eventstream/index.yaml b/apis/eventstream/index.yaml
+index 2c90a25..567df6b 100644
+--- a/apis/eventstream/index.yaml
++++ b/apis/eventstream/index.yaml
+@@ -26,4 +26,5 @@ get:
+             - head_v2
+             - block
++            - bid_included
+             - block_gossip
+             - attestation
+@@ -71,4 +72,18 @@ get:
+                 event: block
+                 data: {"slot":"10", "block":"0x9a2fefd2fdb57f74993c7780ea5b9030d2897b615b89f808011ca5aebed54eaf", "execution_optimistic": false}
++            bid_included:
++              description: |
++                From Gloas onwards, the node has received a block (from P2P or API) containing an external Builder's bid that is successfully imported on the fork-choice `on_block` handler.
++                This includes valid imported blocks that do not become the head. The event does not wait for an execution payload envelope to be received.
++                No event is emitted for pre-Gloas blocks or self-built blocks whose bid has `builder_index` equal to `BUILDER_INDEX_SELF_BUILD`.
++
++                All four fields are required. `slot` is the imported beacon block's slot and `block_root` is its beacon block root.
++                `block_hash` and `builder_index` contain `signed_execution_payload_bid.message.block_hash` and
++                `signed_execution_payload_bid.message.builder_index` from that block.
++                `slot` and `builder_index` are quoted decimal uint64 values. `block_root` and `block_hash` are `0x`-prefixed 32-byte values.
++                The event contains no `execution_optimistic`, `bid_root`, or complete signed bid. The existing `block` event is unchanged.
++              value: |
++                event: bid_included
++                data: {"slot":"10", "block_root":"0x9a2fefd2fdb57f74993c7780ea5b9030d2897b615b89f808011ca5aebed54eaf", "block_hash":"0x76262e91970d375a19bfe8a867288d7b9cde43c8635f598d93d39d041706fc76", "builder_index":"42"}
+             block_gossip:
+               description: The node has received a block (from P2P or API) that passes validation rules of the `beacon_block` topic
