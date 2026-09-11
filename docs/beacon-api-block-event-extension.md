@@ -176,12 +176,12 @@ data: {"slot":"10","block_root":"0x9a2f...54eaf","block_hash":"0x1234...cdef","b
 | `block_hash`    | Execution block hash committed by the selected bid | `block.body.signed_execution_payload_bid.message.block_hash`    | `0x`-prefixed 32-byte value |
 | `builder_index` | External Builder selected by the proposer          | `block.body.signed_execution_payload_bid.message.builder_index` | Quoted decimal              |
 
-NC's confirmed contract for this candidate is:
+This candidate follows NC's replies. His view on omitting `execution_optimistic` was tentative, not a final cross-client decision:
 
 - emit only after successful block import, not when a bid is merely observed over gossip;
 - emit for valid imported non-head blocks because they may later become head;
 - do not emit for self-builds;
-- do not add `execution_optimistic` unless another consumer demonstrates a need for it;
+- propose omitting `execution_optimistic` for Builder reveal, and ask other clients whether a consumer needs it;
 - use `bid_included` as the working event name;
 - do not carry the complete `SignedExecutionPayloadBid`; and
 - do not add `bid_root`, because the four identity fields already locate the retained material needed for reveal.
@@ -359,7 +359,7 @@ Neither PR currently implements #599. PR #490 was updated on 2026-08-21, so both
 | 2026-08-24 | Treat Nico's `nflaig/builder` branch as the current Lodestar PoC                                            | It implements the producer fields, mixed-version fallback, serializer tests, and a two-node Builder run, but remains unpublished and unreviewed                                                                                            |
 | 2026-08-24 | Reopen the event-shape decision before drafting the Beacon APIs PR                                          | Marco's four upstream PoCs and Nico's review show real type-safety, versioning, identity, and self-build tradeoffs. API-02 remains correct independently.                                                                                  |
 | 2026-08-31 | Narrow the live comparison to additive `block` fields versus a lightweight dedicated event                  | NC questioned the need for the full signed bid and favored enough identity to locate retained payload material. Self-build handling for the additive shape remains unresolved between earlier discussion and the latest #9854 PoC.         |
-| 2026-09-02 | Define the lightweight candidate as `bid_included(slot, block_root, block_hash, builder_index)`             | NC confirmed external-Builder-only, successful-import and valid non-head semantics; `execution_optimistic` is not needed for reveal, and `bid_root` is superseded.                                                                         |
+| 2026-09-02 | Define the lightweight candidate as `bid_included(slot, block_root, block_hash, builder_index)`             | NC confirmed external-Builder-only, successful-import and valid non-head semantics. He tentatively considered `execution_optimistic` unnecessary for reveal; `bid_root` is superseded.                                                     |
 | 2026-09-02 | Keep required post-Gloas fields for Candidate A and retain `block_v2` as a live comparison                  | NC agreed optional fields are undesirable and clarified that `block_v2` remains live until other client teams respond.                                                                                                                     |
 | 2026-09-02 | Prepare exact patches for both leading candidates before choosing an upstream contract                      | Lodestar has a split preference, so cross-client review should compare concrete wire changes.                                                                                                                                              |
 | 2026-09-03 | Keep SPEC-01 independent of the API-submission pool change                                                  | Merged Lodestar #9998 changes which BN can select an API-submitted bid, not how a Builder learns that another imported block selected it. The event decision and API-02 fallback remain valid.                                             |
