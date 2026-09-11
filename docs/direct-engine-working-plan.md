@@ -69,7 +69,7 @@ For an initial shared-EL proof of concept, the Builder must follow the BN's emit
 | Bid publication, selection and envelope publication | #9979, #9980, #9982 | Ready for review after critical re-review and exact-head checks | Review the named component files; historical three-dot diffs still include the already-merged ledger. Grouping remains optional maintainer feedback, not a prerequisite |
 | Resolved-input SlotBidder | Fork #77 | Draft, fork-only | Reuse merged services; LOD-76/77/78 own actual input and runtime wiring |
 | Payload-attributes hashes | Fork #80 and Beacon APIs #638 | Both proposals remain open | Coordinate the input contract; preserve #10037 and #10056 producer behavior |
-| Simulation correction | #10054 | Ready, amended after Nazar's review | Existing helper only; full local simulation rerun passed |
+| Simulation correction | #10054 | Out of draft; GitHub review still Changes Requested | Amended and locally validated; awaits Nazar's re-review and full hosted checks |
 | Complete bid/reveal runtime | LOD-76, LOD-77, LOD-78 | Backlog, unassigned | Agree input/ownership split and implement the actual lifecycle |
 
 Linear now records Marko's Builder work as separate implementation or historical evidence issues so delivered work and remaining integration scopes are distinct:

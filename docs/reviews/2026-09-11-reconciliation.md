@@ -2,6 +2,8 @@
 
 This audit refreshed Kris's PRs in ChainSafe/lodestar and both contributor forks, Marko's recent Builder work, relevant new upstream changes, and the project trackers. It is a change-focused review, not a claim that every unchanged experimental line is correct.
 
+Here, **ready for review** means out of draft and prepared for maintainer review, not approved or ready to merge. #10054 remains **Changes Requested** on GitHub after the local correction and awaits Nazar's re-review plus full hosted checks.
+
 ## Approved follow-through
 
 After rechecking the target threads for newer feedback and duplicate replies, Kris approved and posted eight replies across #9958, #10054 and #9982. The replies retain the fork-correlated request type and source-ID guard, explain the tested cancellation fix and simulation simplification, and track shared types separately in LOD-92. Reviewer threads were not resolved on their behalf.
@@ -31,7 +33,7 @@ Marko's store [#9970](https://github.com/ChainSafe/lodestar/pull/9970), policy [
 | PR                                                            | Current head                               | Disposition                                                   |
 | ------------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------------- |
 | [#9958](https://github.com/ChainSafe/lodestar/pull/9958)      | `2d2ff420f32f3ef4bdd3b99f2ec6599b74346db9` | Ready; new review points assessed, no source change           |
-| [#10054](https://github.com/ChainSafe/lodestar/pull/10054)    | `cbdbf682cda6bbef7a168e0c55cf7e37d615e1e4` | Ready; simplified after Nazar's review                        |
+| [#10054](https://github.com/ChainSafe/lodestar/pull/10054)    | `cbdbf682cda6bbef7a168e0c55cf7e37d615e1e4` | Out of draft; GitHub review still Changes Requested           |
 | [#9973](https://github.com/ChainSafe/lodestar/pull/9973)      | `2eaabda8e487497792a028877fe9b5d0ef609e47` | Draft; source dependency still open                           |
 | [#9978](https://github.com/ChainSafe/lodestar/pull/9978)      | `a7f5146fe2fa996f6d8d3bbc0b20017ba67bb0a1` | Draft; source dependency still open                           |
 | [#9981](https://github.com/ChainSafe/lodestar/pull/9981)      | `1e99557c0ba48553c5c9f23d07840b40626a2cc5` | Draft; source dependency still open                           |
