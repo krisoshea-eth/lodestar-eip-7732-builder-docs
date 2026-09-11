@@ -64,6 +64,7 @@ For an initial shared-EL proof of concept, the Builder must follow the BN's emit
 | Payload store | Marko's #9970 and contribution #9 | Merged | Use the simple explicit-key store; LOD-86 tracks the accepted two-slot retention review |
 | Policy | Marko's #9974 and contribution #10 | Merged | LOD-64 covers only the remaining per-call validation decision |
 | Ledger and preferences | #9975, #9976 | Merged | LOD-87/88/89 track shared stream, preference bootstrap and naming follow-ups |
+| Explicit payload-store naming | [#10063](https://github.com/ChainSafe/lodestar/pull/10063) / LOD-89 | Ready for review | Naming only; retention and pruning are unchanged |
 | Bid assembly and envelope assembly | #9978, #9981 | Draft, #9958 still open | Preserve the source dependency and confirm review grouping |
 | Bid publication, selection and envelope publication | #9979, #9980, #9982 | Ready for review after critical re-review and exact-head checks | Review the named component files; historical three-dot diffs still include the already-merged ledger. Grouping remains optional maintainer feedback, not a prerequisite |
 | Resolved-input SlotBidder | Fork #77 | Draft, fork-only | Reuse merged services; LOD-76/77/78 own actual input and runtime wiring |

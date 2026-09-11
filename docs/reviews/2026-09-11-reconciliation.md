@@ -2,7 +2,15 @@
 
 This audit refreshed Kris's PRs in ChainSafe/lodestar and both contributor forks, Marko's recent Builder work, relevant new upstream changes, and the project trackers. It is a change-focused review, not a claim that every unchanged experimental line is correct.
 
-## Latest comment refresh and correction
+## Approved follow-through
+
+After rechecking the target threads for newer feedback and duplicate replies, Kris approved and posted eight replies across #9958, #10054 and #9982. The replies retain the fork-correlated request type and source-ID guard, explain the tested cancellation fix and simulation simplification, and track shared types separately in LOD-92. Reviewer threads were not resolved on their behalf.
+
+LOD-89 is now submitted as ready-for-review [#10063](https://github.com/ChainSafe/lodestar/pull/10063) at `8d80e57d496f1cb1781ab43f688010f59f200ce8`, with maintainer edits enabled. Six focused tests, ordinary Builder type-check, changed-file lint, build/import and diff checks passed again before submission. The change only names the Builder module/member/local variable `payloadStore`; it does not change the accepted store API, retention or pruning.
+
+This brings the ready upstream set to #9958, #9979, #9980, #9982, #10054 and #10063. LOD-89 is In Review and remains assigned to Kris. LOD-87/88 and LOD-76/77/78 still need an agreed ownership split; no runtime assignment was inferred. SPEC-01's two patches are unchanged and unpublished, while Beacon APIs #638 remains a separate public proposal. No routine unstable merges, force pushes, Discord/Beacon API posts or ENV-02 outreach were made. Earlier sections below describe their original snapshots, including the then-unposted replies and local-only naming change.
+
+## Earlier comment refresh and correction
 
 The later refresh read all eight open upstream PRs, including conversation comments, reviews and every inline thread. Seven actionable inline threads remain: four on #9958, two on #10054 and one on #9982. The #10054 changes are already implemented; #9958's safeguards are retained for the reasons below, with common types tracked in LOD-92. Replies are prepared for approval, not posted. The merged foundation reviews were reread for existing helpers, copying, logging, naming, test scope and runtime ownership conventions.
 

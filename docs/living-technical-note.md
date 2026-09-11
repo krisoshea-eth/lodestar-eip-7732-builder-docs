@@ -23,7 +23,7 @@ The [11 September reconciliation](reviews/2026-09-11-reconciliation.md) supersed
 
 Merged #10055 addresses the previously reported PTC signature omission; native-binding and spec-harness qualification remain tracked. Open #10056 affects the producer used by fork #80, while #10057 is a proposer/BN API flow rather than standalone Builder runtime. The current fixture reference is v8.1.4. No current network-wide health is inferred from the supplied monitoring report.
 
-Follow-ups are recorded in LOD-87/88/89/91/92 and Marko's existing LOD-86. LOD-76/77/78 remain unassigned pending the agreed runtime responsibility split. SPEC-01's alternatives and Beacon APIs #638 remain separate and unpublished. ENV-02 outreach is paused.
+Follow-ups are recorded in LOD-87/88/89/91/92 and Marko's existing LOD-86. LOD-89 is now in review through [#10063](https://github.com/ChainSafe/lodestar/pull/10063), a naming-only cleanup. LOD-76/77/78 remain unassigned pending the agreed runtime responsibility split. SPEC-01's alternatives remain unpublished; Beacon APIs #638 is a separate, open payload-attributes proposal. ENV-02 outreach is paused.
 
 ## 10 September review update (historical)
 
