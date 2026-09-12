@@ -150,6 +150,8 @@ Recent Beacon APIs changes support that distinction:
 - [PR #590](https://github.com/ethereum/beacon-APIs/pull/590) introduced `head_v2` because the event's semantics and payload-status model changed, not merely because fields were added; and
 - [PR #621](https://github.com/ethereum/beacon-APIs/pull/621) made an existing event field fork-conditional without introducing a new topic.
 
+These are precedents, not a repository-wide versioning rule. The detailed cross-client review of #590 included differing preferences on versioning and precise slot/root meanings. The [submission-practice notes](spec-01/README.md#fit-with-upstream-proposal-practice) distinguish the narrow normative patch from this supporting design document.
+
 This candidate adds two primitive fields while preserving the event's meaning and emission point. Cross-client review must still confirm that existing producers, serializers, fixtures, and consumers tolerate the additive JSON fields and can enforce their post-Gloas presence without a new event version.
 
 The candidate fork rules are:
@@ -193,6 +195,8 @@ Candidate B is additive and gives consumers an explicit external-Builder lifecyc
 An inclusion notification is not an instruction to reveal, proof of payment, or a guarantee that the block is head. The [honest Builder guidance](https://github.com/ethereum/consensus-specs/blob/master/specs/gloas/builder.md#honest-payload-withheld-messages) permits withholding for an untimely non-head block. Keep event delivery independent of the consumer's deadline and reveal policy. The envelope's parent beacon root must come from the verified selecting block or correctly correlated retained material; neither candidate supplies that field separately.
 
 Omitting `execution_optimistic` in Candidate B must not be interpreted as `false` or as proof of execution validation. A consumer that requires that information must obtain it separately. This remains an explicit cross-client review question, rather than evidence that every possible consumer can omit the field.
+
+The honest-Builder guidance was rechecked at consensus-specs `c37e369dcaed827bd378b7bab623b6beedc0bed5`. Nico's new draft [Lodestar #10070](https://github.com/ChainSafe/lodestar/pull/10070), inspected at `b6fda77e14e1dcc64db9dc14f8be265302be5c2f`, preserves first gossip arrival for PTC timeliness when a repeated proposal is later imported through sync. That is a relevant outcome-testing watch, not a new selection-event field or trigger. In particular, a Builder must not treat the time it receives a post-import SSE notification as the block's first gossip-arrival time. This review does not establish the draft's correctness or a deployed timing fix.
 
 The current event specification enumerates a finite topic set. Adding `bid_included` to a multi-topic request can be rejected by an older server; a rejected request does not leave the other topics subscribed. During rollout, keep a known-supported `block` subscription available and fall back to it when the new topic is unsupported. A quiet dedicated stream does not prove non-selection or establish capability. If both topics are consumed, deduplicate by the selecting beacon block root, not only by execution hash, and do not assume an ordering between them. These are consumer requirements to test, not new replay or capability-negotiation guarantees in this patch.
 

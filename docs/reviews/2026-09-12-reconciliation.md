@@ -1,5 +1,25 @@
 # Builder reconciliation, 12 September 2026
 
+## Input experiment and deeper specification review
+
+Experiment head: [`8ea1d27c1ea09898893147dbfd250a5c4f14c973`](https://github.com/krisoshea-eth/lodestar/commit/8ea1d27c1ea09898893147dbfd250a5c4f14c973). This branch is in Kris's fork only, without a new PR.
+
+The later fork-only `krisoshea/input-consumer` branch begins LOD-76 from fork #77 at `d6bee9001b463d9c910c80f8298a30b9a131a149`. It adds a typed event consumer and incorporates the minimal finality-hash producer/type changes and producer tests from fork #80. Existing code PR heads, including fork #77 and #80, are unchanged by this experiment. There is no new upstream PR.
+
+- The consumer correlates the exact beacon parent with `head_v2` and uses the advertised current/next epoch root for preference lookup. It does not query latest duties and assume branch equivalence.
+- Builder execution proceeds and the proposer's bid-payment address remain distinct. The prior input note's requirement to preserve the producer's execution fee recipient was too restrictive and is corrected against the API description and Nico's PoC.
+- Pending data and distinct attempts are bounded. Head/slot changes, shutdown and replacement cancel work. A new regression reproduced a duplicate caller receiving a late result after cancellation; sharing the guarded result promise fixes it.
+- The real-clock tests cover the BN's 6667-basis-point preparation schedule. A 5000 cutoff is too early for that schedule; 9000 is tested as explicit experimental configuration, not a production default.
+- 135 tests passed across eight focused Builder/producer files, including 30 new consumer tests and the actual SlotBidder/store/ledger/signer/publisher composition with mocked Engine and publication transport. Three API event-server tests passed separately outside the sandbox because localhost binding is restricted inside it. Total 138 focused test executions across nine files.
+- Ordinary Builder, beacon-node, API and types checks passed. The 15-package dependency/build subset, changed-file Biome and Builder import check passed. The first broad dependency build lacked the newly selected package links; a frozen-lockfile subset install repaired the local environment without a lockfile/source workaround. No complete Gloas BN/EL test or hosted success is claimed.
+- This is head-only Gloas input work, not completed LOD-76. Dispatcher subscription, startup/reconnect recovery, Heze bid-bit sourcing and LOD-77/78 runtime/reveal construction remain open. An abort cannot retract an FCU already delivered to the EL.
+
+SPEC-01 was checked against actual Beacon APIs contribution/CI instructions and the changes and reviews in PRs 587, 590 and 621, including Lighthouse/Teku/Nico/NC feedback. The packet now distinguishes its supporting design note from the narrow normative YAML/examples/support-row submission. No EIP-style long-form template or universal event-versioning rule is imposed. Both unchanged candidate patches passed fresh lint and bundling again.
+
+Beacon APIs master remains `ef98d512c03c8ca6b9d7cbdc45b9293ec2b24722`; consensus-specs was read at `c37e369dcaed827bd378b7bab623b6beedc0bed5`. Nico's new draft #10070 at `b6fda77e14e1dcc64db9dc14f8be265302be5c2f` preserves gossip arrival for repeated-proposal PTC timeliness. Track that in QA-01 and do not equate imported-block SSE receipt with first gossip arrival. This was a scoped impact review, not a new validated bug or full review of that draft.
+
+No candidate publication, mentor comment, ENV-02 outreach, routine upstream merge or force push occurred. The eight ready PRs remain ready; no additional implementation draft is promoted by this work. GitHub's queued/incomplete hosted checks and the previously observed Docs-rerun permission limit remain separate from local validation.
+
 ## Later implementation follow-through
 
 The earlier snapshot below is retained for audit history. Subsequent work updated two existing code branches and the SPEC-01 notes, without a routine upstream merge or force push.
