@@ -188,6 +188,16 @@ This candidate follows NC's replies. His view on omitting `execution_optimistic`
 
 Candidate B is additive and gives consumers an explicit external-Builder lifecycle signal. Its cost is a second event that repeats the slot and beacon block root already present in `block`. The post-import trigger and non-head behavior must remain normative so it does not drift into a canonical-head or gossip event.
 
+### Consumer safety and rollout
+
+An inclusion notification is not an instruction to reveal, proof of payment, or a guarantee that the block is head. The [honest Builder guidance](https://github.com/ethereum/consensus-specs/blob/master/specs/gloas/builder.md#honest-payload-withheld-messages) permits withholding for an untimely non-head block. Keep event delivery independent of the consumer's deadline and reveal policy. The envelope's parent beacon root must come from the verified selecting block or correctly correlated retained material; neither candidate supplies that field separately.
+
+Omitting `execution_optimistic` in Candidate B must not be interpreted as `false` or as proof of execution validation. A consumer that requires that information must obtain it separately. This remains an explicit cross-client review question, rather than evidence that every possible consumer can omit the field.
+
+The current event specification enumerates a finite topic set. Adding `bid_included` to a multi-topic request can be rejected by an older server; a rejected request does not leave the other topics subscribed. During rollout, keep a known-supported `block` subscription available and fall back to it when the new topic is unsupported. A quiet dedicated stream does not prove non-selection or establish capability. If both topics are consumed, deduplicate by the selecting beacon block root, not only by execution hash, and do not assume an ordering between them. These are consumer requirements to test, not new replay or capability-negotiation guarantees in this patch.
+
+Before claiming interoperability, test legacy JSON decoders against the extended shape and maximum uint64 sentinel, unknown-topic subscription failure, duplicate delivery across both topics, imported non-head blocks, and Gloas/Heze round trips. The OpenAPI linter does not execute those scenarios.
+
 ## Other alternatives
 
 ### Keep `block` plus `getBlockV2` only
@@ -272,6 +282,8 @@ This audit identifies where current clients construct and consume the `block` ev
 | Grandine   | [`send_block_event`](https://github.com/grandinetech/grandine/blob/eaf220e60699cd63d4223ad2481e42fd15f67802/fork_choice_control/src/events.rs) currently accepts only slot, block root, and optimistic status                                                        | Its current event-channel boundary no longer carries the signed block, so this may need a signature change or a safe lookup                   | What is the preferred way to retain or recover bid identity at both block-event call sites?                                        |
 
 The audit suggests the wire shape is implementable, but it also shows why a Lodestar-only proof of concept is not enough to claim cross-client simplicity. Grandine's narrower event-channel interface and the different client decoder strategies are concrete review items.
+
+On 12 September, the two serializer paths were refreshed independently of the older all-client sweep. Lighthouse's [`SseBlock` at `10568b139b`](https://github.com/sigp/lighthouse/blob/10568b139b3f2fc02c3dab2f8de5165349c97b88/common/eth2/src/types.rs#L991) still has three fields and derives Serde deserialization without a local `deny_unknown_fields` annotation. Its `EventTopic` enum is explicit and has no `bid_included` variant. This supports testing additive-field tolerance, but does not prove the complete HTTP/event consumer accepts either proposal. Teku's [`BlockEvent` at `f5de0ec772`](https://github.com/Consensys/teku/blob/f5de0ec77275942f01e29af54c3cb5ac2fd072f2/data/beaconrestapi/src/main/java/tech/pegasys/teku/beaconrestapi/handlers/v1/events/BlockEvent.java) still receives the signed block and reduces it to a fixed three-field schema. Producer access is available; fork-conditional serialization remains implementation work. Neither inspection records a new client preference or runtime test result.
 
 The current API description is example-based rather than a strongly connected schema per event topic. The upstream PR should therefore rely on explicit prose, examples, client tests, and the `CHANGES.md` support matrix rather than assuming the OpenAPI linter can verify fork-conditional payload behavior.
 

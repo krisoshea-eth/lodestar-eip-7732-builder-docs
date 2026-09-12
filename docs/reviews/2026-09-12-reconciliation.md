@@ -1,5 +1,21 @@
 # Builder reconciliation, 12 September 2026
 
+## Later implementation follow-through
+
+The earlier snapshot below is retained for audit history. Subsequent work updated two existing code branches and the SPEC-01 notes, without a routine upstream merge or force push.
+
+- #10064 is now at `1c7d55b2aea0a7b1b589201d04d0457d7add3617`. Subscription-failure logs include `BUILDER_EVENT_SUBSCRIPTION_FAILED` while retaining the original error. The new assertion failed before the metadata change; 42 focused tests and ordinary Builder type-check, changed-file Biome, dependency builds and build/import checks pass. The bot received an in-thread reply. This is a diagnostic improvement, not a fix for stream recovery.
+- Fork #77 is now at `d6bee9001b463d9c910c80f8298a30b9a131a149`. Its checked-in store follows the accepted simple store behavior, with an intentional type-only import from #9958's fork-correlated `BuiltPayload`. Merged Builder startup, observer, preference, polling and Gate A files were selectively reconciled. There is no restored capacity, defensive-copy or first-write guarantee, and fork #63 is unchanged.
+- Fork #77 passed 167 tests across 12 focused files, including all 47 SlotBidder/pipeline tests against that checked-in store. Ordinary Builder type-check, changed-file Biome, dependency builds and build/import checks passed. This replaces the earlier need for a test-only store substitution; it does not supply input-consumer or runtime wiring.
+- A repeated static merge-tree check still reports add/add conflicts in the intentionally adapted store, payload fixture and expanded policy/store tests. The ledger conflict is gone. This is not a clean upstream runtime diff yet.
+- The approved #10054 Docs rerun was attempted. GitHub rejected it with HTTP 403, requiring repository admin rights. No workflow or simulation code was changed to bypass that permission.
+- SPEC-01 now documents non-head reveal policy, omitted optimistic status, unsupported-topic fallback and rollout tests. Lighthouse/Teku serializer paths were rechecked. Both wire patches are unchanged; no cross-client decision or fresh runtime interoperability is claimed.
+- The [input-contract checkpoint](../builder-input-contract.md) records concrete missing BN inputs and the additional Heze transaction/bid-bit distinction. LOD-76/77/78 remain incomplete; no new ownership agreement is inferred.
+
+The eight ready upstream PRs remain ready. No dependent draft was promoted. No mentor comment, Discord/Beacon APIs publication or ENV-02 outreach was made in this follow-through. These component checks do not establish a complete Gloas BN/EL lifecycle.
+
+## Earlier inventory snapshot
+
 This refresh screened the 42 Lodestar PRs updated since 10 September and read full review/conversation threads on 43 selected upstream, contributor-fork and docs PRs. That includes all 11 of Kris's open upstream PRs, four open fork PRs, both merged contributions on Marko's fork, the four merged Builder foundations and Marko's relevant recent implementation/comparison PRs. New source changes received a Builder-focused compatibility review, not an exhaustive audit of unrelated code or every unchanged experimental branch.
 
 Upstream was checked at `a0619b279aa57140768859767be392ff5a20f656`. No existing Lodestar branch was refreshed, rebased or force-pushed. No mentor review comment, Discord message or Beacon APIs proposal was posted. ENV-02 outreach remains paused.

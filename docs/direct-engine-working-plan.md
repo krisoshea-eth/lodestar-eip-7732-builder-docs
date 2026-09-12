@@ -69,10 +69,10 @@ For an initial shared-EL proof of concept, the Builder must follow the BN's emit
 | API event setup cancellation | [#10065](https://github.com/ChainSafe/lodestar/pull/10065) / REL-01 | Ready for review | Independent transport fix; not complete restart/replay recovery |
 | Bid assembly and envelope assembly | #9978, #9981 | Draft, #9958 still open | Preserve the source dependency and confirm review grouping |
 | Bid publication, selection and envelope publication | #9979, #9980, #9982 | Ready for review after critical re-review and exact-head checks | Review the named component files; historical three-dot diffs still include the already-merged ledger. Grouping remains optional maintainer feedback, not a prerequisite |
-| Resolved-input SlotBidder | Fork #77 | Draft, fork-only | Reuse merged services; LOD-76/77/78 own actual input and runtime wiring |
+| Resolved-input SlotBidder | Fork #77 | Draft, fork-only | Accepted store behavior and merged foundations reconciled; LOD-76/77/78 own actual input and runtime wiring |
 | Payload-attributes hashes | Fork #80 and Beacon APIs #638 | Both proposals remain open | Coordinate the input contract; preserve #10037 and #10056 producer behavior |
 | Simulation correction | #10054 | Out of draft; GitHub review still Changes Requested | Hosted Tests/Sim passed; Docs failed during dependency installation. Await Nazar's re-review and an authorized Docs rerun |
-| Complete bid/reveal runtime | LOD-76, LOD-77, LOD-78 | Backlog, unassigned | Agree input/ownership split and implement the actual lifecycle |
+| Complete bid/reveal runtime | LOD-76, LOD-77, LOD-78 | Backlog, unassigned | Use the [input-contract checkpoint](builder-input-contract.md); implement actual event consumption and the lifecycle |
 
 Linear now records Marko's Builder work as separate implementation or historical evidence issues so delivered work and remaining integration scopes are distinct:
 

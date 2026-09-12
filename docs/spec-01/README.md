@@ -13,6 +13,8 @@ These are two alternative discussion drafts, not two changes intended to merge t
 
 Both preserve successful-import semantics, including valid non-head blocks. Neither waits for a payload envelope, changes gossip validation, guarantees canonical selection, or replaces exact comparison with the locally signed bid. Neither introduces replay, reconnect, SSE IDs, `bid_root`, or a full signed-bid payload. `block_v2` remains a possible alternative if other clients prefer it.
 
+The 12 September research follow-up adds consumer-safety and rollout checks to the working document. Inclusion does not require revealing an untimely non-head block; omitted optimistic status is not false. An unsupported new topic can reject the whole subscription request, so retain the standard block-event fallback and do not infer capability from a quiet stream. These clarifications leave both wire patches unchanged. Lighthouse and Teku serializer paths were rechecked, without claiming runtime interoperability or agreement from either team.
+
 Each patch changes only `apis/eventstream/index.yaml` and `CHANGES.md`. The temporary changelog link is to issue #599; replace it with the new PR number when publishing. Empty client-support columns deliberately make no implementation claim.
 
 ## Validation
