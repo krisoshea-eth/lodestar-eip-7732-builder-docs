@@ -48,12 +48,23 @@ The current project inventory remains 92 tracked issues, including completed and
 
 Beacon APIs master remains `ef98d512c03c8ca6b9d7cbdc45b9293ec2b24722`. Public #599 has no newer selection decision, and #638's head is unchanged. #627/#10072 concerns supplying a bid before production, not observing its inclusion after import. The working document records this distinction. Neither normative event patch changed, and nothing was published to Beacon APIs or Discord.
 
+## Approved follow-through later on 13 September
+
+This section supersedes the earlier current-head and unposted-reply statements above. The earlier checks remain historical evidence at their recorded heads.
+
+- The three approved replies are posted on [#9958](https://github.com/ChainSafe/lodestar/pull/9958#discussion_r3997990814), [#9979](https://github.com/ChainSafe/lodestar/pull/9979#issuecomment-5649398558) and [#10065](https://github.com/ChainSafe/lodestar/pull/10065#issuecomment-5649398825).
+- Copilot's new #9979 pruning finding reproduced after the three-epoch history window for pending, rejected and accepted publication. Keeping every reservation forever would unbound memory. The fix instead advances a monotonic oldest-slot cutoff and rejects expired slots before signing. The reply is [posted](https://github.com/ChainSafe/lodestar/pull/9979#discussion_r3997997949). This exposed an add/add conflict with the squash-merged ledger parent; a necessary merge of the exact `82e7577c8bebe2c6cca1ec633d690f9bbdcab087` base resolved the two ledger files. At final head `91038c140a9b6257194d621da0d4e162d7e61d10`, all 40 publisher/signer/ledger tests, ordinary type-check, changed-file Biome, build/import and diff checks passed. The PR is mergeable and its description now reflects the clean six-file review diff.
+- Copilot's #10064 logging suggestion was checked against both previous subscribers. Both used error level, so the refactor now preserves it. This does not treat every reconnectable error as terminal. At `6c3318d9fa0ca8dbed3e55a9bc7a556d61ac4aa6`, all 47 targeted tests and package checks passed; the [reply](https://github.com/ChainSafe/lodestar/pull/10064#issuecomment-5649418120) is posted.
+- Fork #77 carries the ledger correction at `7ed07c5403c68eb43f159d461aa5bcc8253fb764`. All 80 targeted tests, including 47 SlotBidder/pipeline tests, plus type-check, lint, build/import and diff checks passed. It remains a fork-only resolved-input draft.
+- The existing fork-only input-consumer branch is pushed at `b8a9b57dd769b6188137892642466749fb4f3774`. An injected consumer now receives head/payload/preference events through the real Builder dispatcher. Tests cover all six arrival orders, duplicate suppression, missing preferences, slot cancellation and shutdown. The real consumer, SlotBidder, store, ledger, signer and publisher compose in a Builder test; payload construction and BN transport are mocked. All 134 targeted tests, ordinary type-check, changed-file Biome, build/import and diff checks passed. Automatic initialization, CLI/Engine configuration, Heze bid-bit derivation and reveal runtime remain incomplete. No new PR or ownership assignment was made.
+- #10065 is approved with successful hosted test/simulation/docs checks, with the benchmark skipped. #9982's failed multifork job hits the old `unknownBlockParent` assertion at slot 38, the simulation path addressed by #10054. This is not evidence of an envelope-publication regression. #10054's Docs failure is a Node-header download `ECONNRESET`; the account cannot approve or rerun ChainSafe workflows requiring repository administration. Fresh full hosted checks on the newly pushed heads are not claimed.
+
 ## Next
 
-1. Approve the three prepared replies on #9958, #9979 and #10065.
-2. Review the updated docs PR #31.
+1. Continue review of the two tested feedback corrections on #9979 and #10064. Their replies are posted.
+2. Review the updated docs PR #31; it is not merged by this run.
 3. Continue the seven ready PRs through maintainer review and exact-head hosted checks: #9958, #9979, #9980, #9982, #10054, #10064 and #10065.
 4. Keep #9973/#9978/#9981 draft while their PayloadSource parent remains open.
 5. Continue LOD-76's input contract and LOD-77/78 running Builder/reveal integration, followed by a complete Gloas lifecycle test.
 
-No CodeRabbit, mentor reply, Discord/Beacon API publication or ENV-02 outreach occurred. ENV-02 outreach remains paused.
+No CodeRabbit, force push, Discord/Beacon API publication or ENV-02 outreach occurred. The approved mentor replies and two bot replies are posted. Necessary conflict merges are recorded above; there were no routine refreshes of the other PR branches. ENV-02 outreach remains paused.

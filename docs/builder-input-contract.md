@@ -1,8 +1,8 @@
 # Builder input contract for the first runtime experiment
 
-Research and implementation checkpoint, 12 September 2026. This is a fork-only experiment for [LOD-76](https://linear.app/kriso/issue/LOD-76), not an accepted Beacon API contract or completed runtime implementation. It is separate from [SPEC-01](beacon-api-block-event-extension.md), which concerns selection notifications.
+Research and implementation checkpoint, 13 September 2026. This is a fork-only experiment for [LOD-76](https://linear.app/kriso/issue/LOD-76) and [LOD-77](https://linear.app/kriso/issue/LOD-77), not an accepted Beacon API contract or completed runtime implementation. It is separate from [SPEC-01](beacon-api-block-event-extension.md), which concerns selection notifications.
 
-The source references below were inspected at Lodestar [`a0619b279aa57140768859767be392ff5a20f656`](https://github.com/ChainSafe/lodestar/tree/a0619b279aa57140768859767be392ff5a20f656). The experimental `krisoshea/input-consumer` branch starts from fork #77 at `d6bee9001b463d9c910c80f8298a30b9a131a149`. Unlike the existing resolved-input pipeline, it accepts typed `head_v2`, `payload_attributes` and preference events. It is not yet connected to the running Builder dispatcher or CLI.
+The source references below were inspected at Lodestar [`a0619b279aa57140768859767be392ff5a20f656`](https://github.com/ChainSafe/lodestar/tree/a0619b279aa57140768859767be392ff5a20f656). The experimental `krisoshea/input-consumer` branch is now at [`b8a9b57dd769b6188137892642466749fb4f3774`](https://github.com/krisoshea-eth/lodestar/commit/b8a9b57dd769b6188137892642466749fb4f3774). It accepts typed `head_v2`, `payload_attributes` and preference events through the shared Builder dispatcher when a consumer is injected. `Builder.init()` and the CLI do not construct that consumer yet.
 
 ## Input sources and remaining decisions
 
@@ -24,7 +24,7 @@ The previous checkpoint incorrectly required preserving the BN's execution fee r
 
 Start with a pinned Gloas-only experiment, rejecting Heze explicitly until its additional input is supplied. This is a suggested first test slice, not a reduction of LOD-76's required Gloas/Heze coverage.
 
-1. Use the Builder-owned dispatcher from #10064. Add `payload_attributes` and `head_v2` to that subscription only for the configured experiment, preserving block/preference dispatch and failure isolation. Insert preferences into their tracker before retrying pending input. This dispatcher connection remains outstanding.
+1. Use the Builder-owned dispatcher from #10064. The experiment adds `payload_attributes` and `head_v2` to that subscription only when a consumer is injected, preserving block/preference dispatch and failure isolation. Preferences enter their tracker before pending input is retried. The injected dispatcher connection is implemented; automatic construction and CLI configuration remain outstanding.
 2. Consume #80's explicit hash-field proposal alongside the current producer ordering. Preserve merged #10037's emission before the BN's Engine call and account for #10056 when its producer changes are integrated.
 3. Select the preference by proposal slot and the branch-correlated dependent root from a matching head event. Require its validator index and target gas limit to match the payload input. If required input is missing, wait without preparing a payload. Preference and head bootstrap/recovery remain necessary before reliable startup/reconnect behavior can be claimed.
 4. Construct the existing fork-correlated `BuildRequest` and use the existing orchestrator/SlotBidder. Keep job identity and retrieval timing explicit; do not introduce another source, store or bidding service.
@@ -46,4 +46,6 @@ The retrieval deadline is within the slot before the proposal, not the later pay
 
 The fork-only experiment now exercises typed input through the actual SlotBidder, accepted store, ledger, signer and bid publisher, with mocked payload construction and BN publication transport. It retains only the latest pending input, bounds distinct attempts per slot, cancels replaced work and suppresses late results for duplicate callers. Failed attempts are not automatically retried. It carries the minimal #80 producer and codec changes so the experimental BN emits the same hash fields the consumer decodes; it does not supersede #80 or accept #638.
 
-Dispatcher/Builder/CLI construction, complete Heze input derivation, restart recovery, shared-EL safety and real bid/selection/reveal evidence remain incomplete. No broader ownership assignment is claimed.
+At `b8a9b57dd769b6188137892642466749fb4f3774`, 134 targeted tests across eight files passed, with ordinary Builder type-check, changed-file Biome, build/import and diff checks. Builder lifecycle tests cover all six event-arrival orders, one shared subscription, missing preferences, duplicate delivery, slot replacement and shutdown. One test drives the real consumer, SlotBidder, accepted store, ledger, signer and publisher from Builder events; payload construction and BN transport are mocked. Deliberate input cancellation uses the existing `ErrorAborted` so normal replacement does not produce a spurious warning.
+
+Automatic Builder/CLI construction, complete Heze input derivation, restart recovery, shared-EL safety and real bid/selection/reveal evidence remain incomplete. No broader ownership assignment is claimed.
