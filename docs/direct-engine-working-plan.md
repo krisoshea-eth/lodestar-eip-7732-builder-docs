@@ -1,10 +1,10 @@
 # Direct-Engine Builder working plan
 
-> **Status:** Confirmed working direction, reviewed through 11 September 2026. Nico confirmed direct Engine access as the preferred baseline for `packages/builder`, with the proof-of-concept branch used as implementation evidence rather than merged wholesale. Production EL topology and the exact source-BN input contract remain open design work.
+> **Status:** Confirmed working direction, reviewed through 12 September 2026. Nico confirmed direct Engine access as the preferred baseline for `packages/builder`, with the proof-of-concept branch used as implementation evidence rather than merged wholesale. Production EL topology and the exact source-BN input contract remain open design work.
 
 ## Purpose and evidence boundary
 
-The [11 September reconciliation](reviews/2026-09-11-reconciliation.md) controls current status. API-02, TEST-01, the ledger, preference subscription, Marko's store and policy, and ENV-03 are merged. Contributions #9 and #10 are incorporated upstream. The preference tracker retains received objects directly; it does not promise defensive copying or a read-only caller contract. Historical validation below retains its original date.
+The [12 September reconciliation](reviews/2026-09-12-reconciliation.md) controls current status. API-02, TEST-01, the ledger, preference subscription, Marko's store and policy, and ENV-03 are merged. Contributions #9 and #10 are incorporated upstream. The preference tracker retains received objects directly; it does not promise defensive copying or a read-only caller contract. Historical validation below retains its original date.
 
 Nico's [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder) branch demonstrates an end-to-end Builder that owns payload construction through an Engine API connection. This differs materially from the original BN-mediated plan, where the source beacon node owned payload construction and stateful reveal material.
 
@@ -56,7 +56,7 @@ For an initial shared-EL proof of concept, the Builder must follow the BN's emit
 
 ## Current upstream and stacked delivery map
 
-| Capability | Review artifact | State checked on 11 September | Next action |
+| Capability | Review artifact | State checked on 12 September | Next action |
 | --- | --- | --- | --- |
 | Block observation and Gate A tests | #9931, #9932 | Merged | Reuse; follow-ups do not reopen these PRs |
 | Payload source | #9958 | Ready, review comments open | Keep fork correlation; assess source routing; shared types tracked in LOD-92 |
@@ -65,11 +65,13 @@ For an initial shared-EL proof of concept, the Builder must follow the BN's emit
 | Policy | Marko's #9974 and contribution #10 | Merged | LOD-64 covers only the remaining per-call validation decision |
 | Ledger and preferences | #9975, #9976 | Merged | LOD-87/88/89 track shared stream, preference bootstrap and naming follow-ups |
 | Explicit payload-store naming | [#10063](https://github.com/ChainSafe/lodestar/pull/10063) / LOD-89 | Ready for review | Naming only; retention and pruning are unchanged |
+| Shared Builder event subscription | [#10064](https://github.com/ChainSafe/lodestar/pull/10064) / LOD-87 | Ready for review | One block/preferences stream; no replay or payload-input contract change |
+| API event setup cancellation | [#10065](https://github.com/ChainSafe/lodestar/pull/10065) / REL-01 | Ready for review | Independent transport fix; not complete restart/replay recovery |
 | Bid assembly and envelope assembly | #9978, #9981 | Draft, #9958 still open | Preserve the source dependency and confirm review grouping |
 | Bid publication, selection and envelope publication | #9979, #9980, #9982 | Ready for review after critical re-review and exact-head checks | Review the named component files; historical three-dot diffs still include the already-merged ledger. Grouping remains optional maintainer feedback, not a prerequisite |
 | Resolved-input SlotBidder | Fork #77 | Draft, fork-only | Reuse merged services; LOD-76/77/78 own actual input and runtime wiring |
 | Payload-attributes hashes | Fork #80 and Beacon APIs #638 | Both proposals remain open | Coordinate the input contract; preserve #10037 and #10056 producer behavior |
-| Simulation correction | #10054 | Out of draft; GitHub review still Changes Requested | Amended and locally validated; awaits Nazar's re-review and full hosted checks |
+| Simulation correction | #10054 | Out of draft; GitHub review still Changes Requested | Hosted Tests/Sim passed; Docs failed during dependency installation. Await Nazar's re-review and an authorized Docs rerun |
 | Complete bid/reveal runtime | LOD-76, LOD-77, LOD-78 | Backlog, unassigned | Agree input/ownership split and implement the actual lifecycle |
 
 Linear now records Marko's Builder work as separate implementation or historical evidence issues so delivered work and remaining integration scopes are distinct:
@@ -118,7 +120,7 @@ When a parent merges, inspect the child diff first. Update dependencies only whe
 
 | Track | Evidence | Project effect |
 | --- | --- | --- |
-| Impossible envelope sync targets | [Lodestar #9994](https://github.com/ChainSafe/lodestar/pull/9994) | Open guard for known genesis and pre-Gloas roots. Route its final disposition and unknown-root recovery cases to REL-01 and QA-01 |
+| Impossible envelope sync targets | [Lodestar #9994](https://github.com/ChainSafe/lodestar/pull/9994) | Closed unmerged. Keep unknown-root recovery cases in REL-01/QA-01; do not treat this proposal as delivered |
 | Bid-validation cost ordering | Merged [Lodestar #9984](https://github.com/ChainSafe/lodestar/pull/9984) | Reuse the BN-side ordering of cheap rejects and ignores before state and signature work; it does not add a Builder-side service |
 | Spec-test expected-error enforcement | Merged [Lodestar #9986](https://github.com/ChainSafe/lodestar/pull/9986) | Track the resulting Gloas sweep-index vectors in QA-01; do not create a duplicate Builder PR for the shared test-harness fix |
 | Candidate ranking and logs | [Lodestar #9966](https://github.com/ChainSafe/lodestar/pull/9966) | BN-side selection diagnostics only; no overlap with Builder payload construction |
@@ -134,6 +136,8 @@ When a parent merges, inspect the child diff first. Update dependencies only whe
 | Genesis-registered Buildoor assignment | [ethereum-package #1483](https://github.com/ethpandaops/ethereum-package/pull/1483) | E2E/INT fixture watch; launched Buildoor keys must actually correspond to `state.builders`, and genesis Builders remain inactive until epoch 1 finalizes |
 | Gloas compliance and ReqResp formats | [consensus-specs #5572](https://github.com/ethereum/consensus-specs/pull/5572), [#5573](https://github.com/ethereum/consensus-specs/pull/5573), and [#5590](https://github.com/ethereum/consensus-specs/pull/5590) | Reuse accepted randomized-equivocation and state-transition vectors in QA/OUT work; #5590 is exploratory and non-normative until its ownership issue settles |
 | Heze inclusion-list response bounds | [execution-apis #870](https://github.com/ethereum/execution-apis/pull/870), [#878](https://github.com/ethereum/execution-apis/pull/878) | Conditional EXT-FOCIL-01 input only; no change to the current Gloas payload-source contract |
+
+Merged #10061/#10062/#10066 update native bindings and transport/codec dependencies. Open #10068 and draft #10069 continue decoder and allocation checks. Route pinned BN/network qualification to QA-01; these do not change the Builder service contracts. Draft release #10067 is not evidence of deployment or a complete Gloas lifecycle.
 
 ## Remaining implementation sequence
 

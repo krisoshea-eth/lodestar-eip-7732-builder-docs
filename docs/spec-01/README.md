@@ -2,7 +2,7 @@
 
 Prepared 10 September 2026 against Beacon APIs master `ef98d512c03c8ca6b9d7cbdc45b9293ec2b24722`.
 
-Rechecked 11 September. Master and the #638 head (`ad322f49e9141e62fca63cedb14706498d9290fc`) are unchanged, and #599 has no new public decision. API-02 #9931 is now merged. This strengthens the fallback implementation evidence but does not choose the selection-event contract. #10056's payload-attributes producer work belongs to the separate input track. Neither candidate patch needs a wire-shape change from this check.
+Rechecked 12 September. Master and the #638 head (`ad322f49e9141e62fca63cedb14706498d9290fc`) are unchanged, and #599 has no new public decision. API-02 #9931 is now merged. This strengthens the fallback implementation evidence but does not choose the selection-event contract. #10056's payload-attributes producer work belongs to the separate input track. Both patches still pass git apply --check. Neither candidate patch needs a wire-shape change from this check. Docs PR #30 is merged; publication to Beacon APIs remains unapproved and no proposal has been posted. The lint/bundle evidence below is from the earlier unchanged-patch validation, not a new runtime check.
 
 These are two alternative discussion drafts, not two changes intended to merge together. No Beacon APIs PR or discussion comment has been posted from this packet. Nico is comfortable with either approach being proposed for cross-client feedback. Coordinate the publication format with Marco and get Kris's approval before posting.
 
