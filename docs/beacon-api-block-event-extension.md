@@ -12,10 +12,16 @@
 | Lodestar proofs of concept | Marco's upstream [#9854](https://github.com/ChainSafe/lodestar/pull/9854), [#9875](https://github.com/ChainSafe/lodestar/pull/9875), [#9876](https://github.com/ChainSafe/lodestar/pull/9876), and [#9896](https://github.com/ChainSafe/lodestar/pull/9896), plus Nico's draft [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder) branch at `99fd8fa9ad` |
 | Target repository          | [`ethereum/beacon-APIs`](https://github.com/ethereum/beacon-APIs)                                                                                                                                                                                                                                                                                                                   |
 | Beacon APIs audit base     | [`ef98d51`](https://github.com/ethereum/beacon-APIs/commit/ef98d512c03c8ca6b9d7cbdc45b9293ec2b24722)                                                                                                                                                                                                                                                                                |
-| Last updated               | 2026-09-11 (public state rechecked; candidate patches unchanged; no cross-client contract selected)                                                                                                                                                                                                                                                                                 |
+| Last updated               | 2026-09-13 (public state rechecked; normative patches unchanged; no cross-client contract selected)                                                                                                                                                                                                                                                                                 |
 | Candidate review packet    | [Exact patches, proposed PR text, and validation](spec-01/README.md)                                                                                                                                                                                                                                                                                                                |
 
 > **Artifact boundary:** This document owns the Builder-selection notification question in beacon-APIs #599. Marco's open [beacon-APIs #638](https://github.com/ethereum/beacon-APIs/pull/638) is a separate payload-attributes schema change for `safe_block_hash` and `finalized_block_hash`. The current #638 head does not specify post-Gloas emission timing and does not settle the selection-event wire contract.
+
+## Related work checked on 13 September
+
+Nico's new [Lodestar #10072](https://github.com/ChainSafe/lodestar/pull/10072), stacked on [#10073](https://github.com/ChainSafe/lodestar/pull/10073), implements the separate [Beacon APIs #627](https://github.com/ethereum/beacon-APIs/pull/627) proposal for a validator-supplied bid. This happens before block production and does not replace a Builder's post-import inclusion notification. Its draft has an existing Heze request-codec review finding; that is not a reason to add the full bid or fork-version wrapping to this lightweight event without a demonstrated need.
+
+The current public #599 discussion has no newer selection decision, Beacon APIs master remains `ef98d512c03c8ca6b9d7cbdc45b9293ec2b24722`, and #638 remains a separate open finality-hash proposal. Neither event patch is changed by these producer-side PRs. No specification proposal was published in this update.
 
 ## PoC review caveats, 7 September
 
@@ -150,6 +156,8 @@ Recent Beacon APIs changes support that distinction:
 - [PR #590](https://github.com/ethereum/beacon-APIs/pull/590) introduced `head_v2` because the event's semantics and payload-status model changed, not merely because fields were added; and
 - [PR #621](https://github.com/ethereum/beacon-APIs/pull/621) made an existing event field fork-conditional without introducing a new topic.
 
+These are precedents, not a repository-wide versioning rule. The detailed cross-client review of #590 included differing preferences on versioning and precise slot/root meanings. The [submission-practice notes](spec-01/README.md#fit-with-upstream-proposal-practice) distinguish the narrow normative patch from this supporting design document.
+
 This candidate adds two primitive fields while preserving the event's meaning and emission point. Cross-client review must still confirm that existing producers, serializers, fixtures, and consumers tolerate the additive JSON fields and can enforce their post-Gloas presence without a new event version.
 
 The candidate fork rules are:
@@ -187,6 +195,18 @@ This candidate follows NC's replies. His view on omitting `execution_optimistic`
 - do not add `bid_root`, because the four identity fields already locate the retained material needed for reveal.
 
 Candidate B is additive and gives consumers an explicit external-Builder lifecycle signal. Its cost is a second event that repeats the slot and beacon block root already present in `block`. The post-import trigger and non-head behavior must remain normative so it does not drift into a canonical-head or gossip event.
+
+### Consumer safety and rollout
+
+An inclusion notification is not an instruction to reveal, proof of payment, or a guarantee that the block is head. The [honest Builder guidance](https://github.com/ethereum/consensus-specs/blob/master/specs/gloas/builder.md#honest-payload-withheld-messages) permits withholding for an untimely non-head block. Keep event delivery independent of the consumer's deadline and reveal policy. The envelope's parent beacon root must come from the verified selecting block or correctly correlated retained material; neither candidate supplies that field separately.
+
+Omitting `execution_optimistic` in Candidate B must not be interpreted as `false` or as proof of execution validation. A consumer that requires that information must obtain it separately. This remains an explicit cross-client review question, rather than evidence that every possible consumer can omit the field.
+
+The honest-Builder guidance was rechecked at consensus-specs `c37e369dcaed827bd378b7bab623b6beedc0bed5`. Nico's new draft [Lodestar #10070](https://github.com/ChainSafe/lodestar/pull/10070), inspected at `b6fda77e14e1dcc64db9dc14f8be265302be5c2f`, preserves first gossip arrival for PTC timeliness when a repeated proposal is later imported through sync. That is a relevant outcome-testing watch, not a new selection-event field or trigger. In particular, a Builder must not treat the time it receives a post-import SSE notification as the block's first gossip-arrival time. This review does not establish the draft's correctness or a deployed timing fix.
+
+The current event specification enumerates a finite topic set. Adding `bid_included` to a multi-topic request can be rejected by an older server; a rejected request does not leave the other topics subscribed. During rollout, keep a known-supported `block` subscription available and fall back to it when the new topic is unsupported. A quiet dedicated stream does not prove non-selection or establish capability. If both topics are consumed, deduplicate by the selecting beacon block root, not only by execution hash, and do not assume an ordering between them. These are consumer requirements to test, not new replay or capability-negotiation guarantees in this patch.
+
+Before claiming interoperability, test legacy JSON decoders against the extended shape and maximum uint64 sentinel, unknown-topic subscription failure, duplicate delivery across both topics, imported non-head blocks, and Gloas/Heze round trips. The OpenAPI linter does not execute those scenarios.
 
 ## Other alternatives
 
@@ -231,7 +251,7 @@ These are design proofs of concept, not four changes intended to merge. Their ma
 
 Nico's draft [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder) branch now provides the producer and consumer proof of concept. Commit [`679e12d8e2`](https://github.com/ChainSafe/lodestar/commit/679e12d8e2) adds optional `builderIndex` and `blockHash` fields to Lodestar's `block` event codec and emits both fields for every imported post-Gloas block from `signedExecutionPayloadBid.message`. The serializer tests cover an external Builder index, omission for the legacy shape, and `BUILDER_INDEX_SELF_BUILD` encoded as the quoted decimal `UINT64_MAX` value.
 
-The same branch adds a Builder `Revealer` that consumes the enriched fields and falls back to `getBlockV2` when they are absent. That one-shot fallback demonstrates mixed-version compatibility. API-02 remains the stronger complete-block path because it adds fork metadata checks, structural validation, bounded retry, and root deduplication. If Nico's branch becomes an upstream PR, the two implementations should be reconciled rather than keeping parallel fetch paths.
+The same branch adds a Builder `Revealer` that consumes the enriched fields and falls back to `getBlockV2` when they are absent. That single-fetch fallback demonstrates mixed-version compatibility. API-02 remains the stronger complete-block path because it adds fork metadata checks, structural validation, bounded retry, and root deduplication. If Nico's branch becomes an upstream PR, the two implementations should be reconciled rather than keeping parallel fetch paths.
 
 The branch also records a two-node minimal-preset Kurtosis run in `packages/builder/DESIGN.md`, with the external Builder winning and revealing payloads. That is useful implementation evidence, but the public PoC has not been proposed as a complete production implementation for upstream review. It does not establish cross-client agreement or replace SPEC-01's upstream review.
 
@@ -272,6 +292,8 @@ This audit identifies where current clients construct and consume the `block` ev
 | Grandine   | [`send_block_event`](https://github.com/grandinetech/grandine/blob/eaf220e60699cd63d4223ad2481e42fd15f67802/fork_choice_control/src/events.rs) currently accepts only slot, block root, and optimistic status                                                        | Its current event-channel boundary no longer carries the signed block, so this may need a signature change or a safe lookup                   | What is the preferred way to retain or recover bid identity at both block-event call sites?                                        |
 
 The audit suggests the wire shape is implementable, but it also shows why a Lodestar-only proof of concept is not enough to claim cross-client simplicity. Grandine's narrower event-channel interface and the different client decoder strategies are concrete review items.
+
+On 12 September, the two serializer paths were refreshed independently of the older all-client sweep. Lighthouse's [`SseBlock` at `10568b139b`](https://github.com/sigp/lighthouse/blob/10568b139b3f2fc02c3dab2f8de5165349c97b88/common/eth2/src/types.rs#L991) still has three fields and derives Serde deserialization without a local `deny_unknown_fields` annotation. Its `EventTopic` enum is explicit and has no `bid_included` variant. This supports testing additive-field tolerance, but does not prove the complete HTTP/event consumer accepts either proposal. Teku's [`BlockEvent` at `f5de0ec772`](https://github.com/Consensys/teku/blob/f5de0ec77275942f01e29af54c3cb5ac2fd072f2/data/beaconrestapi/src/main/java/tech/pegasys/teku/beaconrestapi/handlers/v1/events/BlockEvent.java) still receives the signed block and reduces it to a fixed three-field schema. Producer access is available; fork-conditional serialization remains implementation work. Neither inspection records a new client preference or runtime test result.
 
 The current API description is example-based rather than a strongly connected schema per event topic. The upstream PR should therefore rely on explicit prose, examples, client tests, and the `CHANGES.md` support matrix rather than assuming the OpenAPI linter can verify fork-conditional payload behavior.
 

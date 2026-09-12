@@ -2,7 +2,7 @@
 
 Prepared 10 September 2026 against Beacon APIs master `ef98d512c03c8ca6b9d7cbdc45b9293ec2b24722`.
 
-Rechecked 11 September. Master and the #638 head (`ad322f49e9141e62fca63cedb14706498d9290fc`) are unchanged, and #599 has no new public decision. API-02 #9931 is now merged. This strengthens the fallback implementation evidence but does not choose the selection-event contract. #10056's payload-attributes producer work belongs to the separate input track. Neither candidate patch needs a wire-shape change from this check.
+Rechecked 12 September. Master and the #638 head (`ad322f49e9141e62fca63cedb14706498d9290fc`) are unchanged, and #599 has no new public decision. API-02 #9931 is now merged. This strengthens the fallback implementation evidence but does not choose the selection-event contract. #10056's payload-attributes producer work belongs to the separate input track. Both patches still pass git apply --check. Neither candidate patch needs a wire-shape change from this check. Docs PR #30 is merged; publication to Beacon APIs remains unapproved and no proposal has been posted. Fresh lint/bundle validation is recorded below; it is not a runtime interoperability check.
 
 These are two alternative discussion drafts, not two changes intended to merge together. No Beacon APIs PR or discussion comment has been posted from this packet. Nico is comfortable with either approach being proposed for cross-client feedback. Coordinate the publication format with Marco and get Kris's approval before posting.
 
@@ -13,11 +13,25 @@ These are two alternative discussion drafts, not two changes intended to merge t
 
 Both preserve successful-import semantics, including valid non-head blocks. Neither waits for a payload envelope, changes gossip validation, guarantees canonical selection, or replaces exact comparison with the locally signed bid. Neither introduces replay, reconnect, SSE IDs, `bid_root`, or a full signed-bid payload. `block_v2` remains a possible alternative if other clients prefer it.
 
+The 12 September research follow-up adds consumer-safety and rollout checks to the working document. Inclusion does not require revealing an untimely non-head block; omitted optimistic status is not false. An unsupported new topic can reject the whole subscription request, so retain the standard block-event fallback and do not infer capability from a quiet stream. These clarifications leave both wire patches unchanged. Lighthouse and Teku serializer paths were rechecked, without claiming runtime interoperability or agreement from either team.
+
 Each patch changes only `apis/eventstream/index.yaml` and `CHANGES.md`. The temporary changelog link is to issue #599; replace it with the new PR number when publishing. Empty client-support columns deliberately make no implementation claim.
 
-## Validation
+## Fit with upstream proposal practice
 
-The unchanged base and both candidates passed Redocly 1.19.0 lint. Both candidates also passed swagger-cli 4.0.4 bundling and `git diff --check`.
+The [Beacon APIs contributing instructions](https://github.com/ethereum/beacon-APIs/blob/ef98d512c03c8ca6b9d7cbdc45b9293ec2b24722/README.md#contributing) and CI validate the OpenAPI YAML with Redocly and bundle it with swagger-cli. There is no required EIP-style design-document template. The concrete submission should therefore remain the small YAML change, examples, compatibility explanation and an honest changelog support row. This longer packet is supporting discussion material.
+
+The 12 September review inspected the actual changes and discussion in [#587](https://github.com/ethereum/beacon-APIs/pull/587), [#590](https://github.com/ethereum/beacon-APIs/pull/590) and [#621](https://github.com/ethereum/beacon-APIs/pull/621). Those event changes ranged from one eventstream file to a wider coordinated head/duties change. Their reviews focus on exact trigger, field meaning, fork boundaries and consumers. They do not establish a universal rule that every event needs a new version, or that two alternative PRs must be opened. Keep client-support cells empty until implementations are verified.
+
+Nico's versioned-container work in #587 supports explicit fork handling when a whole consensus object is emitted. The Lighthouse, Teku, Nico and NC discussion in #590 demonstrates why primitive-event versioning is still a cross-client design choice. Its clarification that `slot` means the head block's slot also informs the separate runtime input consumer; it does not change SPEC-01 into a head-only event.
+
+The current [Heze API proposal #490](https://github.com/ethereum/beacon-APIs/pull/490) remains an overlap watch for eventstream edits and inclusion-list inputs. It is not an accepted source of Builder bid bits, and older hunks must not restore fields or semantics superseded by merged event changes. [#638](https://github.com/ethereum/beacon-APIs/pull/638) still owns finality-hash transport separately.
+
+For publication, one discussion draft with the alternative linked is a reasonable low-overhead starting point. Two clearly cross-linked alternatives also match Nico's guidance if that helps the teams compare. Neither format has been approved for publication here, and neither candidate is consensus.
+
+## Validation evidence
+
+The unchanged base and both candidates passed Redocly 1.19.0 lint again on 12 September. Both candidates also passed fresh swagger-cli 4.0.4 bundling and `git diff --check`. Each alternative was applied in its own clean checkout at the pinned base.
 
 Additional local checks verified the new examples' exact field sets, 32-byte hex roots/hashes, quoted uint64 values, self-build sentinel, topic names, unchanged legacy events, and preservation through bundling. The sentinel is the string `"18446744073709551615"`, never an imprecise JavaScript number.
 
