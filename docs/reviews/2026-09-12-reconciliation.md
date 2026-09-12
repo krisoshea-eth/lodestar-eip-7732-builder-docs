@@ -1,5 +1,7 @@
 # Builder reconciliation, 12 September 2026
 
+The [13 September checkpoint](2026-09-13-reconciliation.md) supersedes this page's PR-status snapshots. #10063 has merged, and the latest source, publication, shared-stream and fork corrections are recorded there. The sections below retain their original evidence dates.
+
 ## Input experiment and deeper specification review
 
 Experiment head: [`8ea1d27c1ea09898893147dbfd250a5c4f14c973`](https://github.com/krisoshea-eth/lodestar/commit/8ea1d27c1ea09898893147dbfd250a5c4f14c973). This branch is in Kris's fork only, without a new PR.

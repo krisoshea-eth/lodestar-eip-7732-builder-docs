@@ -25,7 +25,7 @@ Every production and test responsibility in the 42-file proof-of-concept diff is
 | `payloadSource` | PAYLOAD-SOURCE-01 through #9958 | Extracted as an injected Engine boundary without topology or CLI ownership |
 | `payloadStore` | STORE-01, Marko-owned [LOD-68](https://linear.app/kriso/issue/LOD-68/store-wiring-01-wire-and-prune-the-builder-payload-store), #9970, and test contribution #9 | Keep #9970's simple store. #9 is now test-only; its earlier copying, capacity and first-write proposal remains outside the accepted scope |
 | `bidPolicy` | Marko-owned [LOD-69](https://linear.app/kriso/issue/LOD-69/bid-policy-base-01-add-the-initial-builder-bid-policy), #9974, and arithmetic precision contribution #10 | Keep policy separate from ledger and message assembly |
-| `ledger` | BID-LEDGER-01 through #9975 | Extracted as the one-shot bid, win, liability, and exact reveal-reservation boundary; successful publication is tracked separately |
+| `ledger` | BID-LEDGER-01 through #9975 | Extracted as the bid-submission, win, liability, and exact reveal-reservation boundary; successful publication is tracked separately |
 | `proposerPreferencesTracker` | PREF-01 through #9976 | Subscribes at Builder startup, uses the shared abort signal, prunes by slot and retains received values directly without custom copying. Dependent-root sourcing remains a BN-01 integration decision |
 | `slotBidder` | [LOD-73](https://linear.app/kriso/issue/LOD-73/slot-bidder-01-coordinate-one-resolved-direct-engine-bid), fork draft [#77](https://github.com/krisoshea-eth/lodestar/pull/77), and [BID-RUNTIME-01](https://linear.app/kriso/issue/LOD-77) | A resolved-input consumer composes orchestration, retention, coverability, assembly, and publication; BID-RUNTIME-01 owns event, CLI, and Engine construction |
 | `revealer` | #9980, #9981, #9982, SELECT-01, REV-01, and [REV-RUNTIME-01](https://linear.app/kriso/issue/LOD-78) | Pure selection, parent-root-bound assembly, and retry-safe exact publication seams exist; REV-RUNTIME-01 owns store lookup, cutoff, retry count/backoff, settlement, eviction, and runtime wiring |
@@ -64,7 +64,7 @@ For an initial shared-EL proof of concept, the Builder must follow the BN's emit
 | Payload store | Marko's #9970 and contribution #9 | Merged | Use the simple explicit-key store; LOD-86 tracks the accepted two-slot retention review |
 | Policy | Marko's #9974 and contribution #10 | Merged | LOD-64 covers only the remaining per-call validation decision |
 | Ledger and preferences | #9975, #9976 | Merged | LOD-87/88/89 track shared stream, preference bootstrap and naming follow-ups |
-| Explicit payload-store naming | [#10063](https://github.com/ChainSafe/lodestar/pull/10063) / LOD-89 | Ready for review | Naming only; retention and pruning are unchanged |
+| Explicit payload-store naming | [#10063](https://github.com/ChainSafe/lodestar/pull/10063) / LOD-89 | Merged; LOD-89 Done | Naming only; retention and pruning are unchanged |
 | Shared Builder event subscription | [#10064](https://github.com/ChainSafe/lodestar/pull/10064) / LOD-87 | Ready for review | One block/preferences stream; no replay or payload-input contract change |
 | API event setup cancellation | [#10065](https://github.com/ChainSafe/lodestar/pull/10065) / REL-01 | Ready for review | Independent transport fix; not complete restart/replay recovery |
 | Bid assembly and envelope assembly | #9978, #9981 | Draft, #9958 still open | Preserve the source dependency and confirm review grouping |
@@ -151,21 +151,21 @@ Merged #10061/#10062/#10066 update native bindings and transport/codec dependenc
 ### 2. Payload construction and retention
 
 - Stabilize #9973 against the accepted `PayloadSource` contract.
-- Complete #9970's agreed initial store and slot pruning, including the test-only #9 contribution if accepted. Keep #63 and the earlier #9 hardening commits as proposals, not required initial scope.
+- Build on merged #9970's initial store and slot pruning, including the accepted test-only #9 contribution. Keep #63's broader guarantees outside the accepted initial scope; LOD-86 owns retention follow-up work.
 - Enforce retain-before-publish when the store, assembly, and publication services are integrated.
 
 ### 3. Bid path
 
-- Settle #9974, #9975, and #9976.
+- Build on the merged policy, ledger and preference tracker from #9974, #9975 and #9976. Keep LOD-64's remaining per-call validation separate from the completed arithmetic contribution.
 - Review bid assembly and publication as one logical path, even if the drafts remain separate during development.
-- Preserve exact-width arithmetic, deterministic bid identity, and one-shot publication.
+- Preserve exact-width arithmetic, deterministic bid identity, and deduplicated publication.
 
 ### 4. Selection and reveal
 
 - Keep API-02 as the compatible source-BN observation path.
 - Match the selected signed bid to locally retained material.
 - Construct the exact stateless Gloas or Heze envelope.
-- Submit once through the source BN and record explicit failure outcomes.
+- Reserve the exact envelope before publication, coalesce concurrent attempts and record explicit failure outcomes. Any bounded runtime retry must reuse that same envelope.
 
 ### 5. Runtime integration and evidence
 
