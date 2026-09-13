@@ -2,6 +2,28 @@
 
 This checkpoint supersedes the earlier PR-status snapshots in the 12 September audit. Evidence was refreshed across Kris's and Marko's Lodestar PR inventories, including open/draft PRs and PRs merged since 21 August. The new upstream comparison is pinned to `82e7577c8bebe2c6cca1ec633d690f9bbdcab087`. This is a comment-driven and changed-code review, not another exhaustive review of every unchanged experimental branch.
 
+## Latest refresh and startup experiment
+
+This section supersedes moving statuses in the earlier checkpoints below.
+
+- API setup cancellation #10065 merged on 13 September at 10:00 UTC, merge commit `bb3ffba9e9441e50c533f8309708c1106a6effca`. Its reply is already posted. Broader REL-01 recovery is not complete.
+- Kris has nine open upstream PRs and four open fork PRs. The six ready upstream PRs are #9958, #9979, #9980, #9982, #10054 and #10064. #9973/#9978/#9981 remain source-dependent drafts. Fork #61 already has its upstream counterpart; #63 remains the broader store proposal; #77/#80 remain integration/input drafts. Marko fork #9/#10 are merged.
+- All current open PR discussion inventories were refreshed. No new unanswered reviewer comment was found after the previous replies. Existing unresolved threads await reviewers; no duplicate replies or thread resolutions were posted. Kris's subsequent edits to the custody and publication replies were preserved.
+- #9980's hosted checks pass. #9979's E2E job failed in the Gloas skipped-slot checkpoint-sync test after 150 seconds, while its other substantive checks pass. The failing test starts beacon nodes and validators, not a standalone Builder. Its cause is not established, and it was not labelled flaky or bypassed. #9982 retains the old multifork simulation failure addressed by #10054. #10054's Tests/Sim checks pass, but Docs failed during dependency download and Nazar's re-review remains outstanding. #9958/#10064's latest-head summaries contain only title checks; earlier package checks do not count as fresh hosted results.
+- The fork-only input branch advanced from `b8a9b57dd769b6188137892642466749fb4f3774` to `794158a33d4a3351d234cc1a71f8232fbab09493`. `Builder.init()` now constructs the bid services only when explicit `bidRuntime` options supply an injected PayloadSource, policy and input/timing settings. The accepted store, existing ledger, signer, publisher and shared event dispatcher are reused. Ledger pruning runs with slot cleanup. Publication checks slot, both parent identities, execution hash and fork against retained material.
+- All 188 targeted tests across nine files passed, including 34 Builder lifecycle tests and seven API cancellation/loopback tests. Ordinary Builder/API type-checks, changed-file lint, builds/import checks and whitespace checks passed. The API test first hit the sandbox's localhost permission restriction, then passed in the permitted rerun. Payload construction and BN transport are mocked. No real BN/EL lifecycle or new hosted CI success is claimed.
+- Only the startup commit and the accepted #10065 cancellation commit were added to the existing fork branch. No upstream PR was opened or refreshed and no draft state changed. CLI/Engine transport construction, final input contract, bootstrap/recovery, Heze bid-bit sourcing and selection/reveal wiring remain unfinished.
+
+## New upstream and specification impact
+
+[PR 10075](https://github.com/ChainSafe/lodestar/pull/10075) at `e551ff1ea337b43d5ad9669563246f889db47e43` refreshes cached head when queued attestations are processed. It matters to BN input freshness during empty slots, not a new Builder service. Its dropped per-slot counter reset is already reported in [the existing review](https://github.com/ChainSafe/lodestar/pull/10075#discussion_r3999618973). No duplicate comment is warranted.
+
+[PR 10074](https://github.com/ChainSafe/lodestar/pull/10074) at `05a8d1f7e4bf7de382452768f5b746180e352536` makes two data-availability benchmarks report-only. This changes how performance evidence is interpreted, not production Builder behavior. A green run would not prove the previous thresholds were met. Existing BN-01 and QA-01 issues track both watches; no new component issue is needed. The other recently reviewed Builder-related heads remain compatibility watches. This was a changed-code review, not an exhaustive new audit of every open experimental PR.
+
+Beacon APIs master and the payload-hash proposal remain unchanged. Both SPEC-01 alternatives passed fresh Redocly 1.19.0 lint, swagger-cli 4.0.4 bundling and whitespace checks. The current consensus-spec head `02abf5c173f550acdbe67225a6b682addea110e4` only adds generated-test caching since the prior research pin; it does not change event or reveal rules. The document now separates proposal readiness from cross-client agreement. It removes the overly strict requirement for every active client to respond before the proposal leaves draft. The packet is ready to share with Lodestar, then use an approved upstream draft to obtain cross-client feedback. No publication or implementation support is claimed.
+
+Linear LOD-15/22/23/48/76/77 and their existing GitHub mirrors were reconciled. Repeated audit paragraphs and incorrectly routed Beacon APIs links were corrected. Both Project status fields were checked on those six mirrors. This was a targeted update, not a fresh audit of all 92 historical issues. Existing ownership and ENV-02 outreach restrictions are unchanged.
+
 ## New review decisions and changes
 
 - **#10063 merged** after Nico's approval. LOD-89 is Done; its GitHub issue #95 is closed and both project status fields are Done.
@@ -63,8 +85,8 @@ This section supersedes the earlier current-head and unposted-reply statements a
 
 1. Continue review of the two tested feedback corrections on #9979 and #10064. Their replies are posted.
 2. Review the updated docs PR #31; it is not merged by this run.
-3. Continue the seven ready PRs through maintainer review and exact-head hosted checks: #9958, #9979, #9980, #9982, #10054, #10064 and #10065.
+3. Continue the six ready PRs through maintainer review and exact-head hosted checks: #9958, #9979, #9980, #9982, #10054 and #10064. #10065 is merged.
 4. Keep #9973/#9978/#9981 draft while their PayloadSource parent remains open.
-5. Continue LOD-76's input contract and LOD-77/78 running Builder/reveal integration, followed by a complete Gloas lifecycle test.
+5. Continue LOD-76's input contract, CLI/Engine transport configuration and LOD-78 selection/reveal wiring, followed by a complete Gloas lifecycle test. Programmatic bid-service startup is now implemented on the fork-only experiment.
 
 No CodeRabbit, force push, Discord/Beacon API publication or ENV-02 outreach occurred. The approved mentor replies and two bot replies are posted. Necessary conflict merges are recorded above; there were no routine refreshes of the other PR branches. ENV-02 outreach remains paused.

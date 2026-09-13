@@ -17,7 +17,15 @@
 
 This is the working document for the Lodestar EIP-7732 Builder project, an EPF cohort 7 project by [Kris O'Shea](https://github.com/krisoshea-eth) and [Marko Lazic](https://github.com/markolazic01), mentored by [Nico Flaig](https://github.com/nflaig) (ChainSafe, EIP-7732 co-author). The [project proposal](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md) remains the stable public scope, while the [merged implementation plan](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/implementation-plan.md) owns accepted delivery decisions and issue boundaries. This note carries moving technical context, implementation findings, upstream state, code-path maps, adversarial cases, and research watches. Linear owns issue status, ownership, dependencies, and evidence.
 
-## 12 September review update
+## 13 September startup and review update
+
+API cancellation #10065 has merged. Six upstream PRs remain ready for review and three remain source-dependent drafts. The latest [reconciliation](reviews/2026-09-13-reconciliation.md) records the current heads and hosted checks, including #9979's skipped-slot checkpoint-sync timeout. That timeout is not a reproduced bid-publication regression and has not been labelled flaky.
+
+At `794158a33d4a3351d234cc1a71f8232fbab09493`, the fork-only input branch constructs the bid services through explicit `Builder.init()` options. It uses the existing source, orchestrator, store, policy, ledger, signer and publisher and owns ledger pruning. All 188 targeted tests and ordinary Builder/API package checks passed. BN transport and payload construction are mocked; CLI/Engine setup, accepted finality/custody/Heze inputs, recovery and selection/reveal wiring remain incomplete. The [input checkpoint](builder-input-contract.md) specifies the limits.
+
+SPEC-01 is ready for proposal review, not adopted or runtime-qualified. Both alternative patches pass fresh lint and bundling. The document no longer requires every client to respond before review starts. Share the packet with Lodestar, then obtain approved upstream/client feedback. New #10075 cached-head and #10074 benchmark-threshold work belong to BN-01/QA-01 watches, not a different selection-event shape.
+
+## 12 September review update (historical)
 
 The fork-only `krisoshea/input-consumer` experiment began LOD-76 implementation on top of fork #77. At `b8a9b57dd769b6188137892642466749fb4f3774` on 13 September, it also connects an injected consumer to the shared Builder dispatcher. It correlates typed head/preference/payload events using the existing `head_v2` roots, keeps Builder execution proceeds separate from proposer bid payments, and uses the explicit #80 hash proposal. The [input-contract checkpoint](builder-input-contract.md) records its head-only Gloas limits and 134 targeted tests. Automatic `Builder.init()`/CLI construction and reveal wiring remain absent; LOD-77/78 are unfinished and no complete BN/EL lifecycle is claimed. Nico's new draft [#10070](https://github.com/ChainSafe/lodestar/pull/10070) adds a PTC gossip-arrival watch, not another Builder selection-event requirement.
 

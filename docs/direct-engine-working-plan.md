@@ -1,10 +1,10 @@
 # Direct-Engine Builder working plan
 
-> **Status:** Confirmed working direction, reviewed through 12 September 2026. Nico confirmed direct Engine access as the preferred baseline for `packages/builder`, with the proof-of-concept branch used as implementation evidence rather than merged wholesale. Production EL topology and the exact source-BN input contract remain open design work.
+> **Status:** Confirmed working direction, reviewed through 13 September 2026. Nico confirmed direct Engine access as the preferred baseline for `packages/builder`, with the proof-of-concept branch used as implementation evidence rather than merged wholesale. Production EL topology and the exact source-BN input contract remain open design work.
 
 ## Purpose and evidence boundary
 
-The [12 September reconciliation](reviews/2026-09-12-reconciliation.md) controls current status. API-02, TEST-01, the ledger, preference subscription, Marko's store and policy, and ENV-03 are merged. Contributions #9 and #10 are incorporated upstream. The preference tracker retains received objects directly; it does not promise defensive copying or a read-only caller contract. Historical validation below retains its original date.
+The [13 September reconciliation](reviews/2026-09-13-reconciliation.md) controls current status. API-02, TEST-01, the ledger, preference subscription, Marko's store and policy, ENV-03, naming #10063 and API cancellation #10065 are merged. Contributions #9 and #10 are incorporated upstream. The preference tracker retains received objects directly; it does not promise defensive copying or a read-only caller contract. The fork-only [input experiment](builder-input-contract.md) now supports explicit programmatic Builder startup, not complete CLI/Engine or reveal wiring. Historical validation below retains its original date.
 
 Nico's [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder) branch demonstrates an end-to-end Builder that owns payload construction through an Engine API connection. This differs materially from the original BN-mediated plan, where the source beacon node owned payload construction and stateful reveal material.
 

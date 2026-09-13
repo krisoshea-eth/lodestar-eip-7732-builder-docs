@@ -307,7 +307,7 @@ Questions for each client team:
 2. Can the client source the fields at the existing successful-import point, including for valid non-head blocks?
 3. If `block` is extended, can its serializer express fields that are absent before Gloas and required afterwards, and do consumers tolerate the additions?
 4. If `bid_included` is added, can the producer reliably suppress self-builds while preserving imported non-head events?
-5. Does the client agree that `execution_optimistic`, `bid_root`, and the complete signed bid are unnecessary for the Builder reveal decision?
+5. Does any intended consumer need `execution_optimistic` or the complete signed bid in this notification? The event is not itself a reveal instruction; omitted optimistic status is unknown, not false. `bid_root` has no demonstrated need in the current proposal.
 6. Are additional fixtures or tests needed because the event stream is described through examples rather than a strongly connected per-topic schema?
 
 Recent event PRs provide a practical starting point for reviewers: `@michaelsproul` for Lighthouse, `@rolfyone` for Teku, `@james-prysm` for Prysm, `@tersec` for Nimbus, and `@nflaig` plus `@ensi321` for the Lodestar and Gloas surface. These are suggested contacts based on [PR #590](https://github.com/ethereum/beacon-APIs/pull/590) and [PR #621](https://github.com/ethereum/beacon-APIs/pull/621), not assigned reviewers. Confirm the current contact list and the Grandine contact with Nico before tagging anyone.
@@ -329,7 +329,7 @@ Recent event PRs provide a practical starting point for reviewers: `@michaelspro
 4. Open one discussion draft containing one candidate and a link to the alternative, or two clearly cross-linked alternative drafts as Nico suggested. Use #599 and the agreed cross-client venue to collect feedback; a draft need not wait for that feedback to exist. Neither option is an accepted specification.
 5. Request one response per client covering producer feasibility, decoder compatibility, self-build behavior, and any preferred alternative.
 6. Record each response and implementation link in the table above and in the upstream `CHANGES.md` row.
-7. Keep the PR in draft until the Lodestar implementation shape and initial cross-client feasibility review are complete. Client implementations may land after the specification decision, with support tracked in `CHANGES.md`.
+7. Mark the proposal ready for review once its patch, semantics, examples and compatibility questions are complete. Resolve cross-client concerns through that review. Client implementations may land after the specification decision, with support tracked in `CHANGES.md`.
 
 Cross-client buy-in means agreement that the wire contract is implementable and interoperable. It does not require every client implementation to merge before the specification PR can proceed.
 
@@ -391,12 +391,14 @@ Neither PR currently implements #599. PR #490 was updated on 2026-08-21, so both
 
 Both candidate patches are prepared and locally validated. They are ready for Kris and Marco to review before publication. Confirm the publication arrangement, review venue and initial contacts before posting; cross-client consensus is the outcome sought from draft review, not a prerequisite for opening a discussion draft.
 
-The upstream PR is ready to leave draft when:
+The proposal is ready for upstream review when:
 
 - the reviewed Lodestar implementation evidence is linked;
 - external-Builder, self-build, and pre-Gloas examples are verified;
-- each active client team has responded on producer and consumer feasibility; and
-- objections favoring a different event candidate have been resolved or recorded.
+- its wire contract, import trigger and compatibility limits are explicit; and
+- the alternative and unanswered client questions are clearly linked.
+
+These are proposal-quality checks, not an upstream rule requiring every client to respond before review can begin. Share the packet with Lodestar for a final scope check, then use an approved upstream draft and issue #599 to obtain cross-client feedback. The proposed contract still needs maintainer agreement and implementation evidence before claiming adoption or interoperability.
 
 SPEC-01 is complete when the Beacon APIs PR either merges with documented cross-client support or reaches a recorded upstream decision with clear follow-up ownership.
 

@@ -2,7 +2,7 @@
 
 Prepared 10 September 2026 against Beacon APIs master `ef98d512c03c8ca6b9d7cbdc45b9293ec2b24722`.
 
-Rechecked 12 September. Master and the #638 head (`ad322f49e9141e62fca63cedb14706498d9290fc`) are unchanged, and #599 has no new public decision. API-02 #9931 is now merged. This strengthens the fallback implementation evidence but does not choose the selection-event contract. #10056's payload-attributes producer work belongs to the separate input track. Both patches still pass git apply --check. Neither candidate patch needs a wire-shape change from this check. Docs PR #30 is merged; publication to Beacon APIs remains unapproved and no proposal has been posted. Fresh lint/bundle validation is recorded below; it is not a runtime interoperability check.
+Rechecked 13 September. Master and the #638 head (`ad322f49e9141e62fca63cedb14706498d9290fc`) are unchanged, and #599 has no new public decision. API-02 #9931 is merged. This strengthens the fallback implementation evidence but does not choose the selection-event contract. #10056's payload-attributes producer work belongs to the separate input track. Neither candidate patch needs a wire-shape change from this check. Docs PR #30 is merged; publication to Beacon APIs remains unapproved and no proposal has been posted. Fresh lint/bundle validation is recorded below; it is not a runtime interoperability check.
 
 These are two alternative discussion drafts, not two changes intended to merge together. No Beacon APIs PR or discussion comment has been posted from this packet. Nico is comfortable with either approach being proposed for cross-client feedback. Coordinate the publication format with Marco and get Kris's approval before posting.
 
@@ -31,7 +31,7 @@ For publication, one discussion draft with the alternative linked is a reasonabl
 
 ## Validation evidence
 
-The unchanged base and both candidates passed Redocly 1.19.0 lint again on 12 September. Both candidates also passed fresh swagger-cli 4.0.4 bundling and `git diff --check`. Each alternative was applied in its own clean checkout at the pinned base.
+Both candidates passed fresh Redocly 1.19.0 lint, swagger-cli 4.0.4 bundling and `git diff --check` on 13 September, in separate checkouts at the pinned base. The unchanged base's lint result was recorded on 12 September. No combined-candidate patch was tested or proposed.
 
 Additional local checks verified the new examples' exact field sets, 32-byte hex roots/hashes, quoted uint64 values, self-build sentinel, topic names, unchanged legacy events, and preservation through bundling. The sentinel is the string `"18446744073709551615"`, never an imprecise JavaScript number.
 
@@ -87,6 +87,12 @@ Lodestar's current fallback is https://github.com/ChainSafe/lodestar/pull/9931. 
 
 ## Publication decision
 
+The packet is ready to share with Lodestar for a final scope and presentation check. That is a courtesy and a chance to catch implementation assumptions, not another request to settle the entire Builder architecture. The suggested next step is one approved discussion draft with the other candidate linked; two cross-linked alternatives remain reasonable if maintainers prefer that format. Do not publish both as independent changes intended to merge together.
+
 After Kris and Marco review the patches, either publish one draft with the alternative attached or publish two clearly cross-linked alternative drafts. Use #599 as the common discussion reference. Initial cross-client feedback is not a prerequisite for opening a discussion draft; it is the purpose of that draft. Keep both provisional until the actual contract is agreed.
+
+Before publication, replace the temporary changelog issue link with the actual PR link, recheck overlapping changes and confirm the initial review contacts. Do not claim client support from source inspection alone. The previous working-document requirement for every active client's response before leaving draft was too restrictive and has been removed.
+
+The current consensus-spec head is `02abf5c173f550acdbe67225a6b682addea110e4`. Its only change since the prior research pin is [test-generation caching in PR 5631](https://github.com/ethereum/consensus-specs/pull/5631), not a new Builder event or reveal rule. The honest-Builder guidance still distinguishes inclusion from whether an untimely non-head payload should be revealed. New Lodestar [PR 10075](https://github.com/ChainSafe/lodestar/pull/10075) affects cached-head freshness, and [PR 10074](https://github.com/ChainSafe/lodestar/pull/10074) affects benchmark thresholds. Neither selects or changes this event contract.
 
 This packet does not advance #80 or decide #638, runtime ownership, safe/finalized input delivery, custody columns, or payload-attributes emission/deduplication.
