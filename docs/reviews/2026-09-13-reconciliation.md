@@ -2,9 +2,19 @@
 
 This checkpoint supersedes the earlier PR-status snapshots in the 12 September audit. Evidence was refreshed across Kris's and Marko's Lodestar PR inventories, including open/draft PRs and PRs merged since 21 August. The new upstream comparison is pinned to `82e7577c8bebe2c6cca1ec633d690f9bbdcab087`. This is a comment-driven and changed-code review, not another exhaustive review of every unchanged experimental branch.
 
-## Latest refresh and startup experiment
+## Checkpoint investigation and reveal follow-up
 
-This section supersedes moving statuses in the earlier checkpoints below.
+The #9979 hosted E2E log shows Node A finalizing epochs 2, 4, 5 and 6 but never epoch 3. The exact-epoch waiter therefore never resolved and Node B was never started. A longer timeout would not fix that observed sequence; changing the predicate to accept a later checkpoint would lose the intended skipped-slot checkpoint assertion. Why the run did not finalize epoch 3 remains unestablished.
+
+At exact PR head `91038c140a9b6257194d621da0d4e162d7e61d10`, the isolated unchanged test passed locally in 94.25 seconds, including Node B sync. Dependencies were installed from that head's lockfile and dependency packages rebuilt. The first attempt failed before collecting tests because the native loader could not resolve its optional package; the diagnostic rerun supplied the exact installed 1.1.0 dependency directory through NODE_PATH. It ran on macOS/Node 22.22.3, not hosted Linux/Node 24. This is useful local evidence, not a fresh hosted pass or proof of flakiness. The failed-job rerun was attempted once; GitHub returned HTTP 403 requiring repository administration. A maintainer must rerun it. No #9979 source or timeout change was made.
+
+The existing fork-only runtime branch advanced to `523638b2f8d8b06d7168b204ecd15cf00a04c418`. It connects the existing observer, exact selector, retained-material assembler and envelope publisher through Builder startup. Optional reveal configuration supplies the decision and cutoff; the runtime bounds pending decisions/publication and suppresses late results. Selection records still exist when reveal is disabled or declined. All 198 targeted tests across nine files, Builder type-check, changed-file lint, build/import and diff checks passed. No new PR, routine branch refresh or real BN/EL lifecycle result is claimed. The [input contract](../builder-input-contract.md) records unfinished transport, recovery and reveal-policy work.
+
+SPEC-01 master and #599 were rechecked and contain no new public decision. Both unchanged alternative patches pass fresh lint and bundling. Share the packet with Lodestar now; do not wait for every client to agree before opening an approved discussion draft. No Discord or Beacon APIs post was made.
+
+## Earlier refresh and startup experiment
+
+This section records the earlier startup checkpoint. The follow-up above controls later runtime and CI findings.
 
 - API setup cancellation #10065 merged on 13 September at 10:00 UTC, merge commit `bb3ffba9e9441e50c533f8309708c1106a6effca`. Its reply is already posted. Broader REL-01 recovery is not complete.
 - Kris has nine open upstream PRs and four open fork PRs. The six ready upstream PRs are #9958, #9979, #9980, #9982, #10054 and #10064. #9973/#9978/#9981 remain source-dependent drafts. Fork #61 already has its upstream counterpart; #63 remains the broader store proposal; #77/#80 remain integration/input drafts. Marko fork #9/#10 are merged.
@@ -87,6 +97,6 @@ This section supersedes the earlier current-head and unposted-reply statements a
 2. Review the updated docs PR #31; it is not merged by this run.
 3. Continue the six ready PRs through maintainer review and exact-head hosted checks: #9958, #9979, #9980, #9982, #10054 and #10064. #10065 is merged.
 4. Keep #9973/#9978/#9981 draft while their PayloadSource parent remains open.
-5. Continue LOD-76's input contract, CLI/Engine transport configuration and LOD-78 selection/reveal wiring, followed by a complete Gloas lifecycle test. Programmatic bid-service startup is now implemented on the fork-only experiment.
+5. Continue LOD-76's input contract, CLI/Engine transport configuration and recovery. LOD-78 has opt-in bounded wiring but still needs reviewed head/timeliness policy, retries, payment settlement and eviction conditions. Then test the complete Gloas lifecycle.
 
 No CodeRabbit, force push, Discord/Beacon API publication or ENV-02 outreach occurred. The approved mentor replies and two bot replies are posted. Necessary conflict merges are recorded above; there were no routine refreshes of the other PR branches. ENV-02 outreach remains paused.
