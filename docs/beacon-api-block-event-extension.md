@@ -156,7 +156,7 @@ Recent Beacon APIs changes support that distinction:
 - [PR #590](https://github.com/ethereum/beacon-APIs/pull/590) introduced `head_v2` because the event's semantics and payload-status model changed, not merely because fields were added; and
 - [PR #621](https://github.com/ethereum/beacon-APIs/pull/621) made an existing event field fork-conditional without introducing a new topic.
 
-These are precedents, not a repository-wide versioning rule. The detailed cross-client review of #590 included differing preferences on versioning and precise slot/root meanings. The [submission-practice notes](spec-01/README.md#fit-with-upstream-proposal-practice) distinguish the narrow normative patch from this supporting design document.
+These are precedents, not a repository-wide versioning rule. The detailed cross-client review of #590 included differing preferences on versioning and precise slot/root meanings. The [submission-practice notes](spec-01/REVIEW-NOTES.md#fit-with-upstream-proposal-practice) distinguish the narrow normative patch from this supporting design document.
 
 This candidate adds two primitive fields while preserving the event's meaning and emission point. Cross-client review must still confirm that existing producers, serializers, fixtures, and consumers tolerate the additive JSON fields and can enforce their post-Gloas presence without a new event version.
 

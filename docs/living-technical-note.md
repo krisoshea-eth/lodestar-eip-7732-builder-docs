@@ -19,6 +19,8 @@ This is the working document for the Lodestar EIP-7732 Builder project, an EPF c
 
 ## 13 September startup and review update
 
+LOD-76/77/78 are assigned to Kris in Linear and GitHub for the input consumer, Builder bid wiring and reveal wiring. This supersedes the unassigned ownership notes in historical sections. LOD-93 tracks Kris's existing simulation correction in #10054 separately from the broader QA backlog.
+
 API cancellation #10065 has merged. Six upstream PRs remain ready for review and three remain source-dependent drafts. The latest [reconciliation](reviews/2026-09-13-reconciliation.md) records the current heads and hosted checks, including #9979's skipped-slot checkpoint-sync timeout. That timeout is not a reproduced bid-publication regression and has not been labelled flaky.
 
 At `523638b2f8d8b06d7168b204ecd15cf00a04c418`, the fork-only input branch also connects exact local selections to retained-envelope publication. Reveal requires an explicit caller policy and cutoff; it is not triggered solely by inclusion. All 198 targeted tests and ordinary Builder type-check, lint, build/import and whitespace checks passed. BN transport and payload construction are mocked. CLI/Engine setup, accepted finality/custody/Heze inputs, recovery, reviewed reveal retry/settlement/eviction and the real BN/EL lifecycle remain incomplete. The [input checkpoint](builder-input-contract.md) specifies the limits.

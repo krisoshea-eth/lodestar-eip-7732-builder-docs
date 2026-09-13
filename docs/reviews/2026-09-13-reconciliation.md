@@ -4,6 +4,12 @@ This checkpoint supersedes the earlier PR-status snapshots in the 12 September a
 
 ## Checkpoint investigation and reveal follow-up
 
+### Assignment and sharing correction
+
+The assignment sweep compared all 92 existing Linear issues with their GitHub Project mirrors. Thirty were already assigned to Kris consistently. LOD-76/77/78 were in progress but unassigned despite the fork implementation; they are now assigned to Kris in both systems. Marko's assignments and untouched backlog ownership remain unchanged. New LOD-93 / GitHub issue #99 tracks Kris's existing simulation PR #10054 as an In Review child of QA-01 rather than assigning him the whole QA backlog. LOD-94 records his merged API cancellation PR #10065 as Done under REL-01, without closing or assigning the remaining recovery work.
+
+The [SPEC-01 sharing page](../spec-01/README.md) now contains only the problem, two alternatives, shared behavior and review questions. Research dates, validation details and publishing notes remain in [supporting notes](../spec-01/REVIEW-NOTES.md). The normative patches are unchanged. No Discord or Beacon APIs post was made.
+
 The #9979 hosted E2E log shows Node A finalizing epochs 2, 4, 5 and 6 but never epoch 3. The exact-epoch waiter therefore never resolved and Node B was never started. A longer timeout would not fix that observed sequence; changing the predicate to accept a later checkpoint would lose the intended skipped-slot checkpoint assertion. Why the run did not finalize epoch 3 remains unestablished.
 
 At exact PR head `91038c140a9b6257194d621da0d4e162d7e61d10`, the isolated unchanged test passed locally in 94.25 seconds, including Node B sync. Dependencies were installed from that head's lockfile and dependency packages rebuilt. The first attempt failed before collecting tests because the native loader could not resolve its optional package; the diagnostic rerun supplied the exact installed 1.1.0 dependency directory through NODE_PATH. It ran on macOS/Node 22.22.3, not hosted Linux/Node 24. This is useful local evidence, not a fresh hosted pass or proof of flakiness. The failed-job rerun was attempted once; GitHub returned HTTP 403 requiring repository administration. A maintainer must rerun it. No #9979 source or timeout change was made.
