@@ -1,5 +1,7 @@
 # Builder bid-inclusion events
 
+**Discussion draft:** [Beacon APIs #641](https://github.com/ethereum/beacon-APIs/pull/641) proposes extending `block` and links `bid_included` as the alternative. The event choice remains open.
+
 A Builder needs to know when an imported beacon block includes its bid. Today it can subscribe to `block` and fetch the block to check. [Beacon APIs #599](https://github.com/ethereum/beacon-APIs/issues/599) discusses including enough identity information in an event to avoid fetching unrelated blocks.
 
 These are two alternatives for the same change, not proposals to merge together.

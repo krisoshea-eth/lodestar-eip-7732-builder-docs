@@ -1,6 +1,6 @@
 # Beacon API Gloas Builder-selection event decision
 
-> **Status:** Working draft for discussion. This document is not an accepted Beacon API specification.
+> **Status:** [Beacon APIs discussion draft #641](https://github.com/ethereum/beacon-APIs/pull/641) is open for the extended `block` option, with lightweight `bid_included` linked as the alternative. Neither contract is accepted yet.
 
 | Field                      | Value                                                                                                                                                                                                                                                                                                                                                                               |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -16,6 +16,10 @@
 | Candidate review packet    | [Exact patches, proposed PR text, and validation](spec-01/README.md)                                                                                                                                                                                                                                                                                                                |
 
 > **Artifact boundary:** This document owns the Builder-selection notification question in beacon-APIs #599. Marco's open [beacon-APIs #638](https://github.com/ethereum/beacon-APIs/pull/638) is a separate payload-attributes schema change for `safe_block_hash` and `finalized_block_hash`. The current #638 head does not specify post-Gloas emission timing and does not settle the selection-event wire contract.
+
+## Published proposal
+
+[Beacon APIs #641](https://github.com/ethereum/beacon-APIs/pull/641) is the current review venue, related to #599. Nico reviewed the write-up positively; that does not select an event design. Kris opened one draft for the extended `block` candidate, linked the four-field alternative and left client-support claims empty. The two alternatives passed fresh lint, bundling and example checks against the audit base above. The published patch changes only `apis/eventstream/index.yaml` and `CHANGES.md`.
 
 ## Related work checked on 13 September
 
@@ -323,13 +327,10 @@ Recent event PRs provide a practical starting point for reviewers: `@michaelspro
 
 ### Outreach sequence
 
-1. Compare the two leading candidates here, keeping `block_v2` as a documented fallback.
-2. Review the prepared `index.yaml` and `CHANGES.md` patches for Candidate A and Candidate B in the [review packet](spec-01/README.md).
-3. Coordinate publication with Marco and get Kris's approval before posting or tagging reviewers. No Beacon APIs or Discord post is authorized by preparing these files.
-4. Open one discussion draft containing one candidate and a link to the alternative, or two clearly cross-linked alternative drafts as Nico suggested. Use #599 and the agreed cross-client venue to collect feedback; a draft need not wait for that feedback to exist. Neither option is an accepted specification.
-5. Request one response per client covering producer feasibility, decoder compatibility, self-build behavior, and any preferred alternative.
-6. Record each response and implementation link in the table above and in the upstream `CHANGES.md` row.
-7. Mark the proposal ready for review once its patch, semantics, examples and compatibility questions are complete. Resolve cross-client concerns through that review. Client implementations may land after the specification decision, with support tracked in `CHANGES.md`.
+1. Use [draft #641](https://github.com/ethereum/beacon-APIs/pull/641) and #599 for discussion; the alternative patch is linked in the PR description. Publication is complete, but reviewer outreach remains a separate action.
+2. Gather client feedback on producer feasibility, decoder compatibility, self-build behavior and the preferred event design. `block_v2` remains a documented alternative if clients prefer it.
+3. Record each response and implementation link in the table above. Fill `CHANGES.md` support cells only when support is verified, not merely because a client responds.
+4. Keep #641 in draft while the contract is unsettled. Resolve the event choice and compatibility questions through review, then update the patch and its readiness. Client implementations may land after the specification decision, with support tracked separately.
 
 Cross-client buy-in means agreement that the wire contract is implementable and interoperable. It does not require every client implementation to merge before the specification PR can proceed.
 

@@ -2,6 +2,12 @@
 
 For the proposal itself, read [Builder bid-inclusion events](README.md). This file keeps the supporting research, validation history and draft PR text separate from that short review page.
 
+## Published draft
+
+[Beacon APIs #641](https://github.com/ethereum/beacon-APIs/pull/641) is now open as a draft against `master`, proposing the extended `block` option and linking the lightweight alternative. Both patches were revalidated against `ef98d512c03c8ca6b9d7cbdc45b9293ec2b24722`. The published changelog points to #641; client-support cells remain empty. SPEC-01 is In Review, not complete. No event choice or cross-client agreement is implied by opening the draft.
+
+The preparation history below predates publication. Its statements about unapproved posting or the absence of an upstream PR are historical, not current instructions.
+
 Prepared 10 September 2026 against Beacon APIs master `ef98d512c03c8ca6b9d7cbdc45b9293ec2b24722`.
 
 Rechecked 13 September. Master and the #638 head (`ad322f49e9141e62fca63cedb14706498d9290fc`) are unchanged, and #599 has no new public decision. API-02 #9931 is merged. This strengthens the fallback implementation evidence but does not choose the selection-event contract. #10056's payload-attributes producer work belongs to the separate input track. Neither candidate patch needs a wire-shape change from this check. Docs PR #30 is merged; publication to Beacon APIs remains unapproved and no proposal has been posted. Fresh lint/bundle validation is recorded below; it is not a runtime interoperability check.

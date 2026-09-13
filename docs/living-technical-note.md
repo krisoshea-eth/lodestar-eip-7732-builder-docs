@@ -25,7 +25,7 @@ API cancellation #10065 has merged. Six upstream PRs remain ready for review and
 
 At `523638b2f8d8b06d7168b204ecd15cf00a04c418`, the fork-only input branch also connects exact local selections to retained-envelope publication. Reveal requires an explicit caller policy and cutoff; it is not triggered solely by inclusion. All 198 targeted tests and ordinary Builder type-check, lint, build/import and whitespace checks passed. BN transport and payload construction are mocked. CLI/Engine setup, accepted finality/custody/Heze inputs, recovery, reviewed reveal retry/settlement/eviction and the real BN/EL lifecycle remain incomplete. The [input checkpoint](builder-input-contract.md) specifies the limits.
 
-SPEC-01 is ready for proposal review, not adopted or runtime-qualified. Both alternative patches pass fresh lint and bundling. The document no longer requires every client to respond before review starts. Share the packet with Lodestar, then obtain approved upstream/client feedback. New #10075 cached-head and #10074 benchmark-threshold work belong to BN-01/QA-01 watches, not a different selection-event shape.
+SPEC-01 is now in upstream review through [Beacon APIs draft #641](https://github.com/ethereum/beacon-APIs/pull/641). It proposes the extended `block` option and links the lightweight alternative; neither is adopted or runtime-qualified. Both alternative patches pass fresh lint, bundling and example checks. LOD-48 remains assigned to Kris and is In Review. New #10075 cached-head and #10074 benchmark-threshold work belong to BN-01/QA-01 watches, not a different selection-event shape.
 
 ## 12 September review update (historical)
 

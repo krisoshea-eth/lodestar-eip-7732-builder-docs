@@ -4,6 +4,12 @@ This checkpoint supersedes the earlier PR-status snapshots in the 12 September a
 
 ## Checkpoint investigation and reveal follow-up
 
+### SPEC-01 publication
+
+Kris authorized one draft after Nico responded positively to the short write-up. [Beacon APIs #641](https://github.com/ethereum/beacon-APIs/pull/641) is now open against `master` at `ef98d512c03c8ca6b9d7cbdc45b9293ec2b24722`, with head `befeb3651354f3d26f1a93ea44bd52058680f503`. Maintainer edits are enabled. The two-file patch extends `block`, references #599 and links the lightweight alternative without claiming a chosen cross-client contract.
+
+Redocly 1.19.0 lint, swagger-cli 4.0.4 bundling, example checks and whitespace checks passed for both alternatives in separate checkouts. The extended patch's changelog now links #641, with empty support cells. LOD-48 is In Review, still assigned to Kris. No second proposal, reviewer request, issue comment or Discord post was made. The earlier no-publication statements in this audit are historical.
+
 ### Assignment and sharing correction
 
 The assignment sweep compared all 92 existing Linear issues with their GitHub Project mirrors. Thirty were already assigned to Kris consistently. LOD-76/77/78 were in progress but unassigned despite the fork implementation; they are now assigned to Kris in both systems. Marko's assignments and untouched backlog ownership remain unchanged. New LOD-93 / GitHub issue #99 tracks Kris's existing simulation PR #10054 as an In Review child of QA-01 rather than assigning him the whole QA backlog. LOD-94 records his merged API cancellation PR #10065 as Done under REL-01, without closing or assigning the remaining recovery work.
