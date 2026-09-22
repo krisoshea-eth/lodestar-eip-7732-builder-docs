@@ -2,9 +2,11 @@
 
 For the proposal itself, read [Builder bid-inclusion events](README.md). This file keeps the supporting research, validation history and draft PR text separate from that short review page.
 
-## Published draft
+## Current upstream review, 22 September
 
-[Beacon APIs #641](https://github.com/ethereum/beacon-APIs/pull/641) is now open as a draft against `master`, proposing the extended `block` option and linking the lightweight alternative. Both patches were revalidated against `ef98d512c03c8ca6b9d7cbdc45b9293ec2b24722`. The published changelog points to #641; client-support cells remain empty. SPEC-01 is In Review, not complete. No event choice or cross-client agreement is implied by opening the draft.
+[Beacon APIs #641](https://github.com/ethereum/beacon-APIs/pull/641) is open and not draft, proposing the extended `block` option and linking the lightweight alternative. Nico's 21 September review favours that option. Commit `ebeeb92` shortens the description, updates the main example to Gloas and follows the existing changelog format. Redocly 1.19.0 lint, swagger-cli 4.0.4 bundling, unchanged-topic/legacy-example checks and whitespace checks passed. The stored extended-block patch matches that head against `ef98d512c03c8ca6b9d7cbdc45b9293ec2b24722`. Client-support cells remain empty; this is not cross-client acceptance.
+
+The attestation-weight reveal discussion is already active on the PR, including Kris's 16 September reply. Do not repeat the earlier draft response or turn a proposed threshold into event semantics. New Discord context is still needed before drafting a follow-up there.
 
 The preparation history below predates publication. Its statements about unapproved posting or the absence of an upstream PR are historical, not current instructions.
 

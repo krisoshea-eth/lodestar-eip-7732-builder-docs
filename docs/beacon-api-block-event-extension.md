@@ -1,6 +1,6 @@
 # Beacon API Gloas Builder-selection event decision
 
-> **Status:** [Beacon APIs discussion draft #641](https://github.com/ethereum/beacon-APIs/pull/641) is open for the extended `block` option, with lightweight `bid_included` linked as the alternative. Neither contract is accepted yet.
+> **Status, 22 September:** [Beacon APIs #641](https://github.com/ethereum/beacon-APIs/pull/641) is open and not draft. Nico's 21 September review favours extending `block`. The patch now has the requested concise description, current-fork example and changelog format. This is a review preference, not cross-client acceptance. The lightweight alternative remains linked; an attestation-weight reveal signal remains separate research.
 
 | Field                      | Value                                                                                                                                                                                                                                                                                                                                                                               |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -19,9 +19,9 @@
 
 ## Published proposal
 
-[Beacon APIs #641](https://github.com/ethereum/beacon-APIs/pull/641) is the current review venue, related to #599. Nico reviewed the write-up positively; that does not select an event design. Kris opened one draft for the extended `block` candidate, linked the four-field alternative and left client-support claims empty. The two alternatives passed fresh lint, bundling and example checks against the audit base above. The published patch changes only `apis/eventstream/index.yaml` and `CHANGES.md`.
+[Beacon APIs #641](https://github.com/ethereum/beacon-APIs/pull/641) is the current review venue, related to #599. It began as a draft and is now ready for review. Nico subsequently stated a preference for extending `block`; the earlier neutral position below is historical. Commit `ebeeb92` incorporates his documentation suggestions without changing the import trigger or adding a reveal policy. It passes lint, bundling and example checks. Client-support claims remain empty. The published patch changes only `apis/eventstream/index.yaml` and `CHANGES.md`.
 
-## Related work checked on 13 September
+## Related work checked on 13 September (historical)
 
 Nico's new [Lodestar #10072](https://github.com/ChainSafe/lodestar/pull/10072), stacked on [#10073](https://github.com/ChainSafe/lodestar/pull/10073), implements the separate [Beacon APIs #627](https://github.com/ethereum/beacon-APIs/pull/627) proposal for a validator-supplied bid. This happens before block production and does not replace a Builder's post-import inclusion notification. Its draft has an existing Heze request-codec review finding; that is not a reason to add the full bid or fork-version wrapping to this lightweight event without a demonstrated need.
 

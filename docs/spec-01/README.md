@@ -1,6 +1,6 @@
 # Builder bid-inclusion events
 
-**Discussion draft:** [Beacon APIs #641](https://github.com/ethereum/beacon-APIs/pull/641) proposes extending `block` and links `bid_included` as the alternative. The event choice remains open.
+**In review:** [Beacon APIs #641](https://github.com/ethereum/beacon-APIs/pull/641) proposes extending `block` and links `bid_included` as the alternative. Nico's 21 September review favours extending `block`; cross-client agreement is still open. The PR is not draft.
 
 A Builder needs to know when an imported beacon block includes its bid. Today it can subscribe to `block` and fetch the block to check. [Beacon APIs #599](https://github.com/ethereum/beacon-APIs/issues/599) discusses including enough identity information in an event to avoid fetching unrelated blocks.
 
@@ -26,4 +26,4 @@ The dedicated event omits the full signed bid, `bid_root` and `execution_optimis
 
 Which option would be easier for clients to support? Is any field or import behavior missing for the intended consumers? `block_v2` remains an alternative if clients prefer explicit event versioning.
 
-Both patches pass the repository's OpenAPI lint and bundling checks, with additional example checks. Client implementations and interoperability have not been validated. [Supporting research, validation and draft PR text](REVIEW-NOTES.md).
+The extended `block` patch now follows Nico's requested concise description and current-fork example. Its 22 September revision passes OpenAPI lint, bundling and example checks; hosted CI and spellcheck also pass at the new head. The alternative retains its earlier validation. Client implementations and interoperability have not been validated. [Supporting research and proposal history](REVIEW-NOTES.md).
