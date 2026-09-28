@@ -17,7 +17,11 @@
 
 This is the working document for the Lodestar EIP-7732 Builder project, an EPF cohort 7 project by [Kris O'Shea](https://github.com/krisoshea-eth) and [Marko Lazic](https://github.com/markolazic01), mentored by [Nico Flaig](https://github.com/nflaig) (ChainSafe, EIP-7732 co-author). The [project proposal](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md) remains the stable public scope, while the [merged implementation plan](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/implementation-plan.md) owns accepted delivery decisions and issue boundaries. This note carries moving technical context, implementation findings, upstream state, code-path maps, adversarial cases, and research watches. Linear owns issue status, ownership, dependencies, and evidence.
 
-## 13 September startup and review update
+## 28 September checkpoint
+
+The [current reconciliation](reviews/2026-09-28-reconciliation.md) records the pushed timer/envelope fixes, accepted-contract reconciliation of fork #77 and the input experiment, new Builder-related upstream work, and Nico's approval of Beacon APIs #641. Real BN/EL lifecycle evidence remains missing. GitHub tracking was updated; Linear authentication is blocked, so cross-board synchronization is not claimed.
+
+## 13 September startup and review update (historical)
 
 LOD-76/77/78 are assigned to Kris in Linear and GitHub for the input consumer, Builder bid wiring and reveal wiring. This supersedes the unassigned ownership notes in historical sections. LOD-93 tracks Kris's existing simulation correction in #10054 separately from the broader QA backlog.
 

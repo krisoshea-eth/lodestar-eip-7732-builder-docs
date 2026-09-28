@@ -1,10 +1,10 @@
 # Direct-Engine Builder working plan
 
-> **Status:** Confirmed direct-Engine working direction, reconciled 22 September 2026. Source #9958 has merged. Production EL topology, remaining inputs and complete runtime evidence are still open.
+> **Status:** Confirmed direct-Engine working direction, reconciled 28 September 2026. Source #9958 has merged. Production EL topology, remaining inputs and complete runtime evidence are still open.
 
 ## Purpose and evidence boundary
 
-The [22 September reconciliation](reviews/2026-09-22-reconciliation.md) controls current status. Source #9958 and simulation fix #10054 join the merged foundations. Contributions #9/#10 are incorporated; broader fork store proposal #63 is closed. The accepted source uses plain post-Gloas types and passes null custody columns. The [input experiment](builder-input-contract.md) has programmatic startup and opt-in reveal evidence, but still needs accepted dependency reconciliation, concrete CLI/Engine transport and real lifecycle tests. Historical validation below retains its original date.
+The [28 September reconciliation](reviews/2026-09-28-reconciliation.md) controls current status. Source #9958 and simulation fix #10054 join the merged foundations. Contributions #9/#10 are incorporated; broader fork store proposal #63 is closed. The accepted source uses plain post-Gloas types and passes null custody columns. The [input experiment](builder-input-contract.md) has programmatic startup and opt-in reveal evidence, but now follows the accepted source/store/policy contracts and still needs concrete CLI/Engine transport, input recovery and real lifecycle tests. Historical validation below retains its original date.
 
 Nico's [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder) branch demonstrates an end-to-end Builder that owns payload construction through an Engine API connection. This differs materially from the original BN-mediated plan, where the source beacon node owned payload construction and stateful reveal material.
 
@@ -68,7 +68,7 @@ For an initial shared-EL proof of concept, the Builder must follow the BN's emit
 | Bid assembly                                       | #9978                               | Ready; unsafe gas-limit guard pushed             | New-head hosted checks remain separate from local validation                             |
 | Envelope assembly                                  | #9981                               | Ready; store type and tests corrected            | Discuss the exact-selection precondition with Nazar                                      |
 | Bid publication / selection / envelope publication | #9979, #9980, #9982                 | Ready                                            | Continue component review; do not equate title checks with full CI                       |
-| Resolved-input SlotBidder                          | Fork #77                            | Draft, fork-only                                 | Reconcile accepted dependencies before promotion; no new feedback in this refresh        |
+| Resolved-input SlotBidder                          | Fork #77                            | Draft, fork-only                                 | Reconciled at dab18e5316; remains a combined fork draft        |
 | Payload-attributes hashes                          | #10109 / fork #80, Beacon APIs #638 | Draft implementation, open specification         | Resolve zero-hash behavior and the intended EL contract                                  |
 | Simulation correction                              | #10054                              | Merged 14 September                              | No outstanding Docs rerun for this closed PR                                             |
 | Bid/reveal runtime                                 | LOD-76/77/78, input-consumer branch | In Progress, Kris                                | Continue input and transport work; test the actual lifecycle                             |
@@ -91,7 +91,7 @@ Every ChainSafe PR targets `unstable`, because contributor dependency branches d
 The delivery order is:
 
 1. Finish review of the seven ready component/refactor PRs; #9958 is already merged.
-2. Reconcile the fork-only SlotBidder/input experiment with accepted source, store and policy contracts, plus the new timer and gas-limit fixes.
+2. Continue the reconciled fork-only SlotBidder/input experiment with concrete transport, input recovery and agreed reveal policy; do not reopen the accepted store/policy scope.
 3. Settle the finality-hash contract without making #638 mandatory by assumption.
 4. Complete concrete Builder/CLI/Engine setup under LOD-77.
 5. Complete reviewed selection/reveal policy, retry, settlement and eviction under LOD-78.

@@ -1,6 +1,6 @@
 # Builder bid-inclusion events
 
-**In review:** [Beacon APIs #641](https://github.com/ethereum/beacon-APIs/pull/641) proposes extending `block` and links `bid_included` as the alternative. Nico's 21 September review favours extending `block`; cross-client agreement is still open. The PR is not draft.
+**In review:** [Beacon APIs #641](https://github.com/ethereum/beacon-APIs/pull/641) proposes extending `block` and links `bid_included` as the alternative. Nico approved the proposal on 26 September and left it open for other client approvals; cross-client agreement is still open. The PR is not draft.
 
 A Builder needs to know when an imported beacon block includes its bid. Today it can subscribe to `block` and fetch the block to check. [Beacon APIs #599](https://github.com/ethereum/beacon-APIs/issues/599) discusses including enough identity information in an event to avoid fetching unrelated blocks.
 
@@ -21,6 +21,8 @@ These are two alternatives for the same change, not proposals to merge together.
 Both notify after successful block import, including valid non-head blocks, without waiting for the execution payload envelope. Inclusion does not guarantee the block is canonical or instruct the Builder to reveal. A Builder that needs to verify the complete signed bid still fetches the block and compares it with its local record.
 
 The dedicated event omits the full signed bid, `bid_root` and `execution_optimistic`. Missing optimistic status must not be interpreted as `false`. The existing `block` plus block-fetch path remains available when a BN does not support the new topic.
+
+Nico considers the separate reveal-trigger suggestion independent of this PR. His Lodestar-specific guidance permits revealing on receipt because the Builder has no unbundling risk. The runtime policy remains separate from the event wire contract.
 
 ## Feedback
 
