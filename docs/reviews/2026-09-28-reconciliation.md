@@ -4,16 +4,17 @@
 
 - #9973 now checks the preparation delay immediately before scheduling, including a backwards-clock regression. Pushed head `d1d06a3f3`; 31 orchestration and 11 source tests passed with Builder package checks.
 - #9981 remains open. It now compares retained material with the selected bid's Builder index, ordered blob commitments and execution requests root. Pushed head `e51e98f6a`; 12 envelope and four store tests passed with package checks. This does not add EL or KZG validation.
-- Fork #77 is pushed at `dab18e5316`. Its source matches merged #9958, the accepted store/policy behavior is retained, and the approved timer/gas/envelope checks are incorporated. All 312 Builder tests and package checks passed.
-- The existing input-consumer branch is pushed at `c82a486ec4`. Configurable custody input was removed; the accepted source supplies null. Opt-in Builder startup and selection/reveal wiring remain, and the full selected bid now reaches envelope assembly. All 374 Builder tests and package checks passed with mocked Engine/BN boundaries.
+- #9978 is pushed at `634d348cc9`. It checks exact Heze inclusion-bit length, compares the returned payload against caller-supplied BN prevRandao, and reuses ForkPostGloas without making Heze inputs optional. Six new regressions failed before the correction; all 23 assembly tests and package checks passed afterward.
+- Fork #77 is pushed at `20b77913fa`. It passes expected prevRandao from the build request and rejects invalid material before storage/publication. All 76 focused assembly/SlotBidder/pipeline tests and package checks passed. Its accepted source/store/policy reconciliation remains intact. The earlier 312-test run belongs to `dab18e5316`.
+- The existing input-consumer branch is pushed at `ba7ab851fa` with the same approved assembly contract. All 149 focused consumer/Builder/pipeline tests and package checks passed with mocked Engine/BN boundaries. The earlier 374-test run belongs to `c82a486ec4`. Custody remains null in the accepted source; opt-in Builder and selection/reveal wiring remain experimental.
 
 Seven upstream PRs are non-draft: #9973, #9978, #9979, #9980, #9981, #9982 and #10064. This is their GitHub state, not a claim that all review feedback is complete. #10109 and fork #80 remain draft. Fork #77 remains a combined integration draft. #61 uses the same branch as #9973 but its old base no longer supplies a clean two-file comparison. #63 and Marko-fork contributions #9/#10 are closed or merged.
 
 ## Reviews and remaining changes
 
-The approved gas-limit, timer, envelope-boundary and zero-finality-hash replies were posted. New #9978 feedback on inclusion-bit length, authoritative prevRandao and ForkPostGloas needs its own scoped amendment. The short/long inclusion-bit serialization behavior was reproduced. Marko's #9980 suggestion to group selection into reveal deserves a boundary discussion, not blindly deleting local ledger accounting. #10064's optional service extraction remains separate from its existing error handling.
+The approved gas-limit, timer, envelope-boundary and zero-finality-hash replies were posted. The three additional #9978 amendments are now implemented, tested and acknowledged in separate threads. Marko's #9980 selection/reveal grouping suggestion received a reply asking to preserve local ledger accounting and clarify missing-record behavior; no service was removed. #10064's existing error handling and optional later service extraction were acknowledged separately without another source change.
 
-Full uint64 gas-limit support is tracked in [GitHub #111](https://github.com/krisoshea-eth/lodestar/issues/111). The existing safe-integer guard prevents signing rounded values; it does not replace an exact-width Engine/type migration.
+Full uint64 gas-limit support is tracked in [LOD-105](https://linear.app/kriso/issue/LOD-105) and [GitHub #111](https://github.com/krisoshea-eth/lodestar/issues/111), assigned to Kris. The existing safe-integer guard prevents signing rounded values; it does not replace an exact-width Engine/type migration.
 
 ## Upstream impact
 
@@ -31,7 +32,7 @@ Nico approved [Beacon APIs #641](https://github.com/ethereum/beacon-APIs/pull/64
 
 ## Next implementation
 
-1. Resolve the new bid-assembly review questions and selection/reveal grouping.
+1. Continue bid-assembly review and decide selection/reveal grouping without dropping ledger accounting implicitly.
 2. Settle coherent parent/safe/finalized inputs and the supported EL deployment. Geth's zero-hash handling does not by itself establish a portable Builder contract or remove competing FCU writers.
 3. Reuse existing JWT, RPC, Engine serialization and configuration utilities for concrete construction, preserving per-operation abort behavior and null custody serialization.
 4. Add startup/reconnect recovery and the agreed reveal/settlement/eviction policy to the existing experiment.
@@ -39,6 +40,6 @@ Nico approved [Beacon APIs #641](https://github.com/ethereum/beacon-APIs/pull/64
 
 ## Tracking and evidence limits
 
-Affected GitHub issues and Project entries were refreshed; Marko's #10192 is tracked under STORAGE-02 and assigned to him. LOD-76/77/78's GitHub mirrors remain assigned to Kris. Linear repeatedly returned an authentication loop, so its new gas-limit issue and synchronization remain pending. Cached Linear status fields for the completed smoke and dedup issues still disagree with GitHub Done. Do not claim a synchronized board from the GitHub updates alone.
+Linear authentication recovered during the approved follow-through. The GitHub integration had already created LOD-105, so no duplicate issue was created. Missing Builder project membership, incorrect upstream links, stale authentication notes and project status caches were repaired. All 105 tracked issues have matching status and assignee fields across Linear and GitHub Projects. Marko's active #10192 follow-up is In Progress; completed smoke/dedup/spec work remains Done. LOD-76/77/78 remain assigned to Kris. This field reconciliation is not a fresh technical completion audit of every backlog issue.
 
 New-head hosted checks on #9973/#9981 currently show title validation only. There was no real BN/EL run, no CodeRabbit review, no routine unstable merge or force push. ENV-02 outreach remains paused. The source audit was focused on changed Builder-relevant code and review feedback, not an exhaustive audit of every unrelated Lodestar PR.
