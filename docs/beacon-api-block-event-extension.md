@@ -12,7 +12,7 @@
 | Lodestar proofs of concept | Marco's upstream [#9854](https://github.com/ChainSafe/lodestar/pull/9854), [#9875](https://github.com/ChainSafe/lodestar/pull/9875), [#9876](https://github.com/ChainSafe/lodestar/pull/9876), and [#9896](https://github.com/ChainSafe/lodestar/pull/9896), plus Nico's draft [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder) branch at `99fd8fa9ad` |
 | Target repository          | [`ethereum/beacon-APIs`](https://github.com/ethereum/beacon-APIs)                                                                                                                                                                                                                                                                                                                   |
 | Beacon APIs audit base     | [`ef98d51`](https://github.com/ethereum/beacon-APIs/commit/ef98d512c03c8ca6b9d7cbdc45b9293ec2b24722)                                                                                                                                                                                                                                                                                |
-| Last updated               | 2026-09-13 (public state rechecked; normative patches unchanged; no cross-client contract selected)                                                                                                                                                                                                                                                                                 |
+| Last updated               | 2026-10-04 (Lodestar producer and consumer status reconciled; no cross-client agreement claimed)                                                                                                                                                                                                                                                                                    |
 | Candidate review packet    | [Exact patches, proposed PR text, and validation](spec-01/README.md)                                                                                                                                                                                                                                                                                                                |
 
 > **Artifact boundary:** This document owns the Builder-selection notification question in beacon-APIs #599. Marco's open [beacon-APIs #638](https://github.com/ethereum/beacon-APIs/pull/638) is a separate payload-attributes schema change for `safe_block_hash` and `finalized_block_hash`. The current #638 head does not specify post-Gloas emission timing and does not settle the selection-event wire contract.
@@ -130,7 +130,7 @@ data: {"slot":"10","block":"0x9a2f...54eaf","execution_optimistic":false,"builde
 
 `builder_index` is set to `BUILDER_INDEX_SELF_BUILD`, whose consensus value is `UINT64_MAX`. The Beacon API JSON representation is the quoted decimal string `"18446744073709551615"`. `block_hash` remains the hash committed by the self-build bid.
 
-Marco's latest #9854 proof of concept omits the added fields for self-builds. That is useful implementation evidence, but it is not the preferred Candidate A contract: Nico and NC both favor required post-Gloas fields because optional fields are ambiguous. Under Candidate A, a self-build therefore carries `BUILDER_INDEX_SELF_BUILD` and its committed `block_hash`. A dedicated external-Builder event naturally emits nothing for self-builds.
+Merged Lodestar [#9854](https://github.com/ChainSafe/lodestar/pull/9854) includes both fields for self-builds and has a serialization regression. It matches Candidate A's required post-Gloas shape. The 7 September finding above applies only to the cited earlier head. A dedicated external-Builder event would emit nothing for self-builds.
 
 ## Event and consumer behavior
 
@@ -144,7 +144,7 @@ A Builder can use `(builder_index, block_hash)` as an efficient first-pass selec
 
 API-02 therefore remains useful after this extension. It supplies the bounded, fork-correct fallback and supports clients that have not implemented the additional fields.
 
-During a mixed-version rollout, a consumer MUST NOT interpret missing fields as a self-build or as evidence that its bid was not selected. If either field is absent, the consumer falls back to the existing root-based `getBlockV2` path. The extension only removes a retrieval when both fields are present and the candidate can be rejected cheaply.
+During a mixed-version rollout, a consumer must not interpret missing fields as a self-build or as evidence that its bid was not selected. Lodestar [#10257](https://github.com/ChainSafe/lodestar/pull/10257) accepts the legacy shape when both fields are absent and falls back to root-based `getBlockV2` retrieval. A partial new shape is rejected as malformed rather than used for filtering. This is the Lodestar consumer's compatibility behavior, not permission for a post-Gloas producer to omit fields required by Candidate A. The extension only removes a retrieval when both fields are present and the candidate can be rejected cheaply.
 
 ## Versioning and compatibility
 

@@ -45,6 +45,8 @@ Recent BN work on range-envelope identity (#10251), sync backoff (#10249/#10250/
 
 Publication retries (LOD-107), signer overload cleanup (LOD-109), exact uint64 codecs (LOD-105) and multi-BN publication (LOD-37) remain separate. A timeout does not prove a bid was never broadcast; do not clear its reservation indiscriminately. Multi-BN work follows a demonstrated single-source-BN lifecycle.
 
+Payment reconciliation is tracked in [LOD-112](https://linear.app/kriso/issue/LOD-112), under LOD-78. The runtime records selected liabilities but does not yet observe payment settlement. A refreshed balance can therefore still have an already-paid local liability deducted again, and unsettled winning records survive pruning. This is a limitation for sustained bidding. The follow-up needs coherent state and canonical outcome evidence; elapsed time, queue absence, a balance delta or successful reveal alone must not release a reservation.
+
 ## Beacon API specification
 
 [SPEC-01 / Beacon APIs #641](https://github.com/ethereum/beacon-APIs/pull/641) is open and ready for review. Lodestar's extended block event has merged, but that does not establish cross-client agreement. The lightweight alternative remains linked. The wire contract describes inclusion, not a mandatory reveal policy. No new specification or Discord post was made for this reconciliation.

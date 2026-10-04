@@ -27,6 +27,8 @@ The runtime reuses the merged source, store, policy, ledger, signer, selector an
 
 Enabling live bidding requires a reveal cutoff. Reveal is prompt by default, following Nico's Lodestar-specific guidance; no additional attestation threshold is required. An optional caller policy may decline it. Both policy evaluation and publication are bounded, and per-event failures do not stop later events. Recording a selection is not proof that a payment settled.
 
+The current runtime does not call `recordPaymentSettled`. [LOD-112](https://linear.app/kriso/issue/LOD-112) owns the follow-up that reconciles local liabilities with a root-identified balance and pending-obligation snapshot. Moving a payment to the withdrawal queue is not an actual balance debit. Settlement and record eviction must handle canonical outcomes, delayed withdrawals, top-ups and reorgs without double counting or prematurely releasing funds.
+
 ## Engine and CLI follow-up
 
 [#10234](https://github.com/ChainSafe/lodestar/pull/10234) connects one Gloas source to one JSON-RPC endpoint using the existing JWT client and codecs. Payload IDs remain local to that endpoint. Heze Engine transport and adoption of the future shared SSZ transport are separate work.
