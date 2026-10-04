@@ -18,9 +18,11 @@ These are two alternatives for the same change, not proposals to merge together.
 | Main trade-off  | Reuses an existing topic, with two required fields from Gloas onward | Leaves `block` unchanged, but adds another topic with some duplicated information |
 | Proposed change | [OpenAPI patch](extend-block.patch)                                  | [OpenAPI patch](bid-included.patch)                                               |
 
-## Shared behavior
+## Intended import behavior
 
 Both notify after successful block import, including valid non-head blocks, without waiting for the execution payload envelope. Inclusion does not guarantee the block is canonical or instruct the Builder to reveal. A Builder that needs to verify the complete signed bid still fetches the block and compares it with its local record.
+
+This is the intended consumer behavior, not verified cross-client delivery. The stored extended-block patch follows Nico's request to add the two fields without changing the existing import description. It adds no separate every-import or timing guarantee. Any stronger normative wording should be reviewed on #641, not introduced only in this copy of the patch.
 
 The dedicated event omits the full signed bid, `bid_root` and `execution_optimistic`. Missing optimistic status must not be interpreted as `false`. The existing `block` plus block-fetch path remains available when a BN does not support the new topic.
 

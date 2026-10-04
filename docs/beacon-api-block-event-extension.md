@@ -327,10 +327,10 @@ Recent event PRs provide a practical starting point for reviewers: `@michaelspro
 
 ### Outreach sequence
 
-1. Use [draft #641](https://github.com/ethereum/beacon-APIs/pull/641) and #599 for discussion; the alternative patch is linked in the PR description. Publication is complete, but reviewer outreach remains a separate action.
+1. Continue discussion on [open PR #641](https://github.com/ethereum/beacon-APIs/pull/641) and #599; the alternative patch is linked in the PR description. Publication is complete, but reviewer outreach remains a separate action.
 2. Gather client feedback on producer feasibility, decoder compatibility, self-build behavior and the preferred event design. `block_v2` remains a documented alternative if clients prefer it.
 3. Record each response and implementation link in the table above. Fill `CHANGES.md` support cells only when support is verified, not merely because a client responds.
-4. Keep #641 in draft while the contract is unsettled. Resolve the event choice and compatibility questions through review, then update the patch and its readiness. Client implementations may land after the specification decision, with support tracked separately.
+4. Keep collecting feedback on #641, which is ready for review. Resolve the event choice and compatibility questions there and amend the proposal where needed. Ready for review does not mean agreed or interoperable; track client implementations separately.
 
 Cross-client buy-in means agreement that the wire contract is implementable and interoperable. It does not require every client implementation to merge before the specification PR can proceed.
 
@@ -390,16 +390,16 @@ Neither PR currently implements #599. PR #490 was updated on 2026-08-21, so both
 
 ## Completion criteria
 
-Both candidate patches are prepared and locally validated. They are ready for Kris and Marco to review before publication. Confirm the publication arrangement, review venue and initial contacts before posting; cross-client consensus is the outcome sought from draft review, not a prerequisite for opening a discussion draft.
+The extended-block proposal is published as #641, with the locally validated alternative linked. Nico has approved it; broader client feedback and implementation evidence remain outstanding. Do not open a duplicate proposal or repeat the completed publication step.
 
-The proposal is ready for upstream review when:
+Review should establish that:
 
 - the reviewed Lodestar implementation evidence is linked;
 - external-Builder, self-build, and pre-Gloas examples are verified;
 - its wire contract, import trigger and compatibility limits are explicit; and
 - the alternative and unanswered client questions are clearly linked.
 
-These are proposal-quality checks, not an upstream rule requiring every client to respond before review can begin. Share the packet with Lodestar for a final scope check, then use an approved upstream draft and issue #599 to obtain cross-client feedback. The proposed contract still needs maintainer agreement and implementation evidence before claiming adoption or interoperability.
+These are proposal-quality checks, not an upstream rule requiring every client to respond before review can begin. Use the existing PR and issue #599 for further feedback. The proposed contract still needs cross-client agreement and implementation evidence before claiming interoperability.
 
 SPEC-01 is complete when the Beacon APIs PR either merges with documented cross-client support or reaches a recorded upstream decision with clear follow-up ownership.
 

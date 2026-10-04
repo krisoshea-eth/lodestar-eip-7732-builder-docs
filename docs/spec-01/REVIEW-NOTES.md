@@ -8,6 +8,8 @@ For the proposal itself, read [Builder bid-inclusion events](README.md). This fi
 
 The attestation-weight reveal discussion is already active on the PR, including Kris's 16 September reply. Do not repeat the earlier draft response or turn a proposed threshold into event semantics. New Discord context is still needed before drafting a follow-up there.
 
+The extended-block patch retains the existing import description and the concise two-field addition requested in [Nico's review](https://github.com/ethereum/beacon-APIs/pull/641#discussion_r4061206169). Non-head coverage and delivery before the envelope remain consumer expectations to verify, not guarantees established by the linter or this stored patch. A proposed normative clarification belongs on the upstream PR; do not silently change its mirrored patch here.
+
 The preparation history below predates publication. Its statements about unapproved posting or the absence of an upstream PR are historical, not current instructions.
 
 Prepared 10 September 2026 against Beacon APIs master `ef98d512c03c8ca6b9d7cbdc45b9293ec2b24722`.
