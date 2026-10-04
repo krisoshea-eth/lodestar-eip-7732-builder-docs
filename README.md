@@ -4,25 +4,27 @@ This repository mirrors the Lodestar EIP-7732 Builder project documents as raw M
 
 ## Documents
 
-| Document | GitHub file | Source |
-| --- | --- | --- |
-| Project proposal | [docs/proposal.md](docs/proposal.md) | Accepted EPF proposal in `eth-protocol-fellows/cohort-seven` |
-| Implementation plan | [docs/implementation-plan.md](docs/implementation-plan.md) | Canonical full plan in GitHub |
-| Direct-Engine working plan | [docs/direct-engine-working-plan.md](docs/direct-engine-working-plan.md) | Confirmed working direction, current PR stack, unresolved production choices, and delivery order |
-| HackMD plan landing page | [docs/hackmd-implementation-plan-index.md](docs/hackmd-implementation-plan-index.md) | Short index for the public [HackMD plan URL](https://hackmd.io/@krisos/SyPZNJp4fg) |
-| Living technical note | [docs/living-technical-note.md](docs/living-technical-note.md) | Canonical GitHub note with a public [HackMD mirror](https://hackmd.io/@krisos/S1a9mdB7fl) |
-| Beacon API Builder-selection event decision | [docs/beacon-api-block-event-extension.md](docs/beacon-api-block-event-extension.md) | Working comparison for SPEC-01 and beacon-APIs #599 |
-| ENV-02 Builder dev runbook | [docs/runbooks/env-02-builder-dev.md](docs/runbooks/env-02-builder-dev.md) | Pinned local environment and evidence procedure for API-02 |
-| ENV-02 first-machine evidence | [docs/evidence/env-02-2026-08-31.md](docs/evidence/env-02-2026-08-31.md) | Point-in-time event, deduplication, and shutdown evidence |
-| Weekly updates | [docs/weekly-updates/](docs/weekly-updates/) | Kris and Marko's EPF HackMD updates |
-| Work log | [docs/work-log.md](docs/work-log.md) | Weekly project-board, implementation, and review progress |
+Start with [current implementation status](docs/current-status.md) and the [runtime input contract](docs/builder-input-contract.md). The full plan, technical note and dated audits retain useful history, but their older PR tables are not the current queue.
 
-The [11 September reconciliation](docs/reviews/2026-09-11-reconciliation.md) records current PR dispositions, extracted review follow-ups and validation limits. Earlier dated audits and weekly updates remain historical.
+| Document                                    | GitHub file                                                                          | Source                                                                                           |
+| ------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Project proposal                            | [docs/proposal.md](docs/proposal.md)                                                 | Accepted EPF proposal in `eth-protocol-fellows/cohort-seven`                                     |
+| Implementation plan                         | [docs/implementation-plan.md](docs/implementation-plan.md)                           | Canonical full plan in GitHub                                                                    |
+| Direct-Engine working plan                  | [docs/direct-engine-working-plan.md](docs/direct-engine-working-plan.md)             | Confirmed working direction, current PR stack, unresolved production choices, and delivery order |
+| HackMD plan landing page                    | [docs/hackmd-implementation-plan-index.md](docs/hackmd-implementation-plan-index.md) | Short index for the public [HackMD plan URL](https://hackmd.io/@krisos/SyPZNJp4fg)               |
+| Living technical note                       | [docs/living-technical-note.md](docs/living-technical-note.md)                       | Canonical GitHub note with a public [HackMD mirror](https://hackmd.io/@krisos/S1a9mdB7fl)        |
+| Beacon API Builder-selection event decision | [docs/beacon-api-block-event-extension.md](docs/beacon-api-block-event-extension.md) | Working comparison for SPEC-01 and beacon-APIs #599                                              |
+| ENV-02 Builder dev runbook                  | [docs/runbooks/env-02-builder-dev.md](docs/runbooks/env-02-builder-dev.md)           | Pinned local environment and evidence procedure for API-02                                       |
+| ENV-02 first-machine evidence               | [docs/evidence/env-02-2026-08-31.md](docs/evidence/env-02-2026-08-31.md)             | Point-in-time event, deduplication, and shutdown evidence                                        |
+| Weekly updates                              | [docs/weekly-updates/](docs/weekly-updates/)                                         | Kris and Marko's EPF HackMD updates                                                              |
+| Work log                                    | [docs/work-log.md](docs/work-log.md)                                                 | Weekly project-board, implementation, and review progress                                        |
+
+The [current status page](docs/current-status.md) records the active PRs and remaining runtime work. Dated audits and weekly updates are historical snapshots.
 
 ## Weekly Updates
 
-| Week | Kris | Marko |
-| --- | --- | --- |
+| Week   | Kris                                                                                           | Marko                                                                                             |
+| ------ | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | Week 0 | [GitHub](docs/weekly-updates/kris/week-00.md) / [HackMD](https://hackmd.io/@krisos/rJZ18M_-fg) | [GitHub](docs/weekly-updates/marko/week-00.md) / [HackMD](https://hackmd.io/@lqzic/week-0-update) |
 | Week 1 | [GitHub](docs/weekly-updates/kris/week-01.md) / [HackMD](https://hackmd.io/@krisos/S1jkvupWfx) | [GitHub](docs/weekly-updates/marko/week-01.md) / [HackMD](https://hackmd.io/@lqzic/week-1-update) |
 | Week 2 | [GitHub](docs/weekly-updates/kris/week-02.md) / [HackMD](https://hackmd.io/@krisos/SJ7J9cRffx) | [GitHub](docs/weekly-updates/marko/week-02.md) / [HackMD](https://hackmd.io/@lqzic/week-2-update) |
@@ -31,7 +33,7 @@ The [11 September reconciliation](docs/reviews/2026-09-11-reconciliation.md) rec
 | Week 5 | [GitHub](docs/weekly-updates/kris/week-05.md) / [HackMD](https://hackmd.io/@krisos/rysfyco4Mg) | [GitHub](docs/weekly-updates/marko/week-05.md) / [HackMD](https://hackmd.io/@lqzic/week-5-update) |
 | Week 6 | [GitHub](docs/weekly-updates/kris/week-06.md) / [HackMD](https://hackmd.io/@krisos/SyM9AhPrfg) | [GitHub](docs/weekly-updates/marko/week-06.md) / [HackMD](https://hackmd.io/@lqzic/week-6-update) |
 | Week 7 | [GitHub](docs/weekly-updates/kris/week-07.md) / [HackMD](https://hackmd.io/@krisos/BJ_rpGBUMl) | [GitHub](docs/weekly-updates/marko/week-07.md) / [HackMD](https://hackmd.io/@lqzic/week-7-update) |
-| Week 8 | [GitHub](docs/weekly-updates/kris/week-08.md) / [HackMD](https://hackmd.io/@krisos/B11rp1LUfg) | |
+| Week 8 | [GitHub](docs/weekly-updates/kris/week-08.md) / [HackMD](https://hackmd.io/@krisos/B11rp1LUfg) |                                                                                                   |
 
 ## Syncing With HackMD
 
