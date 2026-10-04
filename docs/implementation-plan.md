@@ -1,5 +1,7 @@
 # Lodestar EIP-7732 Builder — Implementation Plan
 
+For current delivery state, use [Builder implementation status](current-status.md) and the [runtime input contract](builder-input-contract.md). The checkpoints, PR tables and schedule below preserve the September plan; they are not the current review queue or live-network qualification.
+
 **Planning horizon:** EPF7 Weeks 6–21+  
 **Owners:** Kris O'Shea and Marko Lazic  
 **Mentor / primary reviewers:** Nico Flaig, NC, and the Lodestar team  

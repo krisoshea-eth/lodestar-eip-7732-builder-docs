@@ -1,10 +1,10 @@
 # Direct-Engine Builder working plan
 
-> **Status:** Confirmed direct-Engine working direction, reconciled 28 September 2026. Source #9958 has merged. Production EL topology, remaining inputs and complete runtime evidence are still open.
+> **Current delivery state:** See [Builder implementation status](current-status.md) and the [runtime input contract](builder-input-contract.md). The extraction matrix and PR tables below are historical planning snapshots, not the current review queue.
 
 ## Purpose and evidence boundary
 
-The [28 September reconciliation](reviews/2026-09-28-reconciliation.md) controls current status. Source #9958 and simulation fix #10054 join the merged foundations. Contributions #9/#10 are incorporated; broader fork store proposal #63 is closed. The accepted source uses plain post-Gloas types and passes null custody columns. The [input experiment](builder-input-contract.md) has programmatic startup and opt-in reveal evidence, but now follows the accepted source/store/policy contracts and still needs concrete CLI/Engine transport, input recovery and real lifecycle tests. Historical validation below retains its original date.
+The [28 September reconciliation](reviews/2026-09-28-reconciliation.md) records the earlier state. Source #9958 and simulation fix #10054 join the merged foundations. Contributions #9/#10 are incorporated; broader fork store proposal #63 is closed. The accepted source uses plain post-Gloas types and passes null custody columns. The [input experiment](builder-input-contract.md) has programmatic startup and opt-in reveal evidence, but now follows the accepted source/store/policy contracts and still needs concrete CLI/Engine transport, input recovery and real lifecycle tests. Historical validation below retains its original date.
 
 Nico's [`nflaig/builder`](https://github.com/ChainSafe/lodestar/tree/nflaig/builder) branch demonstrates an end-to-end Builder that owns payload construction through an Engine API connection. This differs materially from the original BN-mediated plan, where the source beacon node owned payload construction and stateful reveal material.
 
@@ -12,7 +12,7 @@ The branch is a proof of concept, not an upstream-ready patch. At [`99fd8fa9ad`]
 
 The project is extracting small, typed, testable boundaries from the proof of concept. An open draft is evidence that a review boundary exists. It is not evidence that Lodestar maintainers have accepted the abstraction or final API.
 
-## Proof-of-concept extraction matrix
+## Proof-of-concept extraction matrix (historical)
 
 Every production and test responsibility in the 42-file proof-of-concept diff is routed below. This is a responsibility map, not a claim that each prototype type or service should be copied upstream.
 
@@ -48,13 +48,13 @@ Every production and test responsibility in the 42-file proof-of-concept diff is
 
 The initial implementation is p2p-Builder-first. The Builder does not join libp2p directly; it submits bids and envelopes through its source BN. Since merged #9998 keeps API-only bids out of that BN's local pool, selection evidence uses a second proposer BN that receives the bid over p2p. A Builder API server is a later addition. Bounded in-memory payload retention is acceptable for the first working loop; durable restart recovery remains follow-up work.
 
-For an initial shared-EL proof of concept, the Builder must follow the BN's emitted payload attributes exactly so its `forkchoiceUpdated` request does not conflict with the BN view. A stock EL cannot start a build on an arbitrary parent without `forkchoiceUpdated`. Production deployment must therefore settle one of these models:
+An initial shared-EL proof of concept must follow the BN's emitted attributes, but delayed events can still race the BN's own `forkchoiceUpdated` calls. Matching attributes does not establish single-writer safety. A stock EL cannot start a build on an arbitrary parent without `forkchoiceUpdated`. Production deployment must therefore settle one of these models:
 
 1. a dedicated Builder EL;
 2. a shared EL with an enforceable single-view/single-input invariant; or
 3. alternative building software behind the injected payload-source boundary.
 
-## Current upstream and stacked delivery map
+## September delivery map (historical)
 
 | Capability                                         | Review artifact                     | State checked on 22 September                    | Next action                                                                              |
 | -------------------------------------------------- | ----------------------------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------- |
@@ -68,7 +68,7 @@ For an initial shared-EL proof of concept, the Builder must follow the BN's emit
 | Bid assembly                                       | #9978                               | Ready; unsafe gas-limit guard pushed             | New-head hosted checks remain separate from local validation                             |
 | Envelope assembly                                  | #9981                               | Ready; store type and tests corrected            | Discuss the exact-selection precondition with Nazar                                      |
 | Bid publication / selection / envelope publication | #9979, #9980, #9982                 | Ready                                            | Continue component review; do not equate title checks with full CI                       |
-| Resolved-input SlotBidder                          | Fork #77                            | Draft, fork-only                                 | Reconciled at dab18e5316; remains a combined fork draft        |
+| Resolved-input SlotBidder                          | Fork #77                            | Draft, fork-only                                 | Reconciled at dab18e5316; remains a combined fork draft                                  |
 | Payload-attributes hashes                          | #10109 / fork #80, Beacon APIs #638 | Draft implementation, open specification         | Resolve zero-hash behavior and the intended EL contract                                  |
 | Simulation correction                              | #10054                              | Merged 14 September                              | No outstanding Docs rerun for this closed PR                                             |
 | Bid/reveal runtime                                 | LOD-76/77/78, input-consumer branch | In Progress, Kris                                | Continue input and transport work; test the actual lifecycle                             |
@@ -84,18 +84,11 @@ Linear now records Marko's Builder work as separate implementation or historical
 
 These attribution issues do not create new implementation work. They make delivered ownership visible and keep the still-open work scoped to behavior not already landed elsewhere.
 
-### How the stack is reviewed
+### Stack review rules
 
 Every ChainSafe PR targets `unstable`, because contributor dependency branches do not exist in the ChainSafe repository. Until a dependency merges, GitHub may show dependency files in the child PR. The intended review surface is the child PR's own commit and files, recorded in its description.
 
-The delivery order is:
-
-1. Finish review of the seven ready component/refactor PRs; #9958 is already merged.
-2. Continue the reconciled fork-only SlotBidder/input experiment with concrete transport, input recovery and agreed reveal policy; do not reopen the accepted store/policy scope.
-3. Settle the finality-hash contract without making #638 mandatory by assumption.
-4. Complete concrete Builder/CLI/Engine setup under LOD-77.
-5. Complete reviewed selection/reveal policy, retry, settlement and eviction under LOD-78.
-6. Run a pinned Gloas BN/EL lifecycle with late-reveal, competing-root and recovery cases.
+The component foundations have now merged. Review #10234's connection, #10247's runtime and #10257's filtering independently. CLI draft #10259 and endpoint-dependent recovery draft #10260 are separate follow-ups, followed by the pinned Gloas lifecycle. Do not reopen completed store/policy contributions or revive superseded #80/#10109.
 
 When a parent merges, inspect the child diff first. Update dependencies only where needed for correctness or a coherent review surface, then rerun targeted validation. Do not merge `unstable` merely to refresh a PR or force-push after review starts. Do not ask maintainers to review the whole stack at once.
 
@@ -114,7 +107,7 @@ When a parent merges, inspect the child diff first. Update dependencies only whe
 | Heze dependent-root handling                | [Lodestar #9935](https://github.com/ChainSafe/lodestar/pull/9935)                                                                                                          | Preserve Heze fork and inclusion-list identity in payload and envelope tests                                                                        |
 | Builder preferences without an external URL | [Buildoor #184](https://github.com/ethpandaops/buildoor/pull/184)                                                                                                          | E2E can exercise local/p2p Builder preference flows; p2p bids keep `execution_payment = 0`                                                          |
 
-## Live upstream watches
+## September upstream watch list (historical)
 
 | Track                                   | Evidence                                                                                                                                                                                                                | Project effect                                                                                                                                                                                            |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -137,7 +130,7 @@ When a parent merges, inspect the child diff first. Update dependencies only whe
 
 Merged #10061/#10062/#10066 update native bindings and transport/codec dependencies. Open #10068 and draft #10069 continue decoder and allocation checks. Route pinned BN/network qualification to QA-01; these do not change the Builder service contracts. Draft release #10067 is not evidence of deployment or a complete Gloas lifecycle.
 
-## Remaining implementation sequence
+## Original extraction sequence (historical)
 
 ### 1. Inputs and Engine boundary
 
@@ -190,7 +183,7 @@ These constraints remain valid:
 - work, retries, storage, and shutdown are bounded;
 - public API changes require upstream and cross-client agreement.
 
-## Decisions still open
+## Decisions recorded in September (historical)
 
 These questions no longer block pure service work, but they block final runtime wiring or specification completion:
 

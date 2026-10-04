@@ -1,5 +1,9 @@
 # Lodestar EIP-7732 Builder — Living Technical Note
 
+See [current implementation status](current-status.md) and the [runtime input contract](builder-input-contract.md) before using this note for new work. The table and dated checkpoints below preserve September evidence; their PR states, release pins and telemetry are not current qualification.
+
+## September reference snapshot
+
 | Doc status                      |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Proposal                        | [Merged](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md); strong-success list amended through [PR #186](https://github.com/eth-protocol-fellows/cohort-seven/pull/186)                                                                                                                                                                                                                                                                                                                                                                  |
@@ -17,7 +21,7 @@
 
 This is the working document for the Lodestar EIP-7732 Builder project, an EPF cohort 7 project by [Kris O'Shea](https://github.com/krisoshea-eth) and [Marko Lazic](https://github.com/markolazic01), mentored by [Nico Flaig](https://github.com/nflaig) (ChainSafe, EIP-7732 co-author). The [project proposal](https://github.com/eth-protocol-fellows/cohort-seven/blob/master/projects/lodestar-eip-7732-builder.md) remains the stable public scope, while the [merged implementation plan](https://github.com/krisoshea-eth/lodestar-eip-7732-builder-docs/blob/main/docs/implementation-plan.md) owns accepted delivery decisions and issue boundaries. This note carries moving technical context, implementation findings, upstream state, code-path maps, adversarial cases, and research watches. Linear owns issue status, ownership, dependencies, and evidence.
 
-## 28 September checkpoint
+## 28 September checkpoint (historical)
 
 The [current reconciliation](reviews/2026-09-28-reconciliation.md) records the pushed timer/envelope fixes, accepted-contract reconciliation of fork #77 and the input experiment, new Builder-related upstream work, and Nico's approval of Beacon APIs #641. Real BN/EL lifecycle evidence remains missing. GitHub tracking was updated; Linear authentication is blocked, so cross-board synchronization is not claimed.
 

@@ -4,6 +4,8 @@
 
 A Builder needs to know when an imported beacon block includes its bid. Today it can subscribe to `block` and fetch the block to check. [Beacon APIs #599](https://github.com/ethereum/beacon-APIs/issues/599) discusses including enough identity information in an event to avoid fetching unrelated blocks.
 
+Lodestar's extended event implementation has now merged in [#9854](https://github.com/ChainSafe/lodestar/pull/9854). Its Builder consumer is proposed in [#10257](https://github.com/ChainSafe/lodestar/pull/10257). This provides implementation context, not cross-client compatibility evidence or acceptance of the specification.
+
 These are two alternatives for the same change, not proposals to merge together.
 
 ## The two options
